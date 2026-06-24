@@ -304,7 +304,6 @@ export function PostForm({ initialData, postType }) {
 
               {postType === 'event' && (
                 <>
-                  <>
                     <div className="form-group">
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
