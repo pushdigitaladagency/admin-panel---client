@@ -72,6 +72,7 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
     };
   }, [profilePreview]);
 
+
   const onSubmit = async (data) => {
     try {
       void data;
@@ -150,7 +151,7 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
                     {...register('first_name', {
                       required: 'First name is required',
                     })}
-                    placeholder="John"
+                    placeholder="Enter your first name"
                     className={errors.first_name ? 'error' : ''}
                   />
                   {errors.first_name && (
@@ -164,7 +165,7 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
                     {...register('last_name', {
                       required: 'Last name is required',
                     })}
-                    placeholder="Doe"
+                    placeholder="Enter your last name"
                     className={errors.last_name ? 'error' : ''}
                   />
                   {errors.last_name && (
@@ -390,7 +391,7 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
                 Cancel
               </Button>
               <Button type="submit" variant="primary" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save User'}
+                {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>

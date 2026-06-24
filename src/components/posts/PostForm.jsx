@@ -257,7 +257,11 @@ export function PostForm({ initialData, postType }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Name <span style={{ color: 'var(--color-danger)' }}>*</span></label>
-                <Input {...register('enquiry_name', { required: 'Name is required' })} className={errors.enquiry_name ? 'error' : ''} />
+                <Input 
+                  {...register('enquiry_name', { required: 'Name is required' })} 
+                  placeholder="Enter your name"
+                  className={errors.enquiry_name ? 'error' : ''} 
+                />
                 {errors.enquiry_name && <p className="form-error">{errors.enquiry_name.message}</p>}
               </div>
               <div className="form-group">
@@ -266,7 +270,7 @@ export function PostForm({ initialData, postType }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Mobile</label>
-                <Input {...register('enquiry_mobile')} />
+                <Input {...register('enquiry_mobile')} placeholder="+91 234 567 8900" />
               </div>
               <div className="form-group">
                 <label className="form-label">Subject</label>
@@ -373,7 +377,7 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">Author</label>
                       <Input
                         {...register('author')}
-                        placeholder="e.g. John Doe"
+                        placeholder="Enter your name"
                       />
                     </div>
                   </>
@@ -468,7 +472,7 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">Organizer Contact</label>
                       <Input
                         {...register('organizer_contact')}
-                        placeholder="+1 234 567 8900"
+                        placeholder="+91 234 567 8900"
                       />
                     </div>
                   </div>
@@ -724,7 +728,7 @@ export function PostForm({ initialData, postType }) {
 
               <div className="flex flex-col gap-2 pt-2">
                 <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Save Post'}
+                  {isSubmitting ? 'Saving...' : 'Save'}
                 </Button>
                 <Button
                   type="button"

@@ -126,7 +126,7 @@ export function AlbumForm({ initialData, onSubmit, onCancel }) {
           Cancel
         </Button>
         <Button type="submit" variant="primary">
-          {isEdit ? 'Save Changes' : 'Create Album'}
+          {isEdit ? 'Save' : 'Create Album'}
         </Button>
       </div>
     </form>

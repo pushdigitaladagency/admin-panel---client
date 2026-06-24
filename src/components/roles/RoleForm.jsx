@@ -245,7 +245,7 @@ export function RoleForm({ initialData }) {
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Role'}
+              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </form>

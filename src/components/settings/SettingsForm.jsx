@@ -95,7 +95,7 @@ export function SettingsForm({ initialSettings = {} }) {
       {/* Save Button */}
       <div className="flex justify-end">
         <Button type="submit" variant="primary" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save Settings'}
+          {isSubmitting ? 'Saving...' : 'Save'}
         </Button>
       </div>
     </form>

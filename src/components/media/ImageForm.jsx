@@ -140,7 +140,7 @@ export function ImageForm({ albums = [], initialData, onSubmit, onCancel }) {
           Cancel
         </Button>
         <Button type="submit" variant="primary">
-          {isEdit ? 'Save Changes' : 'Upload Image'}
+          {isEdit ? 'Save' : 'Upload Image'}
         </Button>
       </div>
     </form>

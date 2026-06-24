@@ -12,7 +12,7 @@ export default function EditEnquiryPage() {
     id: params.id, 
     enquiry_name: 'Alice Smith', 
     enquiry_email: 'alice@example.com', 
-    enquiry_mobile: '123-456-7890', 
+    enquiry_mobile: '+91 123-456-7890', 
     enquiry_subject: 'Interested in Services', 
     enquiry_status: 'New', 
     submitted_date: '2026-06-24',

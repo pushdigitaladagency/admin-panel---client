@@ -108,7 +108,7 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
           Cancel
         </Button>
         <Button type="submit" variant="primary">
-          {isEdit ? 'Save Changes' : 'Add Video'}
+          {isEdit ? 'Save' : 'Add Video'}
         </Button>
       </div>
     </form>

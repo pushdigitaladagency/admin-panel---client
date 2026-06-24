@@ -150,7 +150,7 @@ export function PermissionForm({ initialData }) {
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Permission'}
+              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </form>

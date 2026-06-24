@@ -32,8 +32,8 @@ export default function PostListPage() {
     { id: 1, title: 'Tech Breakthrough of the Year', category: 'Technology', author: 'Dr. Evelyn Carter', status: 'published', publish_date: '2026-06-21T10:00:00Z' },
     { id: 2, title: 'Local Tech Hub Expands', category: 'Local News', author: 'John Editor', status: 'draft', publish_date: '2026-06-22T14:30:00Z' },
   ] : postType === 'enquiry' ? [
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', mobile: '123-456-7890', subject: 'Interested in Services', status: 'New', date: '2026-06-24T10:00:00Z' },
-    { id: 2, name: 'Bob Jones', email: 'bob@example.com', mobile: '098-765-4321', subject: 'Support Request', status: 'In Progress', date: '2026-06-23T14:30:00Z' },
+    { id: 1, name: 'Alice Smith', email: 'alice@example.com', mobile: '+91 123-456-7890', subject: 'Interested in Services', status: 'New', date: '2026-06-24T10:00:00Z' },
+    { id: 2, name: 'Bob Jones', email: 'bob@example.com', mobile: '+91 098-765-4321', subject: 'Support Request', status: 'In Progress', date: '2026-06-23T14:30:00Z' },
   ] : [
     { id: 1, title: 'Acme Corp Announces Strategic Partnership', category: 'Partnerships', status: 'published', publish_date: '2026-06-20T10:00:00Z', featured: 'Yes' },
     { id: 2, title: 'Quarterly Earnings Report Q2', category: 'Financial', status: 'draft', publish_date: '2026-06-21T14:30:00Z', featured: 'No' },

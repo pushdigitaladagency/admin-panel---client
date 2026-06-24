@@ -11,8 +11,8 @@ export default function EnquiryListPage() {
   
   // Mock data
   const posts = [
-    { id: 1, name: 'Alice Smith', email: 'alice@example.com', mobile: '123-456-7890', subject: 'Interested in Services', status: 'New', date: '2026-06-24T10:00:00Z' },
-    { id: 2, name: 'Bob Jones', email: 'bob@example.com', mobile: '098-765-4321', subject: 'Support Request', status: 'In Progress', date: '2026-06-23T14:30:00Z' },
+    { id: 1, name: 'Alice Smith', email: 'alice@example.com', mobile: '+91 123-456-7890', subject: 'Interested in Services', status: 'New', date: '2026-06-24T10:00:00Z' },
+    { id: 2, name: 'Bob Jones', email: 'bob@example.com', mobile: '+91 098-765-4321', subject: 'Support Request', status: 'In Progress', date: '2026-06-23T14:30:00Z' },
   ];
 
   const columns = [
