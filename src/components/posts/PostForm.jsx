@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ImagePlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 
@@ -10,12 +11,35 @@ import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import { useTerms } from '@/context/TermsContext';
+import MediaSelectModal from '@/components/media/MediaSelectModal';
 
 export function PostForm({ initialData, postType }) {
   const isEdit = !!initialData;
   const router = useRouter();
   const { addToast } = useToast();
   const { getTerms } = useTerms();
+
+  const featuredImageInputRef = React.useRef(null);
+  const galleryImagesInputRef = React.useRef(null);
+
+  const [featuredImagePreview, setFeaturedImagePreview] = React.useState(initialData?.featured_image || '');
+  const [galleryImagesPreviews, setGalleryImagesPreviews] = React.useState([]);
+
+  const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
+  const [mediaTarget, setMediaTarget] = React.useState(null); // 'featured' or 'gallery'
+
+  const handleFeaturedImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFeaturedImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleGalleryImagesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const urls = files.map(file => URL.createObjectURL(file));
+    setGalleryImagesPreviews(urls);
+  };
 
   const {
     register,
@@ -96,6 +120,21 @@ export function PostForm({ initialData, postType }) {
         },
   });
 
+  const { ref: featuredRef, ...featuredRegister } = register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
+  const { ref: galleryRef, ...galleryRegister } = register('gallery_images');
+
+  const handleMediaModalSelect = (media) => {
+    if (mediaTarget === 'featured') {
+      const url = media.url;
+      setFeaturedImagePreview(url);
+      setValue('featured_image', url, { shouldValidate: true, shouldDirty: true });
+    } else if (mediaTarget === 'gallery') {
+      const urls = Array.isArray(media) ? media.map(m => m.url) : [media.url];
+      setGalleryImagesPreviews(urls);
+      setValue('gallery_images', urls.join(','), { shouldValidate: true, shouldDirty: true });
+    }
+  };
+
   const postTitle = watch('title');
   const editorRef = React.useRef(null);
 
@@ -153,6 +192,43 @@ export function PostForm({ initialData, postType }) {
 
   const CATEGORIES = getTerms(taxonomyKey).map((t) => t.name);
 
+  const renderSeoConfigurations = () => (
+    <div className="card" style={{ background: 'rgba(0, 0, 0, 0.01)', borderStyle: 'dashed' }}>
+      <div className="card-header" style={{ padding: '12px 18px' }}>
+        <h4 className="card-title" style={{ fontSize: '0.875rem' }}>SEO Configurations</h4>
+      </div>
+      <div className="card-body" style={{ padding: '18px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="form-group">
+            <label className="form-label">SEO Title</label>
+            <Input
+              {...register('seo_title')}
+              placeholder="Meta title for search engines"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">SEO Keywords</label>
+            <Input
+              {...register('seo_keywords')}
+              placeholder="event, launch, workshop"
+            />
+          </div>
+
+          <div className="form-group text-left md:col-span-2">
+            <label className="form-label">SEO Description</label>
+            <textarea
+              {...register('seo_description')}
+              className="form-textarea"
+              placeholder="Meta description under 160 characters..."
+              style={{ minHeight: '60px' }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="card max-w-5xl">
       <div className="card-header">
@@ -160,11 +236,9 @@ export function PostForm({ initialData, postType }) {
       </div>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Main Content Form Fields */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="form-label">
                     {postType === 'event' ? 'Event Title' : postType === 'news' ? 'News Title' : 'Title'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
@@ -186,9 +260,7 @@ export function PostForm({ initialData, postType }) {
                   />
                   {errors.slug && <p className="form-error">{errors.slug.message}</p>}
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="form-label">
                     {postType === 'event' ? 'Event Type' : postType === 'news' ? 'News Category' : 'Category'} {postType !== 'event' && <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>}
@@ -209,10 +281,9 @@ export function PostForm({ initialData, postType }) {
                     placeholder="news, launch, tech"
                   />
                 </div>
-              </div>
 
               {postType === 'news' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <>
                   <div className="form-group">
                     <label className="form-label">News Source</label>
                     <Input
@@ -228,12 +299,12 @@ export function PostForm({ initialData, postType }) {
                       placeholder="e.g. John Doe"
                     />
                   </div>
-                </div>
+                </>
               )}
 
               {postType === 'event' && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <>
                     <div className="form-group">
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
@@ -257,9 +328,7 @@ export function PostForm({ initialData, postType }) {
                       />
                       {errors.event_end_date && <p className="form-error">{errors.event_end_date.message}</p>}
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
                       <label className="form-label">Registration Start Date</label>
                       <Input
@@ -275,9 +344,7 @@ export function PostForm({ initialData, postType }) {
                         {...register('reg_end_date')}
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
                       <label className="form-label">
                         Venue <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
@@ -297,9 +364,7 @@ export function PostForm({ initialData, postType }) {
                         placeholder="e.g. 123 Main St"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
                       <label className="form-label">Google Map URL</label>
                       <Input
@@ -315,9 +380,8 @@ export function PostForm({ initialData, postType }) {
                         placeholder="https://example.com/register"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
                       <label className="form-label">Organizer Name</label>
                       <Input
@@ -377,26 +441,102 @@ export function PostForm({ initialData, postType }) {
                   <label className="form-label">
                     {postType === 'event' ? 'Banner Image' : 'Featured Image'} {postType !== 'event' && <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>}
                   </label>
-                  <Input
+                  
+                  {/* Hidden Input */}
+                  <input
                     type="file"
                     accept="image/*"
-                    {...register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' })}
-                    style={{ padding: '7px 14px' }}
-                    className={errors.featured_image ? 'error' : ''}
+                    {...featuredRegister}
+                    ref={(e) => {
+                      featuredRef(e);
+                      featuredImageInputRef.current = e;
+                    }}
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      featuredRegister.onChange(e);
+                      handleFeaturedImageChange(e);
+                    }}
                   />
+
+                  {/* Custom Dashed Image Upload Dropzone */}
+                  <div
+                    onClick={() => {
+                      setMediaTarget('featured');
+                      setIsMediaModalOpen(true);
+                    }}
+                    className="premium-dropzone"
+                  >
+                    {featuredImagePreview ? (
+                      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <img 
+                          src={featuredImagePreview} 
+                          alt="Featured Preview" 
+                          style={{ maxHeight: '100px', objectFit: 'contain', borderRadius: 'var(--radius-sm)', marginBottom: '8px' }} 
+                        />
+                        <span className="premium-dropzone-text" style={{ fontSize: '0.75rem' }}>Click to change image</span>
+                      </div>
+                    ) : (
+                      <>
+                        <ImagePlus size={28} className="premium-dropzone-icon" />
+                        <span className="premium-dropzone-text">Click to select image</span>
+                      </>
+                    )}
+                  </div>
                   {errors.featured_image && <p className="form-error">{errors.featured_image.message}</p>}
                 </div>
 
                 {postType === 'news' ? (
                   <div className="form-group">
                     <label className="form-label">Gallery Images</label>
-                    <Input
+                    
+                    {/* Hidden Input */}
+                    <input
                       type="file"
                       accept="image/*"
                       multiple
-                      {...register('gallery_images')}
-                      style={{ padding: '7px 14px' }}
+                      {...galleryRegister}
+                      ref={(e) => {
+                        galleryRef(e);
+                        galleryImagesInputRef.current = e;
+                      }}
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        galleryRegister.onChange(e);
+                        handleGalleryImagesChange(e);
+                      }}
                     />
+
+                    {/* Custom Dashed Image Upload Dropzone */}
+                    <div
+                      onClick={() => {
+                        setMediaTarget('gallery');
+                        setIsMediaModalOpen(true);
+                      }}
+                      className="premium-dropzone"
+                    >
+                      {galleryImagesPreviews.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '8px' }}>
+                            {galleryImagesPreviews.map((url, i) => (
+                              <img 
+                                key={i}
+                                src={url} 
+                                alt={`Gallery Preview ${i}`} 
+                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} 
+                              />
+                            ))}
+                          </div>
+                          <span className="premium-dropzone-text" style={{ fontSize: '0.75rem' }}>
+                            {galleryImagesPreviews.length} images selected (Click to change)
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <ImagePlus size={28} className="premium-dropzone-icon" />
+                          <span className="premium-dropzone-text">Click to select images</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ) : postType === 'event' ? (
                   <div className="form-group">
@@ -474,93 +614,107 @@ export function PostForm({ initialData, postType }) {
               </div>
 
               {/* SEO Configurations */}
-              <div className="card" style={{ background: 'rgba(0, 0, 0, 0.01)', borderStyle: 'dashed' }}>
-                <div className="card-header" style={{ padding: '12px 18px' }}>
-                  <h4 className="card-title" style={{ fontSize: '0.875rem' }}>SEO Configurations</h4>
-                </div>
-                <div className="card-body" style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div className="form-group">
-                    <label className="form-label">SEO Title</label>
-                    <Input
-                      {...register('seo_title')}
-                      placeholder="Meta title for search engines"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">SEO Keywords</label>
-                    <Input
-                      {...register('seo_keywords')}
-                      placeholder="event, launch, workshop"
-                    />
-                  </div>
-
-                  <div className="form-group text-left">
-                    <label className="form-label">SEO Description</label>
-                    <textarea
-                      {...register('seo_description')}
-                      className="form-textarea"
-                      placeholder="Meta description under 160 characters..."
-                      style={{ minHeight: '60px' }}
-                    />
-                  </div>
-                </div>
-              </div>
+              {postType !== 'news' && renderSeoConfigurations()}
             </div>
 
             {/* Sidebar Controls */}
             <div className="space-y-4">
-              <div className="card" style={{ background: 'var(--color-surface)', border: 'none' }}>
-                <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {postType === 'news' ? (
+                <>
                   <div className="form-group">
-                    <label className="form-label">{postType === 'event' ? 'Publish Status' : 'Status'}</label>
+                    <label className="form-label">Status</label>
                     <Select {...register('status')}>
                       <option value="draft">Draft</option>
                       <option value="published">Published</option>
                     </Select>
                   </div>
 
-                  {postType === 'event' && (
+                  <div className="form-group">
+                    <label className="form-label">Featured News</label>
+                    <Select {...register('featured')}>
+                      <option value="no">No</option>
+                      <option value="yes">Yes</option>
+                    </Select>
+                  </div>
+                </>
+              ) : (
+                <div className="card" style={{ background: 'var(--color-surface)', border: 'none' }}>
+                  <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div className="form-group">
-                      <label className="form-label">Event Status</label>
-                      <Select {...register('event_status')}>
-                        <option value="Upcoming">Upcoming</option>
-                        <option value="Ongoing">Ongoing</option>
-                        <option value="Completed">Completed</option>
+                      <label className="form-label">{postType === 'event' ? 'Publish Status' : 'Status'}</label>
+                      <Select {...register('status')}>
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
                       </Select>
                     </div>
-                  )}
 
-                  {postType !== 'event' && (
-                    <div className="form-group">
-                      <label className="form-label">{postType === 'news' ? 'Featured News' : 'Featured'}</label>
-                      <Select {...register('featured')}>
-                        <option value="no">No</option>
-                        <option value="yes">Yes</option>
-                      </Select>
-                    </div>
-                  )}
+                    {postType === 'event' && (
+                      <div className="form-group">
+                        <label className="form-label">Event Status</label>
+                        <Select {...register('event_status')}>
+                          <option value="Upcoming">Upcoming</option>
+                          <option value="Ongoing">Ongoing</option>
+                          <option value="Completed">Completed</option>
+                        </Select>
+                      </div>
+                    )}
 
-                  <div className="pt-2 flex flex-col gap-2">
-                    <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? 'Saving...' : 'Save Post'}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="secondary" 
-                      className="w-full" 
-                      onClick={() => router.push(`/posts/${postType}`)}
-                    >
-                      Cancel
-                    </Button>
+                    {postType !== 'event' && (
+                      <div className="form-group">
+                        <label className="form-label">{postType === 'news' ? 'Featured News' : 'Featured'}</label>
+                        <Select {...register('featured')}>
+                          <option value="no">No</option>
+                          <option value="yes">Yes</option>
+                        </Select>
+                      </div>
+                    )}
+
+                    {postType !== 'news' && (
+                      <div className="pt-2 flex flex-col gap-2">
+                        <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+                          {isSubmitting ? 'Saving...' : 'Save Post'}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="secondary" 
+                          className="w-full" 
+                          onClick={() => router.push(`/posts/${postType}`)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
+              {postType === 'news' && renderSeoConfigurations()}
+              {postType === 'news' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
+                  <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save Post'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    className="w-full" 
+                    onClick={() => router.push(`/posts/${postType}`)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
 
           </div>
         </form>
       </div>
+
+      <MediaSelectModal 
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        onSelect={handleMediaModalSelect}
+        multiple={mediaTarget === 'gallery'}
+      />
     </div>
   );
 }

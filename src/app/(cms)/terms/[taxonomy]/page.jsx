@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTerms } from '@/context/TermsContext';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/context/ConfirmContext';
 import { Pencil, Trash2 } from 'lucide-react';
 
 export default function TermListPage() {
@@ -13,19 +14,22 @@ export default function TermListPage() {
   const taxonomy = params.taxonomy || 'category';
   const { getTerms, deleteTerm, deleteTerms } = useTerms();
   const { addToast } = useToast();
+  const { confirmDelete } = useConfirm();
 
   const terms = getTerms(taxonomy);
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this term?')) return;
-    deleteTerm(taxonomy, id);
-    addToast('Term deleted successfully (mock)', 'success');
+    confirmDelete('Are you sure you want to delete this term?', () => {
+      deleteTerm(taxonomy, id);
+      addToast('Term deleted successfully (mock)', 'success');
+    });
   };
 
   const handleBulkDelete = async (ids) => {
-    if (!confirm(`Are you sure you want to delete ${ids.length} terms?`)) return;
-    deleteTerms(taxonomy, ids);
-    addToast(`${ids.length} terms deleted (mock)`, 'success');
+    confirmDelete(`Are you sure you want to delete ${ids.length} terms?`, () => {
+      deleteTerms(taxonomy, ids);
+      addToast(`${ids.length} terms deleted (mock)`, 'success');
+    });
   };
 
   const columns = [

@@ -5,6 +5,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Navbar from '@/components/layout/Navbar';
 import { ToastProvider } from '@/components/ui/Toast';
 import { TermsProvider } from '@/context/TermsContext';
+import { ConfirmProvider } from '@/context/ConfirmContext';
 
 export default function CmsLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,16 +13,18 @@ export default function CmsLayout({ children }) {
   return (
     <ToastProvider>
       <TermsProvider>
-        <div className="app-shell">
-          <Sidebar
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-          />
-          <div className="main-wrapper">
-            <Navbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
-            <main className="page-content">{children}</main>
+        <ConfirmProvider>
+          <div className="app-shell">
+            <Sidebar
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
+            />
+            <div className="main-wrapper">
+              <Navbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+              <main className="page-content">{children}</main>
+            </div>
           </div>
-        </div>
+        </ConfirmProvider>
       </TermsProvider>
     </ToastProvider>
   );

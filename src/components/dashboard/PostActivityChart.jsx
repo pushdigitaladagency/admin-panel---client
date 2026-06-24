@@ -24,11 +24,13 @@ export function PostActivityChart() {
       style={{ 
         background: '#ffffff', 
         border: hasBorder ? '1px solid var(--color-border)' : 'none', 
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08)', 
         position: 'relative',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        outline: 'none'
+        outline: 'none',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
       {/* Header */}

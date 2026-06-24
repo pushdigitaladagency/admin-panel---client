@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/context/ConfirmContext';
 
 export function MediaLibrary({ initialMedia = [] }) {
   const [media, setMedia] = useState(initialMedia);
   const [uploading, setUploading] = useState(false);
   const { addToast } = useToast();
+  const { confirmDelete } = useConfirm();
 
   const handleUpload = async (e) => {
     const files = e.target.files;
@@ -36,17 +38,17 @@ export function MediaLibrary({ initialMedia = [] }) {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
-
-    try {
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-      
-      setMedia((prev) => prev.filter((m) => m.id !== id));
-      addToast('File deleted successfully (mock)', 'success');
-    } catch (err) {
-      addToast('Failed to delete file', 'danger');
-    }
+    confirmDelete('Are you sure you want to delete this file?', async () => {
+      try {
+        // Mock network delay
+        await new Promise(res => setTimeout(res, 500));
+        
+        setMedia((prev) => prev.filter((m) => m.id !== id));
+        addToast('File deleted successfully (mock)', 'success');
+      } catch (err) {
+        addToast('Failed to delete file', 'danger');
+      }
+    });
   };
 
   const formatSize = (bytes) => {

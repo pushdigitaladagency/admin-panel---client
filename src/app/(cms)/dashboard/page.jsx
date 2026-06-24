@@ -177,10 +177,10 @@ export default function DashboardPage() {
       </div>
 
       <UserGrowthChart />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px', alignItems: 'start' }} className="mb-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px', alignItems: 'stretch' }} className="mb-6">
         <PostActivityChart />
 
-        <div className="card" style={{ background: '#ffffff', border: '1px solid var(--color-border)' }}>
+        <div className="card" style={{ background: '#ffffff', border: '1px solid var(--color-border)', height: '100%', display: 'flex', flexDirection: 'column' }}>
           <div className="card-header" style={{ padding: '24px 24px 16px 24px', borderBottom: 'none' }}>
             <h3 className="card-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Recent Posts</h3>
           </div>
@@ -238,7 +238,7 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
-        </div>
+         </div>
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/context/ConfirmContext';
 import { AlbumForm } from '@/components/media/AlbumForm';
 import { ImageForm } from '@/components/media/ImageForm';
 import { VideoForm } from '@/components/media/VideoForm';
@@ -19,6 +20,7 @@ import {
 export default function MediaPage() {
   const [activeTab, setActiveTab] = useState('albums');
   const { addToast } = useToast();
+  const { confirmDelete } = useConfirm();
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -146,42 +148,48 @@ export default function MediaPage() {
   };
 
   const handleDeleteAlbum = async (id) => {
-    if (!confirm('Are you sure you want to delete this album? This will not delete the images inside it.')) return;
-    await new Promise((res) => setTimeout(res, 300));
-    setAlbums((prev) => prev.filter((a) => a.id !== id));
-    addToast('Album deleted successfully (mock)', 'success');
+    confirmDelete('Are you sure you want to delete this album? This will not delete the images inside it.', async () => {
+      await new Promise((res) => setTimeout(res, 300));
+      setAlbums((prev) => prev.filter((a) => a.id !== id));
+      addToast('Album deleted successfully (mock)', 'success');
+    });
   };
 
   const handleDeleteImage = async (id) => {
-    if (!confirm('Are you sure you want to delete this image?')) return;
-    await new Promise((res) => setTimeout(res, 300));
-    setImages((prev) => prev.filter((img) => img.id !== id));
-    addToast('Image deleted successfully (mock)', 'success');
+    confirmDelete('Are you sure you want to delete this image?', async () => {
+      await new Promise((res) => setTimeout(res, 300));
+      setImages((prev) => prev.filter((img) => img.id !== id));
+      addToast('Image deleted successfully (mock)', 'success');
+    });
   };
 
   const handleDeleteVideo = async (id) => {
-    if (!confirm('Are you sure you want to delete this video?')) return;
-    await new Promise((res) => setTimeout(res, 300));
-    setVideos((prev) => prev.filter((v) => v.id !== id));
-    addToast('Video deleted successfully (mock)', 'success');
+    confirmDelete('Are you sure you want to delete this video?', async () => {
+      await new Promise((res) => setTimeout(res, 300));
+      setVideos((prev) => prev.filter((v) => v.id !== id));
+      addToast('Video deleted successfully (mock)', 'success');
+    });
   };
 
   const handleBulkDeleteAlbums = async (ids) => {
-    if (!confirm(`Are you sure you want to delete ${ids.length} albums?`)) return;
-    setAlbums((prev) => prev.filter((a) => !ids.includes(a.id)));
-    addToast(`${ids.length} albums deleted (mock)`, 'success');
+    confirmDelete(`Are you sure you want to delete ${ids.length} albums?`, () => {
+      setAlbums((prev) => prev.filter((a) => !ids.includes(a.id)));
+      addToast(`${ids.length} albums deleted (mock)`, 'success');
+    });
   };
 
   const handleBulkDeleteImages = async (ids) => {
-    if (!confirm(`Are you sure you want to delete ${ids.length} images?`)) return;
-    setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
-    addToast(`${ids.length} images deleted (mock)`, 'success');
+    confirmDelete(`Are you sure you want to delete ${ids.length} images?`, () => {
+      setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
+      addToast(`${ids.length} images deleted (mock)`, 'success');
+    });
   };
 
   const handleBulkDeleteVideos = async (ids) => {
-    if (!confirm(`Are you sure you want to delete ${ids.length} videos?`)) return;
-    setVideos((prev) => prev.filter((v) => !ids.includes(v.id)));
-    addToast(`${ids.length} videos deleted (mock)`, 'success');
+    confirmDelete(`Are you sure you want to delete ${ids.length} videos?`, () => {
+      setVideos((prev) => prev.filter((v) => !ids.includes(v.id)));
+      addToast(`${ids.length} videos deleted (mock)`, 'success');
+    });
   };
 
   // Columns Configuration
