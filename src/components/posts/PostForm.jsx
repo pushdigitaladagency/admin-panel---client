@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { ImagePlus, FileText } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 
 import { Button } from '@/components/ui/Button';
@@ -27,6 +29,7 @@ export function PostForm({ initialData, postType }) {
 
   const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
   const [mediaTarget, setMediaTarget] = React.useState(null); // 'featured' or 'gallery'
+  const [activeFormat, setActiveFormat] = React.useState(null);
 
   const handleFeaturedImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -43,6 +46,7 @@ export function PostForm({ initialData, postType }) {
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     setValue,
@@ -178,7 +182,7 @@ export function PostForm({ initialData, postType }) {
       } else {
         addToast(`${postType} created successfully (mock)`, 'success');
       }
-      router.push(`/posts/${postType}`);
+      router.push(postType === 'enquiry' ? '/enquiry' : `/posts/${postType}`);
     } catch (err) {
       addToast(err.message || 'Operation failed', 'danger');
     }
@@ -236,7 +240,78 @@ export function PostForm({ initialData, postType }) {
       </div>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {postType === 'enquiry' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-group">
+                <label className="form-label">Enquiry ID</label>
+                <Input value={initialData?.id || 'New'} disabled />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Status</label>
+                <Select {...register('enquiry_status')}>
+                  <option value="New">New</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Responded">Responded</option>
+                  <option value="Closed">Closed</option>
+                </Select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Name <span style={{ color: 'var(--color-danger)' }}>*</span></label>
+                <Input {...register('enquiry_name', { required: 'Name is required' })} className={errors.enquiry_name ? 'error' : ''} />
+                {errors.enquiry_name && <p className="form-error">{errors.enquiry_name.message}</p>}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <Input type="email" {...register('enquiry_email')} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Mobile</label>
+                <Input {...register('enquiry_mobile')} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Subject</label>
+                <Input {...register('enquiry_subject')} />
+              </div>
+              <div className="form-group md:col-span-2">
+                <label className="form-label">Message</label>
+                <textarea {...register('enquiry_message')} className="form-textarea" rows={4} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Submitted Date</label>
+                <Controller control={control} name="submitted_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Response Date</label>
+                <Controller control={control} name="response_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Assigned To</label>
+                <Input {...register('assigned_to')} placeholder="e.g. Sales Team" />
+              </div>
+              <div className="form-group md:col-span-2">
+                <label className="form-label">Follow-up Notes</label>
+                <textarea {...register('follow_up_notes')} className="form-textarea" rows={3} />
+              </div>
+              <div className="form-group md:col-span-2">
+                <label className="form-label">Attachment (Optional)</label>
+                <Input type="file" {...register('attachment')} />
+              </div>
+              
+              <div className="form-group md:col-span-2 pt-4 flex gap-4">
+                <Button type="submit" variant="primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => router.push(postType === 'enquiry' ? '/enquiry' : `/posts/${postType}`)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Main Content Form Fields */}
             <div className="space-y-4">
@@ -312,11 +387,7 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Input
-                        type="date"
-                        {...register('event_start_date', { required: 'Event Start Date is required' })}
-                        className={errors.event_start_date ? 'error' : ''}
-                      />
+                      <Controller control={control} name="event_start_date" rules={{ required: 'Event Start Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_start_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
                       {errors.event_start_date && <p className="form-error">{errors.event_start_date.message}</p>}
                     </div>
 
@@ -324,28 +395,18 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event End Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Input
-                        type="date"
-                        {...register('event_end_date', { required: 'Event End Date is required' })}
-                        className={errors.event_end_date ? 'error' : ''}
-                      />
+                      <Controller control={control} name="event_end_date" rules={{ required: 'Event End Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_end_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
                       {errors.event_end_date && <p className="form-error">{errors.event_end_date.message}</p>}
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration Start Date</label>
-                      <Input
-                        type="date"
-                        {...register('reg_start_date')}
-                      />
+                      <Controller control={control} name="reg_start_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration End Date</label>
-                      <Input
-                        type="date"
-                        {...register('reg_end_date')}
-                      />
+                      <Controller control={control} name="reg_end_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
                     </div>
 
                     <div className="form-group md:col-span-2">
@@ -420,21 +481,14 @@ export function PostForm({ initialData, postType }) {
                     <label className="form-label">
                       Publish Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                     </label>
-                    <Input
-                      type="date"
-                      {...register('publish_date', { required: 'Publish Date is required' })}
-                      className={errors.publish_date ? 'error' : ''}
-                    />
+                    <Controller control={control} name="publish_date" rules={{ required: 'Publish Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.publish_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
                     {errors.publish_date && <p className="form-error">{errors.publish_date.message}</p>}
                   </div>
 
                   {postType !== 'news' && (
                     <div className="form-group">
                       <label className="form-label">Expiry Date</label>
-                      <Input
-                        type="date"
-                        {...register('expiry_date')}
-                      />
+                      <Controller control={control} name="expiry_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
                     </div>
                   )}
                 </div>
@@ -636,9 +690,9 @@ export function PostForm({ initialData, postType }) {
                         {postType === 'event' ? 'Event Description' : postType === 'news' ? 'Full Content' : 'Detailed Content'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
                       <div className="flex flex-wrap gap-1 p-2 border border-b-0 rounded-t-md" style={{ backgroundColor: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
-                        <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
-                        <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
-                        <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
+                        <button type="button" className={`btn btn-sm ${activeFormat === 'bold' ? 'btn-primary border-2 border-white ring-2 ring-blue-500' : 'btn-secondary'}`} style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
+                        <button type="button" className={`btn btn-sm ${activeFormat === 'italic' ? 'btn-primary border-2 border-white ring-2 ring-blue-500' : 'btn-secondary'}`} style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
+                        <button type="button" className={`btn btn-sm ${activeFormat === 'underline' ? 'btn-primary border-2 border-white ring-2 ring-blue-500' : 'btn-secondary'}`} style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
                       </div>
                       <div
                         id="rich-text-editor"
@@ -676,7 +730,7 @@ export function PostForm({ initialData, postType }) {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => router.push(`/posts/${postType}`)}
+                  onClick={() => router.push(postType === 'enquiry' ? '/enquiry' : `/posts/${postType}`)}
                 >
                   Cancel
                 </Button>
@@ -684,6 +738,7 @@ export function PostForm({ initialData, postType }) {
             </div>
 
           </div>
+          )}
         </form>
       </div>
 

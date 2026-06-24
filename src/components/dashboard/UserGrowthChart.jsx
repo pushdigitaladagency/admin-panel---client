@@ -40,17 +40,17 @@ export function UserGrowthChart() {
   }, []);
 
   return (
-    <div className="card mb-6" style={{ background: '#ffffff', border: '1px solid var(--color-border)', position: 'relative' }}>
+    <div className="card mb-6" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', position: 'relative' }}>
       <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 24px 0 24px', borderBottom: 'none', paddingBottom: isChartVisible ? '0' : '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f3e8ff', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--color-surface-hover)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BarChart3 size={18} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>User Growth</h3>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>User Growth</h3>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }} ref={dropdownRef}>
-          <button style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#f3e8ff', color: '#6366f1', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
+          <button style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--color-surface-hover)', color: '#6366f1', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
             {selectedFilter}
           </button>
           <button 
@@ -75,7 +75,7 @@ export function UserGrowthChart() {
               top: 'calc(100% + 8px)',
               right: '0',
               width: '200px',
-              background: '#ffffff',
+              background: 'var(--color-bg-alt)',
               borderRadius: '12px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
               border: '1px solid var(--color-border)',
@@ -96,8 +96,8 @@ export function UserGrowthChart() {
                     style={{
                       padding: '12px 16px',
                       textAlign: 'left',
-                      background: isActive ? '#f3e8ff' : '#ffffff',
-                      color: isActive ? '#475569' : '#475569',
+                      background: isActive ? 'var(--color-surface-hover)' : 'var(--color-bg-alt)',
+                      color: isActive ? 'var(--color-text-muted)' : 'var(--color-text-muted)',
                       border: 'none',
                       fontSize: '0.875rem',
                       fontWeight: 500,
@@ -108,7 +108,7 @@ export function UserGrowthChart() {
                       if (!isActive) e.currentTarget.style.background = '#f8fafc';
                     }}
                     onMouseLeave={(e) => {
-                      if (!isActive) e.currentTarget.style.background = '#ffffff';
+                      if (!isActive) e.currentTarget.style.background = 'var(--color-bg-alt)';
                     }}
                   >
                     {option}
@@ -134,13 +134,13 @@ export function UserGrowthChart() {
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: '#0f172a', fontSize: 13, fontWeight: 500 }} 
+                tick={{ fill: 'var(--color-text)', fontSize: 13, fontWeight: 500 }} 
                 dy={10}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: '#0f172a', fontSize: 13, fontWeight: 500 }}
+                tick={{ fill: 'var(--color-text)', fontSize: 13, fontWeight: 500 }}
                 tickCount={12}
                 domain={[0, 55]}
               />

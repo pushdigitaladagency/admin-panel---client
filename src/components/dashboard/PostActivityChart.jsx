@@ -22,7 +22,7 @@ export function PostActivityChart() {
       className="card mb-6" 
       onClick={() => setHasBorder(!hasBorder)}
       style={{ 
-        background: '#ffffff', 
+        background: 'var(--color-bg-alt)', 
         border: hasBorder ? '1px solid var(--color-border)' : 'none', 
         position: 'relative',
         cursor: 'pointer',
@@ -39,7 +39,7 @@ export function PostActivityChart() {
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#dcfce7', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BarChart3 size={18} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Post Activity</h3>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>Post Activity</h3>
         </div>
         
         <button 
@@ -56,15 +56,15 @@ export function PostActivityChart() {
       {/* Legend - positioned below header */}
       {isChartVisible && (
         <div style={{ display: 'flex', gap: '24px', padding: '0 24px 16px 24px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: '#475569', fontWeight: 500 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
             <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#f59e0b' }}></span>
             News
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: '#475569', fontWeight: 500 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
             <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#06b6d4' }}></span>
             Events
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: '#475569', fontWeight: 500 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
             <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#8b5cf6' }}></span>
             Press Releases
           </div>
@@ -82,14 +82,14 @@ export function PostActivityChart() {
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: '#475569', fontSize: 13, fontWeight: 500 }} 
+                tick={{ fill: 'var(--color-text-muted)', fontSize: 13, fontWeight: 500 }} 
                 dy={10}
               />
               
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: '#475569', fontSize: 13, fontWeight: 500 }}
+                tick={{ fill: 'var(--color-text-muted)', fontSize: 13, fontWeight: 500 }}
                 domain={[0, 10]}
                 ticks={[0, 2, 4, 6, 8, 10]}
               >
@@ -98,7 +98,7 @@ export function PostActivityChart() {
                   angle={-90} 
                   position="left"
                   offset={0}
-                  style={{ textAnchor: 'middle', fill: '#0f172a', fontWeight: 700, fontSize: 13 }}
+                  style={{ textAnchor: 'middle', fill: 'var(--color-text)', fontWeight: 700, fontSize: 13 }}
                 />
               </YAxis>
               

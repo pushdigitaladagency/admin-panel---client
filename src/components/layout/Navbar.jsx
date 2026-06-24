@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, User, Settings, LogOut } from 'lucide-react';
+import { Menu, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
 
 export default function Navbar({ onMenuToggle }) {
   const router = useRouter();
@@ -19,6 +19,32 @@ export default function Navbar({ onMenuToggle }) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Theme management
+  const [theme, setTheme] = useState('light');
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const userName = 'Admin User';
   const userRole = 'Superadmin';
@@ -42,6 +68,16 @@ export default function Navbar({ onMenuToggle }) {
       </div>
 
       <div className="navbar-right">
+        {/* Theme Toggle */}
+        <button 
+          className="user-menu-btn" 
+          onClick={toggleTheme}
+          style={{ width: '40px', height: '40px', padding: 0, justifyContent: 'center' }}
+          aria-label="Toggle dark mode"
+        >
+          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+
         {/* User menu */}
         <div className="user-menu" ref={dropdownRef}>
           <button

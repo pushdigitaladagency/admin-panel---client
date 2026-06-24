@@ -9,8 +9,10 @@ import {
   Maximize, 
   X,
   FileImage,
-  CheckCircle2
+  CheckCircle2,
+  Check
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple = false }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +21,8 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
   // Track selected IDs
   const [selectedIds, setSelectedIds] = useState([]);
   const fileInputRef = React.useRef(null);
+  const [copied, setCopied] = useState(false);
+  const { addToast } = useToast();
 
   // Mock media library data
   const [mediaItems, setMediaItems] = useState([
@@ -205,19 +209,53 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
                     <span className="media-details-label">URL</span>
                     <div className="media-url-container">
                       <input type="text" readOnly value={selectedItem.url} />
-                      <button className="media-copy-btn" onClick={() => navigator.clipboard.writeText(selectedItem.url)}>
-                        <Copy size={16} />
+                      <button 
+                        className="media-copy-btn" 
+                        onClick={(e) => {
+                          navigator.clipboard.writeText(selectedItem.url);
+                          setCopied(true);
+                          addToast('URL copied to clipboard', 'success');
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        title="Copy to clipboard"
+                      >
+                        {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 <div className="media-details-actions">
-                  <button className="media-action-btn">
+                  <button 
+                    className="media-action-btn"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(selectedItem.url);
+                        const blob = await response.blob();
+                        const objectUrl = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = objectUrl;
+                        link.download = selectedItem.name;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(objectUrl);
+                        addToast('Download started', 'success');
+                      } catch (err) {
+                        console.error('Download failed', err);
+                        // Fallback to opening in new tab
+                        window.open(selectedItem.url, '_blank');
+                        addToast('Failed to download directly. Opened in new tab.', 'warning');
+                      }
+                    }}
+                  >
                     <Download size={16} />
                     <span>Download</span>
                   </button>
-                  <button className="media-action-btn">
+                  <button 
+                    className="media-action-btn"
+                    onClick={() => window.open(selectedItem.url, '_blank')}
+                  >
                     <Maximize size={16} />
                     <span>View</span>
                   </button>

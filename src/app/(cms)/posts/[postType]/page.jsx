@@ -12,12 +12,16 @@ export default function PostListPage() {
     ? 'News'
     : postType === 'event'
       ? 'Events'
-      : 'Press Releases';
+      : postType === 'enquiry'
+        ? 'Enquiries'
+        : 'Press Releases';
   const singularPostTypeLabel = postType === 'news'
     ? 'News'
     : postType === 'event'
       ? 'Event'
-      : 'Press Release';
+      : postType === 'enquiry'
+        ? 'Enquiry'
+        : 'Press Release';
   
   // Mock data
   const posts = postType === 'event' ? [
@@ -27,6 +31,9 @@ export default function PostListPage() {
   ] : postType === 'news' ? [
     { id: 1, title: 'Tech Breakthrough of the Year', category: 'Technology', author: 'Dr. Evelyn Carter', status: 'published', publish_date: '2026-06-21T10:00:00Z' },
     { id: 2, title: 'Local Tech Hub Expands', category: 'Local News', author: 'John Editor', status: 'draft', publish_date: '2026-06-22T14:30:00Z' },
+  ] : postType === 'enquiry' ? [
+    { id: 1, name: 'Alice Smith', email: 'alice@example.com', mobile: '123-456-7890', subject: 'Interested in Services', status: 'New', date: '2026-06-24T10:00:00Z' },
+    { id: 2, name: 'Bob Jones', email: 'bob@example.com', mobile: '098-765-4321', subject: 'Support Request', status: 'In Progress', date: '2026-06-23T14:30:00Z' },
   ] : [
     { id: 1, title: 'Acme Corp Announces Strategic Partnership', category: 'Partnerships', status: 'published', publish_date: '2026-06-20T10:00:00Z', featured: 'Yes' },
     { id: 2, title: 'Quarterly Earnings Report Q2', category: 'Financial', status: 'draft', publish_date: '2026-06-21T14:30:00Z', featured: 'No' },
@@ -84,6 +91,33 @@ export default function PostListPage() {
         <div className="flex gap-2">
           <Link href={`/posts/${postType}/${row.id}/edit`} className="btn btn-secondary btn-sm">
             Edit
+          </Link>
+        </div>
+      ),
+    },
+  ] : postType === 'enquiry' ? [
+    { header: 'Enquiry ID', render: (row) => `#${row.id}` },
+    { header: 'Name', accessorKey: 'name' },
+    { header: 'Email', accessorKey: 'email' },
+    { header: 'Mobile', accessorKey: 'mobile' },
+    { header: 'Subject', accessorKey: 'subject' },
+    {
+      header: 'Submitted Date',
+      render: (row) => new Date(row.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    },
+    {
+      header: 'Status',
+      render: (row) => {
+        const badgeColor = row.status === 'New' ? 'badge-primary' : row.status === 'In Progress' ? 'badge-warning' : row.status === 'Responded' ? 'badge-info' : 'badge-success';
+        return <span className={`badge ${badgeColor}`}>{row.status}</span>;
+      }
+    },
+    {
+      header: 'Actions',
+      render: (row) => (
+        <div className="flex gap-2">
+          <Link href={`/posts/${postType}/${row.id}/edit`} className="btn btn-secondary btn-sm">
+            View / Edit
           </Link>
         </div>
       ),

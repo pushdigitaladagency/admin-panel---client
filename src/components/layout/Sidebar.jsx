@@ -52,7 +52,7 @@ const NAV_SECTIONS = [
       },
       { label: 'Press Releases', href: '/posts/press-release', icon: <Megaphone size={20} /> },
       { label: 'Gallery', href: '/media', icon: <ImageIcon size={20} /> },
-      { label: 'Contact Us', href: '/posts/contact', icon: <Mail size={20} /> },
+      { label: 'Enquiries', href: '/enquiry', icon: <Mail size={20} /> },
     ],
   },
   {
