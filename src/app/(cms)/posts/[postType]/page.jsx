@@ -8,6 +8,16 @@ import { useParams } from 'next/navigation';
 export default function PostListPage() {
   const params = useParams();
   const postType = params.postType || 'post';
+  const postTypeLabel = postType === 'news'
+    ? 'News'
+    : postType === 'event'
+      ? 'Events'
+      : 'Press Releases';
+  const singularPostTypeLabel = postType === 'news'
+    ? 'News'
+    : postType === 'event'
+      ? 'Event'
+      : 'Press Release';
   
   // Mock data
   const posts = postType === 'event' ? [
@@ -114,11 +124,11 @@ export default function PostListPage() {
     <>
       <div className="page-header">
         <div>
-          <h1 className="page-title">{postType.charAt(0).toUpperCase() + postType.slice(1)}s</h1>
-          <p className="page-subtitle">Manage your {postType} content</p>
+          <h1 className="page-title">{postTypeLabel}</h1>
+          <p className="page-subtitle">Manage your {singularPostTypeLabel.toLowerCase()} content</p>
         </div>
         <Link href={`/posts/${postType}/create`} className="btn btn-primary">
-          + New {postType}
+          + New {singularPostTypeLabel}
         </Link>
       </div>
 

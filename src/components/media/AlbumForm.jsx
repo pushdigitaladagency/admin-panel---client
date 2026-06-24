@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ImagePlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -8,6 +9,9 @@ import { Select } from '@/components/ui/Select';
 
 export function AlbumForm({ initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
+  const [preview, setPreview] = React.useState(initialData?.cover_image || null);
+  const [fileName, setFileName] = React.useState('');
+
   const {
     register,
     handleSubmit,
@@ -58,19 +62,44 @@ export function AlbumForm({ initialData, onSubmit, onCancel }) {
         <label className="form-label">
           Cover Image {!isEdit && <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>}
         </label>
-        {isEdit && initialData.cover_image && (
-          <div className="mb-2 flex items-center gap-2">
-            <img src={initialData.cover_image} alt="Current cover" className="w-12 h-12 object-cover rounded" />
-            <span className="text-xs text-muted">Current cover image</span>
-          </div>
-        )}
-        <Input
+        <input
           type="file"
+          id="album-cover-input"
           accept="image/*"
           {...register('cover_image', isEdit ? {} : { required: 'Cover Image is required' })}
-          style={{ padding: '7px 14px' }}
-          className={errors.cover_image ? 'error' : ''}
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setFileName(file.name);
+              const reader = new FileReader();
+              reader.onload = (re) => setPreview(re.target.result);
+              reader.readAsDataURL(file);
+            }
+          }}
         />
+        <div
+          onClick={() => document.getElementById('album-cover-input').click()}
+          className={`premium-dropzone ${errors.cover_image ? 'error' : ''}`}
+          style={{ minHeight: '100px', cursor: 'pointer' }}
+        >
+          {preview ? (
+            <img
+              src={preview}
+              alt="Preview"
+              style={{ 
+                maxHeight: '60px', 
+                borderRadius: 'var(--radius-sm)', 
+                marginBottom: '8px'
+              }}
+            />
+          ) : (
+            <ImagePlus size={28} className="premium-dropzone-icon" />
+          )}
+          <span className="premium-dropzone-text">
+            {fileName || (preview ? 'Change cover image' : 'Select cover image')}
+          </span>
+        </div>
         {errors.cover_image && <p className="form-error">{errors.cover_image.message}</p>}
       </div>
 

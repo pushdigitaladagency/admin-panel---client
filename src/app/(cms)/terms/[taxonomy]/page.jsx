@@ -8,6 +8,7 @@ import { useTerms } from '@/context/TermsContext';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/context/ConfirmContext';
 import { Pencil, Trash2 } from 'lucide-react';
+import { formatTaxonomyLabel, pluralizeTaxonomyLabel } from '@/utils/taxonomyLabels';
 
 export default function TermListPage() {
   const params = useParams();
@@ -17,6 +18,8 @@ export default function TermListPage() {
   const { confirmDelete } = useConfirm();
 
   const terms = getTerms(taxonomy);
+  const taxonomyLabel = formatTaxonomyLabel(taxonomy);
+  const taxonomyPluralLabel = pluralizeTaxonomyLabel(taxonomy);
 
   const handleDelete = async (id) => {
     confirmDelete('Are you sure you want to delete this term?', () => {
@@ -54,11 +57,11 @@ export default function TermListPage() {
     <>
       <div className="page-header">
         <div>
-          <h1 className="page-title" style={{ textTransform: 'capitalize' }}>{taxonomy.replace(/-/g, ' ')}s</h1>
-          <p className="page-subtitle">Manage {taxonomy.replace(/-/g, ' ')} taxonomy</p>
+          <h1 className="page-title" style={{ textTransform: 'capitalize' }}>{taxonomyPluralLabel}</h1>
+          <p className="page-subtitle">Manage {taxonomyLabel} taxonomy</p>
         </div>
         <Link href={`/terms/${taxonomy}/create`} className="btn btn-primary">
-          + New {taxonomy.replace(/-/g, ' ')}
+          + New {taxonomyLabel}
         </Link>
       </div>
 

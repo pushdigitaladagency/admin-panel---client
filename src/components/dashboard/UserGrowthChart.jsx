@@ -23,7 +23,7 @@ const filterOptions = [
   'This month'
 ];
 
-export function UserGrowthChart() {
+export function UserGrowthChart() {                                                                                                                                                                                                                                                                                                                         
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('Last 6 months');
   const [isChartVisible, setIsChartVisible] = useState(true);

@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import { useTerms } from '@/context/TermsContext';
+import { formatTaxonomyLabel } from '@/utils/taxonomyLabels';
 
 export function TermForm({ initialData, taxonomy }) {
   const isEdit = !!initialData;
   const router = useRouter();
   const { addToast } = useToast();
   const { addTerm, updateTerm } = useTerms();
+  const taxonomyLabel = formatTaxonomyLabel(taxonomy);
 
   const {
     register,
@@ -38,10 +40,10 @@ export function TermForm({ initialData, taxonomy }) {
 
       if (isEdit) {
         updateTerm(taxonomy, initialData.id, data);
-        addToast(`${taxonomy.replace(/-/g, ' ')} updated successfully (mock)`, 'success');
+        addToast(`${taxonomyLabel} updated successfully (mock)`, 'success');
       } else {
         addTerm(taxonomy, data);
-        addToast(`${taxonomy.replace(/-/g, ' ')} created successfully (mock)`, 'success');
+        addToast(`${taxonomyLabel} created successfully (mock)`, 'success');
       }
       router.push(`/terms/${taxonomy}`);
     } catch (err) {
@@ -52,7 +54,7 @@ export function TermForm({ initialData, taxonomy }) {
   return (
     <div className="card max-w-2xl">
       <div className="card-header">
-        <h3 className="card-title">{isEdit ? `Edit ${taxonomy.replace(/-/g, ' ')}` : `Create ${taxonomy.replace(/-/g, ' ')}`}</h3>
+        <h3 className="card-title">{isEdit ? `Edit ${taxonomyLabel}` : `Create ${taxonomyLabel}`}</h3>
       </div>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)}>

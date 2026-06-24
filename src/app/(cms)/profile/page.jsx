@@ -1,16 +1,14 @@
 import React from 'react';
-import { ProfileForm } from '@/components/profile/ProfileForm';
+import { UserForm } from '@/components/users/UserForm';
 
 export const dynamic = 'force-dynamic';
 
 export default function ProfilePage() {
-  // Mock data
-  const user = {
-    id: 1,
-    first_name: 'Admin',
-    last_name: 'User',
-    email: 'admin@example.com',
-  };
+  const mockRoles = [
+    { id: 1, name: 'Superadmin' },
+    { id: 2, name: 'Editor' },
+    { id: 3, name: 'Author' },
+  ];
 
   return (
     <>
@@ -21,7 +19,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <ProfileForm user={user} />
+      <UserForm availableRoles={mockRoles} successPath="/profile" cancelPath="/profile" />
     </>
   );
 }

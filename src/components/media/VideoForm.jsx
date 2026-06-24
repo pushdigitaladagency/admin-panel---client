@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ImagePlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -8,6 +9,9 @@ import { Select } from '@/components/ui/Select';
 
 export function VideoForm({ initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
+  const [preview, setPreview] = React.useState(initialData?.thumbnail || null);
+  const [fileName, setFileName] = React.useState('');
+
   const {
     register,
     handleSubmit,
@@ -41,18 +45,44 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
 
       <div className="form-group">
         <label className="form-label">Thumbnail Image</label>
-        {isEdit && initialData.thumbnail && (
-          <div className="mb-2 flex items-center gap-2">
-            <img src={initialData.thumbnail} alt="Current thumbnail" className="w-12 h-12 object-cover rounded" />
-            <span className="text-xs text-muted">Current thumbnail</span>
-          </div>
-        )}
-        <Input
+        <input
           type="file"
+          id="video-thumbnail-input"
           accept="image/*"
           {...register('thumbnail_file')}
-          style={{ padding: '7px 14px' }}
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setFileName(file.name);
+              const reader = new FileReader();
+              reader.onload = (re) => setPreview(re.target.result);
+              reader.readAsDataURL(file);
+            }
+          }}
         />
+        <div
+          onClick={() => document.getElementById('video-thumbnail-input').click()}
+          className="premium-dropzone"
+          style={{ minHeight: '100px', cursor: 'pointer' }}
+        >
+          {preview ? (
+            <img
+              src={preview}
+              alt="Preview"
+              style={{ 
+                maxHeight: '60px', 
+                borderRadius: 'var(--radius-sm)', 
+                marginBottom: '8px'
+              }}
+            />
+          ) : (
+            <ImagePlus size={28} className="premium-dropzone-icon" />
+          )}
+          <span className="premium-dropzone-text">
+            {fileName || (preview ? 'Change thumbnail' : 'Select thumbnail image')}
+          </span>
+        </div>
       </div>
 
       <div className="form-group">

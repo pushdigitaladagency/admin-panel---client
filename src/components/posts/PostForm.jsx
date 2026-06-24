@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ImagePlus } from 'lucide-react';
+import { ImagePlus, FileText } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 
@@ -50,74 +50,74 @@ export function PostForm({ initialData, postType }) {
   } = useForm({
     defaultValues: isEdit
       ? {
-          id: initialData?.id,
-          title: initialData?.title || '',
-          slug: initialData?.slug || '',
-          category: initialData?.category || '',
-          excerpt: initialData?.excerpt || '',
-          content: initialData?.content || '',
-          featured_image: initialData?.featured_image || '',
-          attachment: initialData?.attachment || '',
-          publish_date: initialData?.publish_date || new Date().toISOString().split('T')[0],
-          expiry_date: initialData?.expiry_date || '',
-          tags: initialData?.tags || '',
-          featured: initialData?.featured || 'no',
-          seo_title: initialData?.seo_title || '',
-          seo_keywords: initialData?.seo_keywords || '',
-          seo_description: initialData?.seo_description || '',
-          status: initialData?.status || 'draft',
-          post_type: postType,
-          gallery_images: initialData?.gallery_images || '',
-          news_source: initialData?.news_source || '',
-          author: initialData?.author || '',
-          event_start_date: initialData?.event_start_date || '',
-          event_end_date: initialData?.event_end_date || '',
-          reg_start_date: initialData?.reg_start_date || '',
-          reg_end_date: initialData?.reg_end_date || '',
-          venue: initialData?.venue || '',
-          address: initialData?.address || '',
-          map_url: initialData?.map_url || '',
-          organizer_name: initialData?.organizer_name || '',
-          organizer_email: initialData?.organizer_email || '',
-          organizer_contact: initialData?.organizer_contact || '',
-          registration_link: initialData?.registration_link || '',
-          max_participants: initialData?.max_participants || '',
-          event_status: initialData?.event_status || 'Upcoming',
-        }
+        id: initialData?.id,
+        title: initialData?.title || '',
+        slug: initialData?.slug || '',
+        category: initialData?.category || '',
+        excerpt: initialData?.excerpt || '',
+        content: initialData?.content || '',
+        featured_image: initialData?.featured_image || '',
+        attachment: initialData?.attachment || '',
+        publish_date: initialData?.publish_date || new Date().toISOString().split('T')[0],
+        expiry_date: initialData?.expiry_date || '',
+        tags: initialData?.tags || '',
+        featured: initialData?.featured || 'no',
+        seo_title: initialData?.seo_title || '',
+        seo_keywords: initialData?.seo_keywords || '',
+        seo_description: initialData?.seo_description || '',
+        status: initialData?.status || 'draft',
+        post_type: postType,
+        gallery_images: initialData?.gallery_images || '',
+        news_source: initialData?.news_source || '',
+        author: initialData?.author || '',
+        event_start_date: initialData?.event_start_date || '',
+        event_end_date: initialData?.event_end_date || '',
+        reg_start_date: initialData?.reg_start_date || '',
+        reg_end_date: initialData?.reg_end_date || '',
+        venue: initialData?.venue || '',
+        address: initialData?.address || '',
+        map_url: initialData?.map_url || '',
+        organizer_name: initialData?.organizer_name || '',
+        organizer_email: initialData?.organizer_email || '',
+        organizer_contact: initialData?.organizer_contact || '',
+        registration_link: initialData?.registration_link || '',
+        max_participants: initialData?.max_participants || '',
+        event_status: initialData?.event_status || 'Upcoming',
+      }
       : {
-          title: '',
-          slug: '',
-          category: '',
-          excerpt: '',
-          content: '',
-          featured_image: '',
-          attachment: '',
-          publish_date: new Date().toISOString().split('T')[0],
-          expiry_date: '',
-          tags: '',
-          featured: 'no',
-          seo_title: '',
-          seo_keywords: '',
-          seo_description: '',
-          status: 'draft',
-          post_type: postType,
-          gallery_images: '',
-          news_source: '',
-          author: '',
-          event_start_date: '',
-          event_end_date: '',
-          reg_start_date: '',
-          reg_end_date: '',
-          venue: '',
-          address: '',
-          map_url: '',
-          organizer_name: '',
-          organizer_email: '',
-          organizer_contact: '',
-          registration_link: '',
-          max_participants: '',
-          event_status: 'Upcoming',
-        },
+        title: '',
+        slug: '',
+        category: '',
+        excerpt: '',
+        content: '',
+        featured_image: '',
+        attachment: '',
+        publish_date: new Date().toISOString().split('T')[0],
+        expiry_date: '',
+        tags: '',
+        featured: 'no',
+        seo_title: '',
+        seo_keywords: '',
+        seo_description: '',
+        status: 'draft',
+        post_type: postType,
+        gallery_images: '',
+        news_source: '',
+        author: '',
+        event_start_date: '',
+        event_end_date: '',
+        reg_start_date: '',
+        reg_end_date: '',
+        venue: '',
+        address: '',
+        map_url: '',
+        organizer_name: '',
+        organizer_email: '',
+        organizer_contact: '',
+        registration_link: '',
+        max_participants: '',
+        event_status: 'Upcoming',
+      },
   });
 
   const { ref: featuredRef, ...featuredRegister } = register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
@@ -139,8 +139,8 @@ export function PostForm({ initialData, postType }) {
   const editorRef = React.useRef(null);
 
   React.useEffect(() => {
-    register('content', { 
-      required: postType === 'event' ? 'Event Description is required' : postType === 'news' ? 'Full Content is required' : 'Detailed Content is required' 
+    register('content', {
+      required: postType === 'event' ? 'Event Description is required' : postType === 'news' ? 'Full Content is required' : 'Detailed Content is required'
     });
   }, [register, postType]);
 
@@ -187,8 +187,8 @@ export function PostForm({ initialData, postType }) {
   const taxonomyKey = postType === 'news'
     ? 'news-category'
     : postType === 'event'
-    ? 'event-category'
-    : 'press-release-category';
+      ? 'event-category'
+      : 'press-release-category';
 
   const CATEGORIES = getTerms(taxonomyKey).map((t) => t.name);
 
@@ -237,9 +237,10 @@ export function PostForm({ initialData, postType }) {
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Main Content Form Fields */}
             <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="form-label">
                     {postType === 'event' ? 'Event Title' : postType === 'news' ? 'News Title' : 'Title'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
@@ -283,28 +284,30 @@ export function PostForm({ initialData, postType }) {
                   />
                 </div>
 
-              {postType === 'news' && (
-                <>
-                  <div className="form-group">
-                    <label className="form-label">News Source</label>
-                    <Input
-                      {...register('news_source')}
-                      placeholder="Reuters, AP, Internal"
-                    />
-                  </div>
+                {postType === 'news' && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">News Source</label>
+                      <Input
+                        {...register('news_source')}
+                        placeholder="Reuters, AP, Internal"
+                      />
+                    </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Author</label>
-                    <Input
-                      {...register('author')}
-                      placeholder="e.g. John Doe"
-                    />
-                  </div>
-                </>
-              )}
+                    <div className="form-group">
+                      <label className="form-label">Author</label>
+                      <Input
+                        {...register('author')}
+                        placeholder="e.g. John Doe"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
 
               {postType === 'event' && (
                 <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
@@ -345,7 +348,7 @@ export function PostForm({ initialData, postType }) {
                       />
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-group md:col-span-2">
                       <label className="form-label">
                         Venue <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
@@ -373,13 +376,14 @@ export function PostForm({ initialData, postType }) {
                       />
                     </div>
 
-                    <div className="form-group">
+                    <div className="form-group md:col-span-2">
                       <label className="form-label">Registration Link</label>
                       <Input
                         {...register('registration_link')}
                         placeholder="https://example.com/register"
                       />
                     </div>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
@@ -436,210 +440,17 @@ export function PostForm({ initialData, postType }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label className="form-label">
-                    {postType === 'event' ? 'Banner Image' : 'Featured Image'} {postType !== 'event' && <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>}
-                  </label>
-                  
-                  {/* Hidden Input */}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    {...featuredRegister}
-                    ref={(e) => {
-                      featuredRef(e);
-                      featuredImageInputRef.current = e;
-                    }}
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      featuredRegister.onChange(e);
-                      handleFeaturedImageChange(e);
-                    }}
-                  />
-
-                  {/* Custom Dashed Image Upload Dropzone */}
-                  <div
-                    onClick={() => {
-                      setMediaTarget('featured');
-                      setIsMediaModalOpen(true);
-                    }}
-                    className="premium-dropzone"
-                  >
-                    {featuredImagePreview ? (
-                      <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <img 
-                          src={featuredImagePreview} 
-                          alt="Featured Preview" 
-                          style={{ maxHeight: '100px', objectFit: 'contain', borderRadius: 'var(--radius-sm)', marginBottom: '8px' }} 
-                        />
-                        <span className="premium-dropzone-text" style={{ fontSize: '0.75rem' }}>Click to change image</span>
-                      </div>
-                    ) : (
-                      <>
-                        <ImagePlus size={28} className="premium-dropzone-icon" />
-                        <span className="premium-dropzone-text">Click to select image</span>
-                      </>
-                    )}
-                  </div>
-                  {errors.featured_image && <p className="form-error">{errors.featured_image.message}</p>}
-                </div>
-
-                {postType === 'news' ? (
-                  <div className="form-group">
-                    <label className="form-label">Gallery Images</label>
-                    
-                    {/* Hidden Input */}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      {...galleryRegister}
-                      ref={(e) => {
-                        galleryRef(e);
-                        galleryImagesInputRef.current = e;
-                      }}
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        galleryRegister.onChange(e);
-                        handleGalleryImagesChange(e);
-                      }}
-                    />
-
-                    {/* Custom Dashed Image Upload Dropzone */}
-                    <div
-                      onClick={() => {
-                        setMediaTarget('gallery');
-                        setIsMediaModalOpen(true);
-                      }}
-                      className="premium-dropzone"
-                    >
-                      {galleryImagesPreviews.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '8px' }}>
-                            {galleryImagesPreviews.map((url, i) => (
-                              <img 
-                                key={i}
-                                src={url} 
-                                alt={`Gallery Preview ${i}`} 
-                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} 
-                              />
-                            ))}
-                          </div>
-                          <span className="premium-dropzone-text" style={{ fontSize: '0.75rem' }}>
-                            {galleryImagesPreviews.length} images selected (Click to change)
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          <ImagePlus size={28} className="premium-dropzone-icon" />
-                          <span className="premium-dropzone-text">Click to select images</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ) : postType === 'event' ? (
-                  <div className="form-group">
-                    <label className="form-label">Maximum Participants</label>
-                    <Input
-                      type="number"
-                      {...register('max_participants')}
-                      placeholder="e.g. 150"
-                    />
-                  </div>
-                ) : (
-                  <div className="form-group">
-                    <label className="form-label">Attachment (PDF/Doc)</label>
-                    <Input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      {...register('attachment')}
-                      style={{ padding: '7px 14px' }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  {postType === 'event' ? 'Short Description' : postType === 'news' ? 'Summary' : 'Short Description'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
-                </label>
-                <textarea
-                  {...register('excerpt', { required: 'Short Description is required' })}
-                  className={`form-textarea ${errors.excerpt ? 'error' : ''}`}
-                  placeholder={postType === 'news' ? 'Brief summary of the news...' : postType === 'event' ? 'Brief description of the event...' : 'Summarize the event/post briefly...'}
-                  style={{ minHeight: '60px' }}
-                />
-                {errors.excerpt && <p className="form-error">{errors.excerpt.message}</p>}
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  {postType === 'event' ? 'Event Description' : postType === 'news' ? 'Full Content' : 'Detailed Content (Rich Text Editor)'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
-                </label>
-                {/* Working WYSIWYG Editor Toolbar */}
-                <div className="flex flex-wrap gap-1 p-2 border border-b-0 rounded-t-md" style={{ backgroundColor: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'strikeThrough')}><s>S</s></button>
-                  <span style={{ borderLeft: '1px solid var(--color-border)', margin: '0 4px' }} />
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'insertUnorderedList')}>• List</button>
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'insertOrderedList')}>1. List</button>
-                  <span style={{ borderLeft: '1px solid var(--color-border)', margin: '0 4px' }} />
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'undo')}>Undo</button>
-                  <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'redo')}>Redo</button>
-                </div>
-                <div
-                  id="rich-text-editor"
-                  ref={editorRef}
-                  contentEditable
-                  className={`form-textarea ${errors.content ? 'error' : ''}`}
-                  placeholder="Write the complete details..."
-                  style={{ 
-                    minHeight: '220px', 
-                    borderTopLeftRadius: 0, 
-                    borderTopRightRadius: 0,
-                    outline: 'none',
-                    overflowY: 'auto',
-                    backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)',
-                    padding: '12px'
-                  }}
-                  onInput={(e) => {
-                    setValue('content', e.currentTarget.innerHTML, { shouldDirty: true, shouldValidate: true });
-                  }}
-                />
-                {errors.content && <p className="form-error">{errors.content.message}</p>}
-              </div>
-
               {/* SEO Configurations */}
               {postType !== 'news' && renderSeoConfigurations()}
             </div>
 
             {/* Sidebar Controls */}
             <div className="space-y-4">
-              {postType === 'news' ? (
-                <>
-                  <div className="form-group">
-                    <label className="form-label">Status</label>
-                    <Select {...register('status')}>
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                    </Select>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Featured News</label>
-                    <Select {...register('featured')}>
-                      <option value="no">No</option>
-                      <option value="yes">Yes</option>
-                    </Select>
-                  </div>
-                </>
-              ) : (
-                <div className="card" style={{ background: 'var(--color-surface)', border: 'none' }}>
-                  <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Publish Settings & Status */}
+              {/* Publish Settings & Media */}
+              <div className="card" style={{ background: 'var(--color-surface)', border: 'none' }}>
+                <div className="card-body">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="form-group">
                       <label className="form-label">{postType === 'event' ? 'Publish Status' : 'Status'}</label>
                       <Select {...register('status')}>
@@ -648,8 +459,16 @@ export function PostForm({ initialData, postType }) {
                       </Select>
                     </div>
 
+                    <div className="form-group">
+                      <label className="form-label">{postType === 'news' ? 'Featured News' : 'Featured'}</label>
+                      <Select {...register('featured')}>
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                      </Select>
+                    </div>
+
                     {postType === 'event' && (
-                      <div className="form-group">
+                      <div className="form-group md:col-span-2">
                         <label className="form-label">Event Status</label>
                         <Select {...register('event_status')}>
                           <option value="Upcoming">Upcoming</option>
@@ -659,57 +478,216 @@ export function PostForm({ initialData, postType }) {
                       </div>
                     )}
 
-                    {postType !== 'event' && (
+                    <div className="form-group">
+                      <label className="form-label">
+                        {postType === 'event' ? 'Banner Image' : 'Featured Image'} {postType !== 'event' && <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>}
+                      </label>
+
+                      {/* Hidden Input */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        {...featuredRegister}
+                        ref={(e) => {
+                          featuredRef(e);
+                          featuredImageInputRef.current = e;
+                        }}
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          featuredRegister.onChange(e);
+                          handleFeaturedImageChange(e);
+                        }}
+                      />
+
+                      {/* Custom Dashed Image Upload Dropzone */}
+                      <div
+                        onClick={() => {
+                          setMediaTarget('featured');
+                          setIsMediaModalOpen(true);
+                        }}
+                        className="premium-dropzone"
+                      >
+                      {featuredImagePreview ? (
+                        <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <img
+                            src={featuredImagePreview}
+                            alt="Featured Preview"
+                            style={{ maxHeight: '80px', objectFit: 'contain', borderRadius: 'var(--radius-sm)', marginBottom: '8px' }}
+                          />
+                          <span className="premium-dropzone-text" style={{ fontSize: '0.70rem' }}>Change</span>
+                        </div>
+                      ) : (
+                        <>
+                          <ImagePlus size={24} className="premium-dropzone-icon" />
+                          <span className="premium-dropzone-text">Featured Image</span>
+                        </>
+                      )}
+                      </div>
+                      {errors.featured_image && <p className="form-error">{errors.featured_image.message}</p>}
+                    </div>
+
+                    {postType === 'news' && (
                       <div className="form-group">
-                        <label className="form-label">{postType === 'news' ? 'Featured News' : 'Featured'}</label>
-                        <Select {...register('featured')}>
-                          <option value="no">No</option>
-                          <option value="yes">Yes</option>
-                        </Select>
+                        <label className="form-label">Gallery Images</label>
+
+                        {/* Hidden Input */}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          {...galleryRegister}
+                          ref={(e) => {
+                            galleryRef(e);
+                            galleryImagesInputRef.current = e;
+                          }}
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            galleryRegister.onChange(e);
+                            handleGalleryImagesChange(e);
+                          }}
+                        />
+
+                        {/* Custom Dashed Image Upload Dropzone */}
+                        <div
+                          onClick={() => {
+                            setMediaTarget('gallery');
+                            setIsMediaModalOpen(true);
+                          }}
+                          className="premium-dropzone"
+                        >
+                          {galleryImagesPreviews.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '4px' }}>
+                                {galleryImagesPreviews.slice(0, 3).map((url, i) => (
+                                  <img
+                                    key={i}
+                                    src={url}
+                                    alt={`Gallery Preview ${i}`}
+                                    style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+                                  />
+                                ))}
+                              </div>
+                              <span className="premium-dropzone-text" style={{ fontSize: '0.70rem' }}>
+                                {galleryImagesPreviews.length} images
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <ImagePlus size={24} className="premium-dropzone-icon" />
+                              <span className="premium-dropzone-text">Image Gallery</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     )}
 
-                    {postType !== 'news' && (
-                      <div className="pt-2 flex flex-col gap-2">
-                        <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
-                          {isSubmitting ? 'Saving...' : 'Save Post'}
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="secondary" 
-                          className="w-full" 
-                          onClick={() => router.push(`/posts/${postType}`)}
+                    {postType !== 'news' && postType !== 'event' && (
+                      <div className="form-group md:col-span-2">
+                        <label className="form-label">Attachment (PDF/Doc)</label>
+                        <input
+                          type="file"
+                          id="attachment-input"
+                          accept=".pdf,.doc,.docx"
+                          {...register('attachment')}
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const label = document.getElementById('attachment-label');
+                              if (label) label.innerText = file.name;
+                            }
+                          }}
+                        />
+                        <div
+                          onClick={() => document.getElementById('attachment-input').click()}
+                          className="premium-dropzone"
+                          style={{ minHeight: '80px' }}
                         >
-                          Cancel
-                        </Button>
+                          <FileText size={24} className="premium-dropzone-icon" />
+                          <span id="attachment-label" className="premium-dropzone-text">
+                            Click to select document
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
-              )}
-              {postType === 'news' && renderSeoConfigurations()}
-              {postType === 'news' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '8px' }}>
-                  <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : 'Save Post'}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="secondary" 
-                    className="w-full" 
-                    onClick={() => router.push(`/posts/${postType}`)}
-                  >
-                    Cancel
-                  </Button>
+              </div>
+
+              {/* Summary & Content */}
+              <div className="card" style={{ background: 'var(--color-surface)', border: 'none' }}>
+                <div className="card-body">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="form-group">
+                      <label className="form-label">
+                        {postType === 'event' ? 'Short Description' : postType === 'news' ? 'Summary' : 'Short Description'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
+                      </label>
+                      <textarea
+                        {...register('excerpt', { required: 'Short Description is required' })}
+                        className={`form-textarea ${errors.excerpt ? 'error' : ''}`}
+                        placeholder={postType === 'news' ? 'Brief summary...' : 'Brief description...'}
+                        style={{ minHeight: '268px', height: 'calc(100% - 24px)' }}
+                      />
+                      {errors.excerpt && <p className="form-error">{errors.excerpt.message}</p>}
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">
+                        {postType === 'event' ? 'Event Description' : postType === 'news' ? 'Full Content' : 'Detailed Content'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
+                      </label>
+                      <div className="flex flex-wrap gap-1 p-2 border border-b-0 rounded-t-md" style={{ backgroundColor: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
+                        <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
+                        <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
+                        <button type="button" className="btn btn-secondary btn-sm" style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
+                      </div>
+                      <div
+                        id="rich-text-editor"
+                        ref={editorRef}
+                        contentEditable
+                        className={`form-textarea ${errors.content ? 'error' : ''}`}
+                        style={{
+                          minHeight: '220px',
+                          borderTopLeftRadius: 0,
+                          borderTopRightRadius: 0,
+                          outline: 'none',
+                          overflowY: 'auto',
+                          backgroundColor: 'var(--color-surface)',
+                          border: '1px solid var(--color-border)',
+                          padding: '12px',
+                          fontSize: '0.875rem'
+                        }}
+                        onInput={(e) => setValue('content', e.currentTarget.innerHTML, { shouldDirty: true, shouldValidate: true })}
+                      />
+                      {errors.content && <p className="form-error">{errors.content.message}</p>}
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
+
+
+              {/* SEO & Action Buttons */}
+              {postType === 'news' && renderSeoConfigurations()}
+
+              <div className="flex flex-col gap-2 pt-2">
+                <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Post'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => router.push(`/posts/${postType}`)}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
 
           </div>
         </form>
       </div>
 
-      <MediaSelectModal 
+      <MediaSelectModal
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
         onSelect={handleMediaModalSelect}
