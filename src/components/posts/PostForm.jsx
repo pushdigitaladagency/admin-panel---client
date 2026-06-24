@@ -239,6 +239,7 @@ export function PostForm({ initialData, postType }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Main Content Form Fields */}
+            <div className="space-y-4">
                 <div className="form-group">
                   <label className="form-label">
                     {postType === 'event' ? 'Event Title' : postType === 'news' ? 'News Title' : 'Title'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
