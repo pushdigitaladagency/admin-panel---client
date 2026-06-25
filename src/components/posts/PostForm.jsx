@@ -52,10 +52,18 @@ export function PostForm({ initialData, postType }) {
       .filter(Boolean)
       .map(resolveImageUrl);
   });
+  const [enquiryAttachmentName, setEnquiryAttachmentName] = React.useState(() => {
+    const attachment = initialData?.attachment;
+    return typeof attachment === 'string' ? attachment.split('/').pop() : '';
+  });
 
   const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
   const [mediaTarget, setMediaTarget] = React.useState(null); // 'featured' or 'gallery'
-  const [activeFormat, setActiveFormat] = React.useState(null);
+  const [activeFormats, setActiveFormats] = React.useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
 
   const handleFeaturedImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -197,9 +205,18 @@ export function PostForm({ initialData, postType }) {
   const handleFormat = (e, command) => {
     e.preventDefault();
     document.execCommand(command, false, null);
+    updateActiveFormats();
     if (editorRef.current) {
       setValue('content', editorRef.current.innerHTML, { shouldDirty: true, shouldValidate: true });
     }
+  };
+
+  const updateActiveFormats = () => {
+    setActiveFormats({
+      bold: document.queryCommandState('bold'),
+      italic: document.queryCommandState('italic'),
+      underline: document.queryCommandState('underline'),
+    });
   };
 
   const syncNewsGallery = async (newsId, galleryImagesString) => {
@@ -436,8 +453,23 @@ export function PostForm({ initialData, postType }) {
                 <textarea {...register('follow_up_notes')} className="form-textarea" rows={3} />
               </div>
               <div className="form-group md:col-span-2">
-                <label className="form-label">Attachment (Optional)</label>
-                <Input type="file" {...register('attachment')} />
+                <input
+                  id="enquiry-attachment-input"
+                  type="file"
+                  {...attachmentRegister}
+                  style={{ display: 'none' }}
+                  onChange={(event) => {
+                    attachmentRegister.onChange(event);
+                    const file = event.target.files?.[0];
+                    setEnquiryAttachmentName(file ? file.name : '');
+                  }}
+                />
+                <label htmlFor="enquiry-attachment-input" className="premium-dropzone">
+                  <ImagePlus size={24} className="premium-dropzone-icon" />
+                  <span className="premium-dropzone-text">
+                    {enquiryAttachmentName || 'Featured Image'}
+                  </span>
+                </label>
               </div>
               
               <div className="form-group md:col-span-2 pt-4 flex gap-4">
@@ -833,15 +865,16 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         {postType === 'event' ? 'Event Description' : postType === 'news' ? 'Full Content' : 'Detailed Content'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <div className="flex flex-wrap gap-1 p-2 border border-b-0 rounded-t-md" style={{ backgroundColor: 'var(--color-bg)', borderColor: 'var(--color-border)' }}>
-                        <button type="button" className={`btn btn-sm ${activeFormat === 'bold' ? 'btn-primary border-2 border-white ring-2 ring-blue-500' : 'btn-secondary'}`} style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
-                        <button type="button" className={`btn btn-sm ${activeFormat === 'italic' ? 'btn-primary border-2 border-white ring-2 ring-blue-500' : 'btn-secondary'}`} style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
-                        <button type="button" className={`btn btn-sm ${activeFormat === 'underline' ? 'btn-primary border-2 border-white ring-2 ring-blue-500' : 'btn-secondary'}`} style={{ padding: '4px 8px', fontSize: '11px' }} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
+                      <div className="flex flex-wrap gap-1 p-2 border border-b-0 rounded-t-md" style={{ backgroundColor: 'var(--color-editor-toolbar-bg)', borderColor: 'var(--color-border)' }}>
+                        <button type="button" className={`btn btn-sm btn-secondary rich-text-toolbar-btn ${activeFormats.bold ? 'active' : ''}`} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
+                        <button type="button" className={`btn btn-sm btn-secondary rich-text-toolbar-btn ${activeFormats.italic ? 'active' : ''}`} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
+                        <button type="button" className={`btn btn-sm btn-secondary rich-text-toolbar-btn ${activeFormats.underline ? 'active' : ''}`} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
                       </div>
                       <div
                         id="rich-text-editor"
                         ref={editorRef}
                         contentEditable
+                        data-placeholder={postType === 'event' ? 'Enter event description...' : postType === 'news' ? 'Enter full news content...' : 'Enter detailed content...'}
                         className={`form-textarea ${errors.content ? 'error' : ''}`}
                         style={{
                           minHeight: '220px',
@@ -854,7 +887,12 @@ export function PostForm({ initialData, postType }) {
                           padding: '12px',
                           fontSize: '0.875rem'
                         }}
-                        onInput={(e) => setValue('content', e.currentTarget.innerHTML, { shouldDirty: true, shouldValidate: true })}
+                        onInput={(e) => {
+                          updateActiveFormats();
+                          setValue('content', e.currentTarget.innerHTML, { shouldDirty: true, shouldValidate: true });
+                        }}
+                        onKeyUp={updateActiveFormats}
+                        onMouseUp={updateActiveFormats}
                       />
                       {errors.content && <p className="form-error">{errors.content.message}</p>}
                     </div>
@@ -866,15 +904,20 @@ export function PostForm({ initialData, postType }) {
               {/* SEO & Action Buttons */}
               {postType === 'news' && renderSeoConfigurations()}
 
-              <div className="flex flex-col gap-2 pt-2">
-                <Button type="submit" variant="primary" className="w-full" disabled={isSubmitting}>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isSubmitting}
+                  style={{ width: 'auto', minWidth: '72px', padding: '9px 18px' }}
+                >
                   {isSubmitting ? 'Saving...' : 'Save'}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
-                  className="w-full"
                   onClick={() => router.push(postType === 'enquiry' ? '/enquiry' : `/posts/${postType}`)}
+                  style={{ width: 'auto', minWidth: '84px', padding: '9px 18px' }}
                 >
                   Cancel
                 </Button>

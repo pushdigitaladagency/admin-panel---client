@@ -32,7 +32,7 @@ export default function UserListPage() {
     {
       header: 'Status',
       render: (row) => (
-        <span className={`badge ${row.status ? 'badge-success' : 'badge-warning'}`}>
+        <span className={`badge ${row.status ? 'badge-success' : 'badge-danger'}`}>
           {row.status ? 'Active' : 'Inactive'}
         </span>
       )

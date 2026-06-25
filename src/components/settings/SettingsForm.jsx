@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export function SettingsForm({ initialSettings = {} }) {
   const { addToast } = useToast();
+  const router = useRouter();
 
   const {
     register,
@@ -34,9 +36,6 @@ export function SettingsForm({ initialSettings = {} }) {
       
       {/* General Settings */}
       <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">General Settings</h3>
-        </div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="form-group">
@@ -67,9 +66,6 @@ export function SettingsForm({ initialSettings = {} }) {
 
       {/* SEO Settings */}
       <div className="card">
-        <div className="card-header">
-          <h3 className="card-title">SEO Settings</h3>
-        </div>
         <div className="card-body">
           <div className="form-group">
             <label className="form-label">Default SEO Title</label>
@@ -91,9 +87,22 @@ export function SettingsForm({ initialSettings = {} }) {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+      <div className="flex justify-end gap-3">
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={isSubmitting}
+          style={{ width: '80px', minWidth: '80px', height: '38px', padding: '0 18px' }}
+        >
           {isSubmitting ? 'Saving...' : 'Save'}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => router.push('/dashboard')}
+          style={{ width: '80px', minWidth: '80px', height: '38px', padding: '0 18px' }}
+        >
+          Cancel
         </Button>
       </div>
     </form>

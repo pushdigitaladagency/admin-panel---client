@@ -82,9 +82,6 @@ export function PermissionForm({ initialData }) {
 
   return (
     <div className="card max-w-2xl">
-      <div className="card-header">
-        <h3 className="card-title">{isEdit ? 'Edit Permission' : 'Create Permission'}</h3>
-      </div>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -158,15 +155,15 @@ export function PermissionForm({ initialData }) {
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </Button>
             <Button
               type="button"
               variant="secondary"
               onClick={() => router.push('/permissions')}
             >
               Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </form>

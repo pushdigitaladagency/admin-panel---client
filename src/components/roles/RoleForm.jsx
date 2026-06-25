@@ -110,10 +110,7 @@ export function RoleForm({ initialData }) {
   };
 
   return (
-    <div className="card max-w-2xl">
-      <div className="card-header">
-        <h3 className="card-title">{isEdit ? 'Edit Role' : 'Create Role'}</h3>
-      </div>
+    <div className="card max-w-2xl" style={{ overflow: 'visible' }}>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -165,7 +162,7 @@ export function RoleForm({ initialData }) {
 
             <div className="form-group">
               <label className="form-label">Permissions</label>
-              <div className="relative" ref={dropdownRef}>
+              <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
                 <button
                   type="button"
                   className="form-select text-left w-full flex items-center justify-between cursor-pointer"
@@ -193,7 +190,7 @@ export function RoleForm({ initialData }) {
                     className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto p-2"
                     style={{
                       backgroundColor: 'var(--color-bg-alt)',
-                      borderColor: 'var(--color-border)',
+                      border: '1px solid var(--color-border)',
                       borderRadius: 'var(--radius-md)',
                       boxShadow: 'var(--shadow-md)',
                       position: 'absolute',
@@ -248,14 +245,20 @@ export function RoleForm({ initialData }) {
 
           <div className="mt-6 flex justify-end gap-3">
             <Button
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+              style={{ width: 'auto', minWidth: '72px', padding: '9px 18px' }}
+            >
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </Button>
+            <Button
               type="button"
               variant="secondary"
               onClick={() => router.push('/roles')}
+              style={{ width: 'auto', minWidth: '84px', padding: '9px 18px' }}
             >
               Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </form>

@@ -1,0 +1,15 @@
+<svg width="220" height="260" viewBox="0 0 220 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M110 4L208 250H12L110 4Z" fill="#0b4c93"/>
+  <path d="M110 4L208 250H110V4Z" fill="#1d4f95" opacity=".9"/>
+  <path d="M110 4L12 250H110V4Z" fill="#004b91"/>
+  <path d="M110 175L208 250H12L110 175Z" fill="#244a89"/>
+  <path d="M110 175L208 250H110V175Z" fill="#315692"/>
+  <path d="M110 175L12 250H110V175Z" fill="#173f7d"/>
+  <path d="M110 91L123 118L153 106L145 137L174 153L144 166L153 197L123 185L110 213L97 185L67 197L76 166L46 153L75 137L67 106L97 118L110 91Z" fill="#ffcc17"/>
+  <path d="M110 91L123 118L153 106L145 137L174 153L144 166L153 197L123 185L110 213V91Z" fill="#f4a924"/>
+  <path d="M110 116L122 132L142 128L138 149L154 163L133 169L129 190L110 180L91 190L87 169L66 163L82 149L78 128L98 132L110 116Z" fill="#143f8f"/>
+  <circle cx="110" cy="154" r="35" fill="#12357e"/>
+  <path d="M75 154H145M110 119V189M84 134C100 145 120 145 136 134M84 174C100 163 120 163 136 174" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="110" cy="154" r="35" stroke="#fff" stroke-width="8"/>
+  <path d="M110 120C95 134 90 174 110 188M110 120C125 134 130 174 110 188" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+</svg>

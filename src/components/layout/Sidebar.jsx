@@ -114,7 +114,9 @@ export default function Sidebar({ isOpen, onClose }) {
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         {/* Logo */}
         <div className="sidebar-header">
-          <div className="sidebar-logo-mark">A</div>
+          <div className="sidebar-logo-mark">
+            <img src="/sidebar-logo.svg" alt="Airfloa logo" className="sidebar-logo-image" />
+          </div>
           <span className="sidebar-logo">Airfloa</span>
         </div>
 

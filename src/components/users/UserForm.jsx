@@ -140,9 +140,6 @@ export function UserForm({
 
   return (
     <div className="card max-w-3xl user-form-card">
-      <div className="card-header">
-        <h3 className="card-title">{isProfile ? 'Edit Profile' : isEdit ? 'Edit User' : 'Create User'}</h3>
-      </div>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)} className="user-profile-form-layout" noValidate>
           <aside className="user-profile-sidebar">
@@ -240,7 +237,7 @@ export function UserForm({
                     {...register('username', {
                       required: 'Username is required',
                     })}
-                    placeholder="Enter your name"
+                    placeholder="Enter username"
                     className={errors.username ? 'error' : ''}
                   />
                   {errors.username && (
@@ -430,15 +427,15 @@ export function UserForm({
             </section>
 
             <div className="mt-6 flex justify-end gap-3 user-form-actions">
+              <Button type="submit" variant="primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save'}
+              </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => router.push(cancelPath)}
               >
                 Cancel
-              </Button>
-              <Button type="submit" variant="primary" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>

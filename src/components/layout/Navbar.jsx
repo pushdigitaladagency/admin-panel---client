@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Menu, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { Menu, User, Settings, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { BASE_URL } from '@/lib/api';
 
@@ -94,7 +94,7 @@ export default function Navbar({ onMenuToggle }) {
         {/* User menu */}
         <div className="user-menu" ref={dropdownRef}>
           <button
-            className="user-menu-btn"
+            className={`user-menu-btn ${dropdownOpen ? 'open' : ''}`}
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             <div className="user-avatar">
@@ -112,6 +112,7 @@ export default function Navbar({ onMenuToggle }) {
               <div className="user-name">{userName}</div>
               <div className="user-role">{userRole}</div>
             </div>
+            <ChevronDown size={16} className="user-menu-chevron" />
           </button>
 
           <div className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}>

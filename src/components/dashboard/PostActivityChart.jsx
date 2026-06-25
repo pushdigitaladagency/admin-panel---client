@@ -30,13 +30,14 @@ export function PostActivityChart({ data = [], loading = false }) {
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         outline: 'none',
-        height: '100%',
+        height: isChartVisible ? '100%' : 'auto',
+        alignSelf: isChartVisible ? 'stretch' : 'start',
         display: 'flex',
         flexDirection: 'column'
       }}
     >
       {/* Header */}
-      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 24px 16px 24px', borderBottom: 'none' }}>
+      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isChartVisible ? '24px 24px 16px 24px' : '24px', borderBottom: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#dcfce7', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BarChart3 size={18} />
