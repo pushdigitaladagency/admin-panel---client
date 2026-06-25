@@ -9,7 +9,15 @@ import { Select } from '@/components/ui/Select';
 
 export function VideoForm({ initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
-  const [preview, setPreview] = React.useState(initialData?.thumbnail || null);
+
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const baseHost = (process.env.NEXT_PUBLIC_API_URL || 'http://63.141.242.203:6001/api').replace(/\/api$/, '');
+    return `${baseHost}/${path.replace(/^\/?/, '')}`;
+  };
+
+  const [preview, setPreview] = React.useState(initialData?.thumbnail || getImageUrl(initialData?.thumbnail_image) || null);
   const [fileName, setFileName] = React.useState('');
 
   const {
@@ -21,9 +29,11 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
       title: initialData?.title || '',
       video_url: initialData?.video_url || '',
       description: initialData?.description || '',
-      status: initialData?.status || 'Active',
+      status: (initialData?.status === true || initialData?.status === 1 || initialData?.status === 'Active' || initialData?.status === undefined) ? 'Active' : 'Inactive',
     },
   });
+
+  const thumbnailRegister = register('thumbnail_file');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
@@ -49,9 +59,10 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
           type="file"
           id="video-thumbnail-input"
           accept="image/*"
-          {...register('thumbnail_file')}
+          {...thumbnailRegister}
           style={{ display: 'none' }}
           onChange={(e) => {
+            thumbnailRegister.onChange(e);
             const file = e.target.files?.[0];
             if (file) {
               setFileName(file.name);

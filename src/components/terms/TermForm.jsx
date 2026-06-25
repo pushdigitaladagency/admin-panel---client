@@ -35,15 +35,12 @@ export function TermForm({ initialData, taxonomy }) {
 
   const onSubmit = async (data) => {
     try {
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-
       if (isEdit) {
-        updateTerm(taxonomy, initialData.id, data);
-        addToast(`${taxonomyLabel} updated successfully (mock)`, 'success');
+        await updateTerm(taxonomy, initialData.id, data);
+        addToast(`${taxonomyLabel} updated successfully`, 'success');
       } else {
-        addTerm(taxonomy, data);
-        addToast(`${taxonomyLabel} created successfully (mock)`, 'success');
+        await addTerm(taxonomy, data);
+        addToast(`${taxonomyLabel} created successfully`, 'success');
       }
       router.push(`/terms/${taxonomy}`);
     } catch (err) {

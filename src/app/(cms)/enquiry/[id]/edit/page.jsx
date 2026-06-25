@@ -3,33 +3,41 @@
 import React from 'react';
 import { PostForm } from '@/components/posts/PostForm';
 import { useParams } from 'next/navigation';
+import { useApi } from '@/lib/useApi';
 
 export default function EditEnquiryPage() {
   const params = useParams();
-  
-  // Mock data
-  const mockInitialData = { 
-    id: params.id, 
-    enquiry_name: 'Alice Smith', 
-    enquiry_email: 'alice@example.com', 
-    enquiry_mobile: '+91 123-456-7890', 
-    enquiry_subject: 'Interested in Services', 
-    enquiry_status: 'New', 
-    submitted_date: '2026-06-24',
-    enquiry_message: 'I would like to know more about your services.',
-    assigned_to: '',
-    follow_up_notes: '',
-    response_date: ''
+  const enquiryId = params.id;
+
+  const { data, loading, error } = useApi(`/enquiries/${enquiryId}`);
+
+  if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
+  if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load enquiry'}</p>;
+  if (!data) return <p className="text-muted" style={{ padding: '32px 0' }}>Enquiry not found</p>;
+
+  // Map backend fields to PostForm's enquiry field names
+  const initialData = {
+    id: data.id,
+    enquiry_name: data.name || '',
+    enquiry_email: data.email || '',
+    enquiry_mobile: data.mobile || '',
+    enquiry_subject: data.subject || '',
+    enquiry_status: data.status || 'New',
+    enquiry_message: data.message || '',
+    submitted_date: data.created_at ? data.created_at.split('T')[0] : '',
+    response_date: data.response_date ? data.response_date.split('T')[0] : '',
+    assigned_to: data.assigned_to ? String(data.assigned_to) : '',
+    follow_up_notes: data.follow_up_notes || '',
   };
 
   return (
     <>
       <div className="mb-6">
         <h1 className="page-title text-2xl font-bold text-gray-900 mb-2">View / Edit Enquiry</h1>
-        <p className="page-subtitle text-gray-500">Update the details of the enquiry.</p>
+        <p className="page-subtitle text-gray-500">Update the details of the enquiry. Ref: {data.reference_no || `#${data.id}`}</p>
       </div>
 
-      <PostForm postType="enquiry" initialData={mockInitialData} />
+      <PostForm postType="enquiry" initialData={initialData} />
     </>
   );
 }

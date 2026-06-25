@@ -1,17 +1,15 @@
+'use client';
+
 import React from 'react';
 import { SettingsForm } from '@/components/settings/SettingsForm';
-
-export const dynamic = 'force-dynamic';
+import { useApi } from '@/lib/useApi';
 
 export default function SettingsPage() {
-  // Mock data
-  const settings = {
-    site_name: 'Mock CMS',
-    site_description: 'This is a pure frontend template',
-    contact_email: 'admin@mockcms.com',
-    seo_default_title: 'Mock CMS - Welcome',
-    seo_default_description: 'Welcome to the mock CMS dashboard',
-  };
+  const { data: settings, loading, error } = useApi('/settings');
+
+  if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading settings…</p>;
+  if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load settings'}</p>;
+  if (!settings) return <p className="text-muted" style={{ padding: '32px 0' }}>No settings found.</p>;
 
   return (
     <>

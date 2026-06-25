@@ -14,6 +14,23 @@ import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import { useTerms } from '@/context/TermsContext';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
+import { api, BASE_URL, uploadFile } from '@/lib/api';
+
+const resolveImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+  const baseHost = BASE_URL.replace(/\/api$/, '');
+  return `${baseHost}/${path.replace(/^\/?/, '')}`;
+};
+
+// Map frontend postType slug to API path
+const POST_API = {
+  news: '/news',
+  event: '/events',
+  'press-release': '/press-releases',
+};
 
 export function PostForm({ initialData, postType }) {
   const isEdit = !!initialData;
@@ -24,8 +41,17 @@ export function PostForm({ initialData, postType }) {
   const featuredImageInputRef = React.useRef(null);
   const galleryImagesInputRef = React.useRef(null);
 
-  const [featuredImagePreview, setFeaturedImagePreview] = React.useState(initialData?.featured_image || '');
-  const [galleryImagesPreviews, setGalleryImagesPreviews] = React.useState([]);
+  const [featuredImagePreview, setFeaturedImagePreview] = React.useState(() => {
+    return initialData?.featured_image ? resolveImageUrl(initialData.featured_image) : '';
+  });
+  const [galleryImagesPreviews, setGalleryImagesPreviews] = React.useState(() => {
+    if (!initialData?.gallery_images) return [];
+    return initialData.gallery_images
+      .split(',')
+      .map(img => img.trim())
+      .filter(Boolean)
+      .map(resolveImageUrl);
+  });
 
   const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
   const [mediaTarget, setMediaTarget] = React.useState(null); // 'featured' or 'gallery'
@@ -69,6 +95,7 @@ export function PostForm({ initialData, postType }) {
         seo_title: initialData?.seo_title || '',
         seo_keywords: initialData?.seo_keywords || '',
         seo_description: initialData?.seo_description || '',
+        canonical_url: initialData?.canonical_url || '',
         status: initialData?.status || 'draft',
         post_type: postType,
         gallery_images: initialData?.gallery_images || '',
@@ -103,6 +130,7 @@ export function PostForm({ initialData, postType }) {
         seo_title: '',
         seo_keywords: '',
         seo_description: '',
+        canonical_url: '',
         status: 'draft',
         post_type: postType,
         gallery_images: '',
@@ -126,16 +154,18 @@ export function PostForm({ initialData, postType }) {
 
   const { ref: featuredRef, ...featuredRegister } = register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
   const { ref: galleryRef, ...galleryRegister } = register('gallery_images');
+  const attachmentRegister = register('attachment');
 
   const handleMediaModalSelect = (media) => {
     if (mediaTarget === 'featured') {
       const url = media.url;
       setFeaturedImagePreview(url);
-      setValue('featured_image', url, { shouldValidate: true, shouldDirty: true });
+      setValue('featured_image', media.path || url, { shouldValidate: true, shouldDirty: true });
     } else if (mediaTarget === 'gallery') {
       const urls = Array.isArray(media) ? media.map(m => m.url) : [media.url];
+      const paths = Array.isArray(media) ? media.map(m => m.path || m.url) : [media.path || media.url];
       setGalleryImagesPreviews(urls);
-      setValue('gallery_images', urls.join(','), { shouldValidate: true, shouldDirty: true });
+      setValue('gallery_images', paths.join(','), { shouldValidate: true, shouldDirty: true });
     }
   };
 
@@ -172,15 +202,116 @@ export function PostForm({ initialData, postType }) {
     }
   };
 
+  const syncNewsGallery = async (newsId, galleryImagesString) => {
+    try {
+      const existingRes = await api.get(`/news/${newsId}/gallery`);
+      const existingImages = existingRes?.data || [];
+      const targetPaths = galleryImagesString
+        ? galleryImagesString.split(',').map(p => p.trim()).filter(Boolean)
+        : [];
+
+      // Identify images to delete
+      const imagesToDelete = existingImages.filter(img => !targetPaths.includes(img.image_path));
+      // Identify paths to add
+      const pathsToAdd = targetPaths.filter(path => !existingImages.some(img => img.image_path === path));
+
+      // Perform deletions and additions
+      await Promise.all([
+        ...imagesToDelete.map(img => api.del(`/news/gallery/${img.id}`)),
+        ...pathsToAdd.map((path, idx) => api.post(`/news/${newsId}/gallery`, { image_path: path, sort_order: idx }))
+      ]);
+    } catch (err) {
+      console.error('Error syncing news gallery:', err);
+      throw new Error('Failed to sync gallery images');
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-
-      if (isEdit) {
-        addToast(`${postType} updated successfully (mock)`, 'success');
+      if (postType === 'enquiry') {
+        // Enquiry edit only — map form fields to backend fields
+        const payload = {
+          status: data.enquiry_status,
+          assigned_to: data.assigned_to || null,
+          follow_up_notes: data.follow_up_notes,
+          response_date: data.response_date || null,
+        };
+        await api.put(`/enquiries/${initialData.id}`, payload);
+        addToast('Enquiry updated successfully', 'success');
       } else {
-        addToast(`${postType} created successfully (mock)`, 'success');
+        const apiPath = POST_API[postType] || '/press-releases';
+
+        let attachmentPath = initialData?.attachment || '';
+        if (data.attachment?.[0] instanceof File) {
+          const uploaded = await uploadFile(data.attachment[0]);
+          attachmentPath = uploaded?.path || uploaded?.filename || '';
+        }
+
+        // Build the payload mapping form fields to backend column names
+        const payload = {};
+        payload.title = data.title;
+        payload.status = data.status === 'published' ? 'Published' : 'Draft';
+        payload.featured = data.featured === 'yes';
+        payload.seo_title = data.seo_title;
+        payload.seo_keywords = data.seo_keywords;
+        payload.seo_description = data.seo_description;
+        payload.canonical_url = data.canonical_url;
+        payload.tags = data.tags;
+
+        if (postType === 'news') {
+          payload.category_id = data.category ? Number(data.category) : null;
+          payload.summary = data.excerpt;
+          payload.full_content = data.content;
+          payload.news_source = data.news_source;
+          payload.author = data.author;
+          payload.publish_date = data.publish_date || null;
+          payload.featured_image = typeof data.featured_image === 'string' ? data.featured_image : featuredImagePreview || '';
+        } else if (postType === 'event') {
+          payload.event_type_id = data.category ? Number(data.category) : null;
+          payload.short_description = data.excerpt;
+          payload.description = data.content;
+          payload.event_start_date = data.event_start_date || null;
+          payload.event_end_date = data.event_end_date || null;
+          payload.registration_start_date = data.reg_start_date || null;
+          payload.registration_end_date = data.reg_end_date || null;
+          payload.venue = data.venue;
+          payload.address = data.address;
+          payload.google_map_url = data.map_url;
+          payload.organizer_name = data.organizer_name;
+          payload.organizer_email = data.organizer_email;
+          payload.organizer_contact = data.organizer_contact;
+          payload.registration_link = data.registration_link;
+          payload.maximum_participants = data.max_participants ? Number(data.max_participants) : null;
+          payload.event_status = data.event_status;
+          payload.publish_status = data.status === 'published' ? 'Published' : 'Draft';
+          payload.banner_image = typeof data.featured_image === 'string' ? data.featured_image : featuredImagePreview || '';
+        } else {
+          // press-release
+          payload.category_id = data.category ? Number(data.category) : null;
+          payload.short_description = data.excerpt;
+          payload.detailed_content = data.content;
+          payload.publish_date = data.publish_date || null;
+          payload.expiry_date = data.expiry_date || null;
+          payload.featured_image = typeof data.featured_image === 'string' ? data.featured_image : featuredImagePreview || '';
+          payload.attachment = attachmentPath;
+        }
+
+        if (isEdit) {
+          await api.put(`${apiPath}/${initialData.id}`, payload);
+          if (postType === 'news') {
+            await syncNewsGallery(initialData.id, data.gallery_images);
+          }
+          addToast(`${postType} updated successfully`, 'success');
+        } else {
+          const res = await api.post(apiPath, payload);
+          if (postType === 'news') {
+            const newsId = res?.data?.id;
+            if (newsId) {
+              await syncNewsGallery(newsId, data.gallery_images);
+            }
+          }
+          addToast(`${postType} created successfully`, 'success');
+        }
       }
       router.push(postType === 'enquiry' ? '/enquiry' : `/posts/${postType}`);
     } catch (err) {
@@ -194,7 +325,7 @@ export function PostForm({ initialData, postType }) {
       ? 'event-category'
       : 'press-release-category';
 
-  const CATEGORIES = getTerms(taxonomyKey).map((t) => t.name);
+  const CATEGORIES = getTerms(taxonomyKey);
 
   const renderSeoConfigurations = () => (
     <div className="card" style={{ background: 'rgba(0, 0, 0, 0.01)', borderStyle: 'dashed' }}>
@@ -226,6 +357,14 @@ export function PostForm({ initialData, postType }) {
               className="form-textarea"
               placeholder="Meta description under 160 characters..."
               style={{ minHeight: '60px' }}
+            />
+          </div>
+
+          <div className="form-group md:col-span-2">
+            <label className="form-label">Canonical URL</label>
+            <Input
+              {...register('canonical_url')}
+              placeholder="e.g. https://example.com/posts/my-post"
             />
           </div>
         </div>
@@ -349,7 +488,7 @@ export function PostForm({ initialData, postType }) {
                   <Select {...register('category', postType === 'event' ? {} : { required: 'Category/Type is required' })}>
                     <option value="">Select type...</option>
                     {CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </Select>
                   {errors.category && <p className="form-error">{errors.category.message}</p>}
@@ -646,9 +785,10 @@ export function PostForm({ initialData, postType }) {
                           type="file"
                           id="attachment-input"
                           accept=".pdf,.doc,.docx"
-                          {...register('attachment')}
+                          {...attachmentRegister}
                           style={{ display: 'none' }}
                           onChange={(e) => {
+                            attachmentRegister.onChange(e);
                             const file = e.target.files?.[0];
                             if (file) {
                               const label = document.getElementById('attachment-label');
@@ -663,7 +803,7 @@ export function PostForm({ initialData, postType }) {
                         >
                           <FileText size={24} className="premium-dropzone-icon" />
                           <span id="attachment-label" className="premium-dropzone-text">
-                            Click to select document
+                            {initialData?.attachment ? initialData.attachment.split('/').pop() : 'Click to select document'}
                           </span>
                         </div>
                       </div>

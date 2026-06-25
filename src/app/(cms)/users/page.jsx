@@ -3,21 +3,11 @@
 import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
+import { useApi } from '@/lib/useApi';
 
 export default function UserListPage() {
-  // Mock data
-  const users = [
-    { id: 1, first_name: 'Admin', last_name: 'User', email: 'admin@example.com', mobile_number: '+91 234 567 8900', roles: [1], status: 'Active', last_login: '2026-06-22T10:30:00Z', created_at: '2026-01-15T08:00:00Z' },
-    { id: 2, first_name: 'Jane', last_name: 'Doe', email: 'jane@example.com', mobile_number: '+91 987 654 3210', roles: [2], status: 'Active', last_login: '2026-06-21T14:15:00Z', created_at: '2026-02-20T09:30:00Z' },
-    { id: 3, first_name: 'John', last_name: 'Smith', email: 'john@example.com', mobile_number: '+91 555 123 4567', roles: [3], status: 'Inactive', last_login: '2026-05-10T11:45:00Z', created_at: '2026-03-05T10:15:00Z' },
-    { id: 4, first_name: 'Test', last_name: 'User', email: 'test@example.com', mobile_number: '+91 444 987 6543', roles: [], status: 'Active', last_login: '2026-06-22T09:00:00Z', created_at: '2026-04-10T16:20:00Z' },
-  ];
-
-  const roleMap = {
-    1: 'Superadmin',
-    2: 'Editor',
-    3: 'Author',
-  };
+  const { data, loading, error } = useApi('/users');
+  const users = data || [];
 
   const columns = [
     { header: 'User ID', accessorKey: 'id' },
@@ -31,30 +21,33 @@ export default function UserListPage() {
       header: 'Role',
       render: (row) => (
         <div className="flex gap-1 flex-wrap">
-          {row.roles.map((roleId, i) => (
-            <span key={i} className="badge badge-info">
-              {roleMap[roleId] || `Role #${roleId}`}
-            </span>
-          ))}
-          {row.roles.length === 0 && <span className="text-muted text-sm">None</span>}
+          {row.role?.name ? (
+            <span className="badge badge-info">{row.role.name}</span>
+          ) : (
+            <span className="text-muted text-sm">None</span>
+          )}
         </div>
       )
     },
     {
       header: 'Status',
       render: (row) => (
-        <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-warning'}`}>
-          {row.status}
+        <span className={`badge ${row.status ? 'badge-success' : 'badge-warning'}`}>
+          {row.status ? 'Active' : 'Inactive'}
         </span>
       )
     },
     {
       header: 'Last Login',
-      render: (row) => new Date(row.last_login).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      render: (row) => row.last_login_at
+        ? new Date(row.last_login_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '—'
     },
     {
       header: 'Created Date',
-      render: (row) => new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      render: (row) => row.created_at
+        ? new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—'
     },
     {
       header: 'Actions',
@@ -80,7 +73,13 @@ export default function UserListPage() {
         </Link>
       </div>
 
-      <DataTable data={users} columns={columns} searchKey="email" />
+      {error ? (
+        <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load users'}</p>
+      ) : loading ? (
+        <p className="text-muted" style={{ padding: '16px 0' }}>Loading users…</p>
+      ) : (
+        <DataTable data={users} columns={columns} searchKey="email" />
+      )}
     </>
   );
 }

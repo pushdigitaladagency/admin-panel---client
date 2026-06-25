@@ -3,38 +3,51 @@
 import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
+import { useApi } from '@/lib/useApi';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/context/ConfirmContext';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function PermissionsListPage() {
-  // Mock data
-  const permissions = [
-    { id: 1, name: 'post.view', description: 'Can view posts', group: 'Post' },
-    { id: 2, name: 'post.create', description: 'Can create new posts', group: 'Post' },
-    { id: 3, name: 'post.edit', description: 'Can edit posts', group: 'Post' },
-    { id: 4, name: 'post.delete', description: 'Can delete posts', group: 'Post' },
-    { id: 5, name: 'user.view', description: 'Can view users', group: 'User' },
-    { id: 6, name: 'user.create', description: 'Can create users', group: 'User' },
-    { id: 7, name: 'user.edit', description: 'Can edit users', group: 'User' },
-    { id: 8, name: 'user.delete', description: 'Can delete users', group: 'User' },
-    { id: 9, name: 'role.view', description: 'Can view roles', group: 'Role' },
-    { id: 10, name: 'settings.edit', description: 'Can modify global settings', group: 'Settings' },
-  ];
+  const { data, loading, error, reload } = useApi('/permissions');
+  const permissions = data || [];
+  const { addToast } = useToast();
+  const { confirmDelete } = useConfirm();
+
+  const handleDelete = (id) => {
+    confirmDelete('Are you sure you want to delete this permission?', async () => {
+      try {
+        await api.del(`/permissions/${id}`);
+        addToast('Permission deleted successfully', 'success');
+        reload();
+      } catch (err) {
+        addToast(err.message || 'Delete failed', 'danger');
+      }
+    });
+  };
 
   const columns = [
     {
-      header: 'Module Name',
+      header: 'Module',
       render: (row) => (
-        <span className="badge badge-info">{row.group}</span>
+        <span className="badge badge-info">{row.module?.name || '—'}</span>
       ),
     },
     { header: 'Permission Name', accessorKey: 'name' },
+    { header: 'Code', accessorKey: 'code' },
+    { header: 'Action', accessorKey: 'action' },
     { header: 'Description', accessorKey: 'description' },
     {
       header: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
-          <Link href={`/permissions/${row.id}/edit`} className="btn btn-secondary btn-sm">
-            Edit
+          <Link href={`/permissions/${row.id}/edit`} className="btn btn-secondary btn-sm flex items-center gap-1">
+            <Pencil size={14} /> Edit
           </Link>
+          <button className="btn btn-danger btn-sm flex items-center gap-1" onClick={() => handleDelete(row.id)}>
+            <Trash2 size={14} /> Delete
+          </button>
         </div>
       ),
     },
@@ -52,7 +65,13 @@ export default function PermissionsListPage() {
         </Link>
       </div>
 
-      <DataTable data={permissions} columns={columns} searchKey="name" />
+      {error ? (
+        <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load permissions'}</p>
+      ) : loading ? (
+        <p className="text-muted" style={{ padding: '16px 0' }}>Loading permissions…</p>
+      ) : (
+        <DataTable data={permissions} columns={columns} searchKey="name" />
+      )}
     </>
   );
 }

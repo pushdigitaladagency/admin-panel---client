@@ -3,6 +3,7 @@
 import React from 'react';
 import { UserForm } from '@/components/users/UserForm';
 import { notFound, useParams } from 'next/navigation';
+import { useApi } from '@/lib/useApi';
 
 export default function EditUserPage() {
   const params = useParams();
@@ -10,21 +11,15 @@ export default function EditUserPage() {
   
   if (isNaN(userId)) return notFound();
 
-  // Mock data
-  const mockRoles = [
-    { id: 1, name: 'Superadmin' },
-    { id: 2, name: 'Editor' },
-    { id: 3, name: 'Author' },
-  ];
+  const { data: userData, loading: userLoading, error: userError } = useApi(`/users/${userId}`);
+  const { data: rolesData, loading: rolesLoading } = useApi('/roles');
 
-  const initialData = {
-    id: userId,
-    first_name: 'Admin',
-    last_name: 'User',
-    email: 'admin@example.com',
-    username: 'admin',
-    roles: [1],
-  };
+  const roles = rolesData || [];
+
+  if (userError) return notFound();
+  if (userLoading || rolesLoading) {
+    return <div className="text-muted" style={{ padding: '24px' }}>Loading...</div>;
+  }
 
   return (
     <>
@@ -34,7 +29,7 @@ export default function EditUserPage() {
           <p className="page-subtitle">Modify user details and roles</p>
         </div>
       </div>
-      <UserForm initialData={initialData} availableRoles={mockRoles} />
+      <UserForm initialData={userData} availableRoles={roles} />
     </>
   );
 }

@@ -2,15 +2,20 @@
 
 import React from 'react';
 import DataTable from '@/components/ui/DataTable';
+import { useApi } from '@/lib/useApi';
 
 export default function ActionLogPage() {
-  // Mock data
-  const formattedLogs = [
-    { id: 1, action: 'Created Post', model: 'Post', user: 'Admin User', ip: '192.168.1.10', date: new Date().toLocaleString() },
-    { id: 2, action: 'Updated Settings', model: 'Setting', user: 'Admin User', ip: '192.168.1.10', date: new Date(Date.now() - 3600000).toLocaleString() },
-    { id: 3, action: 'Deleted User', model: 'User', user: 'Editor Jane', ip: '10.0.0.5', date: new Date(Date.now() - 86400000).toLocaleString() },
-    { id: 4, action: 'System Backup', model: 'System', user: 'System', ip: '127.0.0.1', date: new Date(Date.now() - 172800000).toLocaleString() },
-  ];
+  const { data: logsData, loading, error } = useApi('/action-logs');
+  const logs = logsData || [];
+
+  const formattedLogs = logs.map((log) => ({
+    id: log.id,
+    action: log.action,
+    model: log.model || '—',
+    user: log.username || 'System',
+    ip: log.ip_address || '—',
+    date: log.created_at ? new Date(log.created_at).toLocaleString() : '—',
+  }));
 
   const columns = [
     { header: 'Action', accessorKey: 'action' },
@@ -29,7 +34,13 @@ export default function ActionLogPage() {
         </div>
       </div>
 
-      <DataTable data={formattedLogs} columns={columns} searchKey="action" />
+      {error ? (
+        <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load action logs'}</p>
+      ) : loading ? (
+        <p className="text-muted" style={{ padding: '16px 0' }}>Loading action logs…</p>
+      ) : (
+        <DataTable data={formattedLogs} columns={columns} searchKey="action" />
+      )}
     </>
   );
 }

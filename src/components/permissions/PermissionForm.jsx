@@ -6,11 +6,17 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 
 export function PermissionForm({ initialData }) {
   const isEdit = !!initialData;
   const router = useRouter();
   const { addToast } = useToast();
+
+  // Fetch modules from backend
+  const { data: modulesData } = useApi('/modules');
+  const MODULES = (modulesData || []).map((m) => ({ id: m.id, name: m.name }));
 
   const {
     register,
@@ -22,58 +28,57 @@ export function PermissionForm({ initialData }) {
     defaultValues: isEdit
       ? {
           id: initialData?.id,
-          module: initialData?.group || 'Post',
+          module_id: initialData?.module_id || initialData?.module?.id || '',
           name: initialData?.name || '',
           code: initialData?.code || '',
+          action: initialData?.action || '',
           description: initialData?.description || '',
         }
-      : { module: 'Post', name: '', code: '', description: '' },
+      : { module_id: '', name: '', code: '', action: '', description: '' },
   });
 
-  const moduleName = watch('module');
+  const moduleName = watch('module_id');
   const permissionName = watch('name');
 
-  // Auto-generate code e.g. "post.create-posts"
+  // Auto-generate code
   React.useEffect(() => {
     if (permissionName !== undefined && moduleName !== undefined) {
-      const slug = permissionName
+      const mod = MODULES.find((m) => String(m.id) === String(moduleName));
+      const modSlug = mod
+        ? mod.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+        : '';
+      const nameSlug = permissionName
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      const mod = moduleName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-');
-      
-      const generatedCode = mod && slug ? `${mod}.${slug}` : slug || mod;
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+
+      const generatedCode = modSlug && nameSlug ? `${modSlug}.${nameSlug}` : nameSlug || modSlug;
       setValue('code', generatedCode, { shouldDirty: true, shouldValidate: true });
     }
-  }, [moduleName, permissionName, setValue]);
+  }, [moduleName, permissionName, setValue, MODULES]);
 
   const onSubmit = async (data) => {
     try {
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-      
+      const payload = {
+        module_id: Number(data.module_id),
+        name: data.name,
+        code: data.code,
+        action: data.action,
+        description: data.description,
+      };
+
       if (isEdit) {
-        addToast('Permission updated successfully (mock)', 'success');
+        await api.put(`/permissions/${initialData.id}`, payload);
+        addToast('Permission updated successfully', 'success');
       } else {
-        addToast('Permission created successfully (mock)', 'success');
+        await api.post('/permissions', payload);
+        addToast('Permission created successfully', 'success');
       }
       router.push('/permissions');
     } catch (err) {
       addToast(err.message || 'Operation failed', 'danger');
     }
   };
-
-  const MODULES = [
-    'Post',
-    'User',
-    'Role',
-    'Settings',
-    'Media',
-    'Term',
-    'Action Log',
-  ];
 
   return (
     <div className="card max-w-2xl">
@@ -88,15 +93,16 @@ export function PermissionForm({ initialData }) {
                 Module Name <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
               </label>
               <select 
-                {...register('module', { required: 'Module Name is required' })} 
-                className={`form-select ${errors.module ? 'error' : ''}`}
+                {...register('module_id', { required: 'Module is required' })} 
+                className={`form-select ${errors.module_id ? 'error' : ''}`}
               >
+                <option value="">Select module...</option>
                 {MODULES.map(m => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m.id} value={m.id}>{m.name}</option>
                 ))}
               </select>
-              {errors.module && (
-                <p className="form-error">{errors.module.message}</p>
+              {errors.module_id && (
+                <p className="form-error">{errors.module_id.message}</p>
               )}
             </div>
 
@@ -115,20 +121,30 @@ export function PermissionForm({ initialData }) {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">
-              Permission Code <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
-            </label>
-            <Input
-              {...register('code', { required: 'Permission Code is required' })}
-              placeholder="Auto-generated (e.g. post.view)"
-              readOnly
-              className="cursor-not-allowed opacity-70"
-              style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
-            />
-            {errors.code && (
-              <p className="form-error">{errors.code.message}</p>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-group">
+              <label className="form-label">
+                Permission Code <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
+              </label>
+              <Input
+                {...register('code', { required: 'Permission Code is required' })}
+                placeholder="Auto-generated (e.g. post.view)"
+                readOnly
+                className="cursor-not-allowed opacity-70"
+                style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
+              />
+              {errors.code && (
+                <p className="form-error">{errors.code.message}</p>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Action</label>
+              <Input
+                {...register('action')}
+                placeholder="e.g. view, create, edit, delete"
+              />
+            </div>
           </div>
 
           <div className="form-group">

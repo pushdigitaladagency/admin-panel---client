@@ -7,9 +7,17 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 
-export function AlbumForm({ initialData, onSubmit, onCancel }) {
+export function AlbumForm({ categories = [], events = [], initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
-  const [preview, setPreview] = React.useState(initialData?.cover_image || null);
+
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const baseHost = (process.env.NEXT_PUBLIC_API_URL || 'http://63.141.242.203:6001/api').replace(/\/api$/, '');
+    return `${baseHost}/${path.replace(/^\/?/, '')}`;
+  };
+
+  const [preview, setPreview] = React.useState(initialData?.cover_image ? getImageUrl(initialData.cover_image) : null);
   const [fileName, setFileName] = React.useState('');
 
   const {
@@ -19,12 +27,14 @@ export function AlbumForm({ initialData, onSubmit, onCancel }) {
   } = useForm({
     defaultValues: {
       title: initialData?.title || '',
-      category: initialData?.category || '',
+      category_id: initialData?.category_id ? String(initialData.category_id) : '',
       description: initialData?.description || '',
-      event_ref: initialData?.event_ref || '',
-      status: initialData?.status || 'Active',
+      event_id: initialData?.event_id ? String(initialData.event_id) : '',
+      status: (initialData?.status === true || initialData?.status === 'Active' || initialData?.status === undefined) ? 'Active' : 'Inactive',
     },
   });
+
+  const coverImageRegister = register('cover_image', isEdit ? {} : { required: 'Cover Image is required' });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
@@ -42,10 +52,14 @@ export function AlbumForm({ initialData, onSubmit, onCancel }) {
 
       <div className="form-group">
         <label className="form-label">Album Category</label>
-        <Input
-          {...register('category')}
-          placeholder="e.g. Conferences, Sports, Tech"
-        />
+        <Select {...register('category_id')}>
+          <option value="">None / Select Category...</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </Select>
       </div>
 
       <div className="form-group">
@@ -66,9 +80,10 @@ export function AlbumForm({ initialData, onSubmit, onCancel }) {
           type="file"
           id="album-cover-input"
           accept="image/*"
-          {...register('cover_image', isEdit ? {} : { required: 'Cover Image is required' })}
+          {...coverImageRegister}
           style={{ display: 'none' }}
           onChange={(e) => {
+            coverImageRegister.onChange(e);
             const file = e.target.files?.[0];
             if (file) {
               setFileName(file.name);
@@ -105,11 +120,13 @@ export function AlbumForm({ initialData, onSubmit, onCancel }) {
 
       <div className="form-group">
         <label className="form-label">Event Reference</label>
-        <Select {...register('event_ref')}>
+        <Select {...register('event_id')}>
           <option value="">None</option>
-          <option value="Global Developer Summit 2026">Global Developer Summit 2026</option>
-          <option value="Webinar: Intro to Next.js 16">Webinar: Intro to Next.js 16</option>
-          <option value="Tailwind CSS Workshop">Tailwind CSS Workshop</option>
+          {events.map((evt) => (
+            <option key={evt.id} value={evt.id}>
+              {evt.title}
+            </option>
+          ))}
         </Select>
       </div>
 

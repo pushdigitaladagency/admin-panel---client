@@ -1,76 +1,92 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { api } from '@/lib/api';
+import { ALL_TAXONOMIES, taxonomyToApiPath } from '@/utils/taxonomyApi';
 
 const TermsContext = createContext();
 
-// Default terms per taxonomy (mock data)
-const DEFAULT_TERMS = {
-  'news-category': [
-    { id: 1, name: 'National News', slug: 'national-news', description: '' },
-    { id: 2, name: 'International News', slug: 'international-news', description: '' },
-    { id: 3, name: 'Local News', slug: 'local-news', description: '' },
-    { id: 4, name: 'Editorial', slug: 'editorial', description: '' },
-  ],
-  'event-category': [
-    { id: 1, name: 'Conferences', slug: 'conferences', description: '' },
-    { id: 2, name: 'Webinars', slug: 'webinars', description: '' },
-    { id: 3, name: 'Workshops', slug: 'workshops', description: '' },
-    { id: 4, name: 'Seminars', slug: 'seminars', description: '' },
-  ],
-  'press-release-category': [
-    { id: 1, name: 'Press Releases', slug: 'press-releases', description: '' },
-    { id: 2, name: 'Official Statement', slug: 'official-statement', description: '' },
-    { id: 3, name: 'Public Notice', slug: 'public-notice', description: '' },
-    { id: 4, name: 'Announcements', slug: 'announcements', description: '' },
-  ],
-};
-
 export function TermsProvider({ children }) {
-  const [termsByTaxonomy, setTermsByTaxonomy] = useState(DEFAULT_TERMS);
+  const [termsByTaxonomy, setTermsByTaxonomy] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all taxonomy lists from the backend on mount.
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const results = await Promise.allSettled(
+        ALL_TAXONOMIES.map(async (tax) => {
+          const res = await api.get(`${taxonomyToApiPath(tax)}?limit=100`);
+          return { taxonomy: tax, data: res?.data ?? [] };
+        })
+      );
+
+      const map = {};
+      for (const r of results) {
+        if (r.status === 'fulfilled') {
+          map[r.value.taxonomy] = r.value.data;
+        }
+      }
+      setTermsByTaxonomy(map);
+    } catch {
+      // Silently fall back to empty; individual pages will show their own errors.
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const getTerms = (taxonomy) => {
     return termsByTaxonomy[taxonomy] || [];
   };
 
-  const addTerm = (taxonomy, term) => {
-    setTermsByTaxonomy((prev) => {
-      const existing = prev[taxonomy] || [];
-      const newTerm = {
-        ...term,
-        id: Date.now(),
-        slug: term.slug || term.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
-      };
-      return { ...prev, [taxonomy]: [...existing, newTerm] };
-    });
+  // --- mutators call the API then refresh the local cache ---
+
+  const addTerm = async (taxonomy, term) => {
+    const path = taxonomyToApiPath(taxonomy);
+    const res = await api.post(path, term);
+    // Optimistically add to local state.
+    setTermsByTaxonomy((prev) => ({
+      ...prev,
+      [taxonomy]: [...(prev[taxonomy] || []), res.data],
+    }));
+    return res.data;
   };
 
-  const updateTerm = (taxonomy, id, updatedData) => {
-    setTermsByTaxonomy((prev) => {
-      const existing = prev[taxonomy] || [];
-      return {
-        ...prev,
-        [taxonomy]: existing.map((t) => (t.id === id ? { ...t, ...updatedData } : t)),
-      };
-    });
+  const updateTerm = async (taxonomy, id, updatedData) => {
+    const path = taxonomyToApiPath(taxonomy);
+    const res = await api.put(`${path}/${id}`, updatedData);
+    setTermsByTaxonomy((prev) => ({
+      ...prev,
+      [taxonomy]: (prev[taxonomy] || []).map((t) => (t.id === id ? res.data : t)),
+    }));
+    return res.data;
   };
 
-  const deleteTerm = (taxonomy, id) => {
-    setTermsByTaxonomy((prev) => {
-      const existing = prev[taxonomy] || [];
-      return { ...prev, [taxonomy]: existing.filter((t) => t.id !== id) };
-    });
+  const deleteTerm = async (taxonomy, id) => {
+    const path = taxonomyToApiPath(taxonomy);
+    await api.del(`${path}/${id}`);
+    setTermsByTaxonomy((prev) => ({
+      ...prev,
+      [taxonomy]: (prev[taxonomy] || []).filter((t) => t.id !== id),
+    }));
   };
 
-  const deleteTerms = (taxonomy, ids) => {
-    setTermsByTaxonomy((prev) => {
-      const existing = prev[taxonomy] || [];
-      return { ...prev, [taxonomy]: existing.filter((t) => !ids.includes(t.id)) };
-    });
+  const deleteTerms = async (taxonomy, ids) => {
+    const path = taxonomyToApiPath(taxonomy);
+    // Delete one by one (backend has no bulk endpoint).
+    await Promise.allSettled(ids.map((id) => api.del(`${path}/${id}`)));
+    setTermsByTaxonomy((prev) => ({
+      ...prev,
+      [taxonomy]: (prev[taxonomy] || []).filter((t) => !ids.includes(t.id)),
+    }));
   };
 
   return (
-    <TermsContext.Provider value={{ getTerms, addTerm, updateTerm, deleteTerm, deleteTerms }}>
+    <TermsContext.Provider value={{ getTerms, addTerm, updateTerm, deleteTerm, deleteTerms, loading, refetch: fetchAll }}>
       {children}
     </TermsContext.Provider>
   );

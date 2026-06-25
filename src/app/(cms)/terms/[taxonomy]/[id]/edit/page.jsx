@@ -4,6 +4,8 @@ import React from 'react';
 import { TermForm } from '@/components/terms/TermForm';
 import { notFound, useParams } from 'next/navigation';
 import { formatTaxonomyLabel } from '@/utils/taxonomyLabels';
+import { taxonomyToApiPath } from '@/utils/taxonomyApi';
+import { useApi } from '@/lib/useApi';
 
 export default function EditTermPage() {
   const params = useParams();
@@ -13,12 +15,18 @@ export default function EditTermPage() {
   
   if (isNaN(termId)) return notFound();
 
-  // Mock data
+  const apiPath = taxonomyToApiPath(taxonomy);
+  const { data, loading, error } = useApi(`${apiPath}/${termId}`);
+
+  if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
+  if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load term'}</p>;
+  if (!data) return notFound();
+
   const initialData = {
-    id: termId,
-    name: `Mock ${taxonomy}`,
-    slug: `mock-${taxonomy}`,
-    description: 'This is a mock description.',
+    id: data.id,
+    name: data.name || '',
+    slug: data.slug || '',
+    description: data.description || '',
   };
 
   return (

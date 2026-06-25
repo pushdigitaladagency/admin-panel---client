@@ -13,6 +13,7 @@ import {
   Check
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import { api, BASE_URL, uploadFile } from '@/lib/api';
 
 export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple = false }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,17 +25,128 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
   const [copied, setCopied] = useState(false);
   const { addToast } = useToast();
 
-  // Mock media library data
-  const [mediaItems, setMediaItems] = useState([
-    { id: 1, name: 'Screenshot 2026-06-23 111811 (1)', type: 'PNG', size: '59.55 KB', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&auto=format&fit=crop&q=60', date: '6/24/2026' },
-    { id: 2, name: 'hero-banner-v2', type: 'JPG', size: '124.20 KB', url: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=500&auto=format&fit=crop&q=60', date: '6/23/2026' },
-    { id: 3, name: 'avatar-placeholder', type: 'SVG', size: '12.05 KB', url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500&auto=format&fit=crop&q=60', date: '6/20/2026' },
-    { id: 4, name: 'conference-room', type: 'JPG', size: '890.11 KB', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=60', date: '6/19/2026' },
-    { id: 5, name: 'product-mockup', type: 'PNG', size: '450.33 KB', url: 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=500&auto=format&fit=crop&q=60', date: '6/18/2026' },
-    { id: 6, name: 'team-photo-2026', type: 'JPG', size: '1.2 MB', url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=60', date: '6/15/2026' },
-    { id: 7, name: 'logo-transparent', type: 'PNG', size: '45.10 KB', url: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=500&auto=format&fit=crop&q=60', date: '6/10/2026' },
-    { id: 8, name: 'app-icon', type: 'PNG', size: '25.00 KB', url: 'https://images.unsplash.com/photo-1611162618071-b39a2ec055ce?w=500&auto=format&fit=crop&q=60', date: '6/05/2026' },
-  ]);
+  const [mediaItems, setMediaItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchMediaItems = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/gallery-albums');
+      const albums = res?.data || [];
+      const imagesList = [];
+      const baseHost = BASE_URL.replace(/\/api$/, '');
+      const resolveUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        return `${baseHost}/${path.replace(/^\/?/, '')}`;
+      };
+
+      const parseDate = (createdAt, updatedAt) => {
+        const raw = updatedAt || createdAt;
+        if (!raw) return 'N/A';
+        const d = new Date(raw);
+        return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+      };
+
+      albums.forEach(album => {
+        const isAlbumActive = album.status === true || album.status === 1 || String(album.status).toLowerCase() === 'active';
+        if (album.images && album.images.length) {
+          album.images.forEach(img => {
+            const isImageActive = img.status === true || img.status === 1 || String(img.status).toLowerCase() === 'active';
+            
+            // Only show active images whose parent album is also active
+            if (isAlbumActive && isImageActive) {
+              const fileName = img.image_path.split('/').pop();
+              const ext = fileName.split('.').pop().toUpperCase();
+              imagesList.push({
+                id: img.id,
+                name: img.image_title || fileName,
+                type: ext || 'IMG',
+                size: 'N/A',
+                url: resolveUrl(img.image_path),
+                path: img.image_path,
+                date: parseDate(img.created_at || img.createdAt, img.updated_at || img.updatedAt)
+              });
+            }
+          });
+        }
+      });
+      setMediaItems(imagesList);
+
+      // Asynchronously fetch actual sizes for all items
+      imagesList.forEach(item => {
+        fetch(item.url, { method: 'HEAD' })
+          .then(res => {
+            const len = res.headers.get('content-length');
+            if (len) {
+              const sizeKb = parseInt(len, 10) / 1024;
+              let sizeStr = '';
+              if (sizeKb > 1024) {
+                sizeStr = (sizeKb / 1024).toFixed(2) + ' MB';
+              } else {
+                sizeStr = sizeKb.toFixed(2) + ' KB';
+              }
+              setMediaItems(prev => prev.map(m => m.id === item.id ? { ...m, size: sizeStr } : m));
+            }
+          })
+          .catch(err => {
+            console.error('Failed to fetch size for', item.url, err);
+          });
+      });
+    } catch (err) {
+      console.error('Failed to fetch media library:', err);
+      addToast('Failed to load gallery images', 'danger');
+    } finally {
+      setLoading(false);
+    }
+  }, [addToast]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      fetchMediaItems();
+    }
+  }, [isOpen, fetchMediaItems]);
+
+  const selectedItem = selectedIds.length > 0 ? mediaItems.find(item => item.id === selectedIds[0]) : null;
+  const [fileSize, setFileSize] = useState('N/A');
+
+  React.useEffect(() => {
+    if (!selectedItem) {
+      setFileSize('N/A');
+      return;
+    }
+
+    if (selectedItem.size && selectedItem.size !== 'N/A') {
+      setFileSize(selectedItem.size);
+      return;
+    }
+
+    let active = true;
+    setFileSize('Loading...');
+
+    fetch(selectedItem.url, { method: 'HEAD' })
+      .then(res => {
+        if (!active) return;
+        const len = res.headers.get('content-length');
+        if (len) {
+          const sizeKb = parseInt(len, 10) / 1024;
+          if (sizeKb > 1024) {
+            setFileSize((sizeKb / 1024).toFixed(2) + ' MB');
+          } else {
+            setFileSize(sizeKb.toFixed(2) + ' KB');
+          }
+        } else {
+          setFileSize('N/A');
+        }
+      })
+      .catch(() => {
+        if (active) setFileSize('N/A');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedItem]);
 
   if (!isOpen) return null;
 
@@ -54,8 +166,6 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
       setSelectedIds([id]);
     }
   };
-
-  const selectedItem = selectedIds.length > 0 ? mediaItems.find(item => item.id === selectedIds[0]) : null;
 
   const handleConfirmSelection = () => {
     if (selectedIds.length === 0) return;
@@ -77,18 +187,35 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      const newMedia = Array.from(files).map((file, index) => ({
-        id: Date.now() + index,
-        name: file.name,
-        type: file.name.split('.').pop().toUpperCase(),
-        size: (file.size / 1024).toFixed(2) + ' KB',
-        url: URL.createObjectURL(file),
-        date: new Date().toLocaleDateString()
-      }));
-      setMediaItems(prev => [...newMedia, ...prev]);
+    if (!files || files.length === 0) return;
+
+    setLoading(true);
+    try {
+      const uploadedItems = [];
+      const baseHost = BASE_URL.replace(/\/api$/, '');
+      
+      for (const file of Array.from(files)) {
+        const res = await uploadFile(file);
+        const url = `${baseHost}/${res.path.replace(/^\/?/, '')}`;
+        uploadedItems.push({
+          id: res.filename,
+          name: res.filename,
+          type: file.name.split('.').pop().toUpperCase(),
+          size: (res.size / 1024).toFixed(2) + ' KB',
+          url: url,
+          path: res.path,
+          date: new Date().toLocaleDateString()
+        });
+      }
+      setMediaItems(prev => [...uploadedItems, ...prev]);
+      addToast('File(s) uploaded successfully', 'success');
+    } catch (err) {
+      console.error('Upload failed:', err);
+      addToast(err.message || 'Failed to upload file(s)', 'danger');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -155,28 +282,38 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
 
           {/* Main Content Grid */}
           <div className="media-modal-main">
-            <div className="media-grid">
-              {filteredItems.map(item => (
-                <div 
-                  key={item.id} 
-                  className={`media-grid-item ${selectedIds.includes(item.id) ? 'selected' : ''}`}
-                  onClick={() => handleSelectToggle(item.id)}
-                >
-                  <div className="media-grid-item-image-wrapper">
-                    <img src={item.url} alt={item.name} className="media-grid-item-image" />
-                    {selectedIds.includes(item.id) && (
-                      <div className="media-grid-item-check">
-                        <CheckCircle2 size={24} fill="#5A67D8" color="white" />
-                      </div>
-                    )}
+            {loading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-muted)', fontSize: '0.875rem' }}>
+                Loading gallery images...
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-muted)', fontSize: '0.875rem' }}>
+                No images found
+              </div>
+            ) : (
+              <div className="media-grid">
+                {filteredItems.map(item => (
+                  <div 
+                    key={item.id} 
+                    className={`media-grid-item ${selectedIds.includes(item.id) ? 'selected' : ''}`}
+                    onClick={() => handleSelectToggle(item.id)}
+                  >
+                    <div className="media-grid-item-image-wrapper">
+                      <img src={item.url} alt={item.name} className="media-grid-item-image" />
+                      {selectedIds.includes(item.id) && (
+                        <div className="media-grid-item-check">
+                          <CheckCircle2 size={24} fill="#5A67D8" color="white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="media-grid-item-info">
+                      <p className="media-grid-item-name">{item.name}</p>
+                      <p className="media-grid-item-meta">{item.type} • {item.size}</p>
+                    </div>
                   </div>
-                  <div className="media-grid-item-info">
-                    <p className="media-grid-item-name">{item.name}</p>
-                    <p className="media-grid-item-meta">{item.type} • {item.size}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Sidebar */}
@@ -198,7 +335,7 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
                   </div>
                   <div className="media-details-row">
                     <span className="media-details-label">File Size</span>
-                    <span className="media-details-value">{selectedItem.size}</span>
+                    <span className="media-details-value">{fileSize}</span>
                   </div>
                   <div className="media-details-row">
                     <span className="media-details-label">Uploaded</span>

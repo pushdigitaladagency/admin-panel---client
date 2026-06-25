@@ -9,7 +9,15 @@ import { Select } from '@/components/ui/Select';
 
 export function ImageForm({ albums = [], initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
-  const [preview, setPreview] = React.useState(initialData?.image_url || null);
+
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const baseHost = (process.env.NEXT_PUBLIC_API_URL || 'http://63.141.242.203:6001/api').replace(/\/api$/, '');
+    return `${baseHost}/${path.replace(/^\/?/, '')}`;
+  };
+
+  const [preview, setPreview] = React.useState(initialData?.image_url || getImageUrl(initialData?.image_path) || null);
   const [fileName, setFileName] = React.useState('');
 
   const {
@@ -18,14 +26,16 @@ export function ImageForm({ albums = [], initialData, onSubmit, onCancel }) {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      album_id: initialData?.album_id || '',
-      title: initialData?.title || '',
+      album_id: initialData?.album_id ? String(initialData.album_id) : '',
+      title: initialData?.image_title || initialData?.title || '',
       caption: initialData?.caption || '',
       alt_text: initialData?.alt_text || '',
-      display_order: initialData?.display_order || '0',
-      status: initialData?.status || 'Active',
+      display_order: initialData?.display_order !== undefined ? String(initialData.display_order) : '0',
+      status: (initialData?.status === true || initialData?.status === 1 || initialData?.status === 'Active' || initialData?.status === undefined) ? 'Active' : 'Inactive',
     },
   });
+
+  const imageFileRegister = register('image_file', isEdit ? {} : { required: 'Image upload is required' });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
@@ -55,9 +65,10 @@ export function ImageForm({ albums = [], initialData, onSubmit, onCancel }) {
           type="file"
           id="image-file-input"
           accept="image/*"
-          {...register('image_file', isEdit ? {} : { required: 'Image upload is required' })}
+          {...imageFileRegister}
           style={{ display: 'none' }}
           onChange={(e) => {
+            imageFileRegister.onChange(e);
             const file = e.target.files?.[0];
             if (file) {
               setFileName(file.name);

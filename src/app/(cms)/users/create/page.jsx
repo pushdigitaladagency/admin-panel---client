@@ -1,14 +1,17 @@
+'use client';
+
 import React from 'react';
 import { UserForm } from '@/components/users/UserForm';
-
-export const dynamic = 'force-dynamic';
+import { useApi } from '@/lib/useApi';
 
 export default function CreateUserPage() {
-  const mockRoles = [
-    { id: 1, name: 'Superadmin' },
-    { id: 2, name: 'Editor' },
-    { id: 3, name: 'Author' },
-  ];
+  const { data: rolesData, loading: rolesLoading } = useApi('/roles');
+
+  const roles = rolesData || [];
+
+  if (rolesLoading) {
+    return <div className="text-muted" style={{ padding: '24px' }}>Loading...</div>;
+  }
 
   return (
     <>
@@ -18,7 +21,7 @@ export default function CreateUserPage() {
           <p className="page-subtitle">Add a new user to the system</p>
         </div>
       </div>
-      <UserForm availableRoles={mockRoles} />
+      <UserForm availableRoles={roles} />
     </>
   );
 }

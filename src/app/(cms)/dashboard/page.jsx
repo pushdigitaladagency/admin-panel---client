@@ -1,33 +1,22 @@
+'use client';
+
 import Link from 'next/link';
 import { Users, Shield, ShieldAlert, Image as ImageIcon, FileText, Calendar, Mail, FileEdit, ArrowRight } from 'lucide-react';
 import { UserGrowthChart } from '@/components/dashboard/UserGrowthChart';
 import { PostActivityChart } from '@/components/dashboard/PostActivityChart';
-
-
-export const dynamic = 'force-dynamic';
+import { useApi } from '@/lib/useApi';
 
 export default function DashboardPage() {
-  // Mock stats
-  const userCount = 28;
-  const roleCount = 5;
-  const permissionCount = 64;
-  const pressReleaseCount = 312;
-  const newsCount = 45;
-  const eventCount = 12;
-  const galleryCount = 89;
-  const contactCount = 17;
+  const { data: statsData, loading: statsLoading } = useApi('/dashboard/stats');
+  const { data: recentData, loading: recentLoading } = useApi('/dashboard/recent');
 
-  const recentPosts = [
-    { id: 1, title: 'Welcome to the new CMS', status: 'published', post_type: 'post', created_at: '2026-06-20T10:00:00Z', author: 'Admin User' },
-    { id: 2, title: 'Summer Collection Preview', status: 'draft', post_type: 'post', created_at: '2026-06-21T14:30:00Z', author: 'Editor Jane' },
-    { id: 3, title: 'About Us page updated', status: 'published', post_type: 'page', created_at: '2026-06-22T09:15:00Z', author: 'Admin User' },
-    { id: 4, title: 'Annual Conference 2026', status: 'pending', post_type: 'event', created_at: '2026-06-22T11:45:00Z', author: 'Event Manager' },
-  ];
+  const s = statsData || {};
+  const recentPosts = recentData || [];
 
   const stats = [
     {
       label: 'Users',
-      value: userCount,
+      value: s.users ?? '—',
       icon: <Users size={22} />,
       color: '#3b82f6',
       bg: '#3b82f6',
@@ -35,7 +24,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Roles',
-      value: roleCount,
+      value: s.roles ?? '—',
       icon: <Shield size={22} />,
       color: '#10b981',
       bg: '#10b981',
@@ -43,7 +32,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Permissions',
-      value: permissionCount,
+      value: s.permissions ?? '—',
       icon: <ShieldAlert size={22} />,
       color: '#f43f5e',
       bg: '#f43f5e',
@@ -51,7 +40,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Press Releases',
-      value: pressReleaseCount,
+      value: s.pressReleases ?? '—',
       icon: <FileEdit size={22} />,
       color: '#8b5cf6',
       bg: '#8b5cf6',
@@ -59,7 +48,7 @@ export default function DashboardPage() {
     },
     {
       label: 'News',
-      value: newsCount,
+      value: s.news ?? '—',
       icon: <FileText size={22} />,
       color: '#f59e0b',
       bg: '#f59e0b',
@@ -67,7 +56,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Events',
-      value: eventCount,
+      value: s.events ?? '—',
       icon: <Calendar size={22} />,
       color: '#06b6d4',
       bg: '#06b6d4',
@@ -75,19 +64,19 @@ export default function DashboardPage() {
     },
     {
       label: 'Gallery',
-      value: galleryCount,
+      value: s.galleryAlbums ?? '—',
       icon: <ImageIcon size={22} />,
       color: '#ec4899',
       bg: '#ec4899',
       href: '/media',
     },
     {
-      label: 'Contact Us',
-      value: contactCount,
+      label: 'Enquiries',
+      value: s.enquiries ?? '—',
       icon: <Mail size={22} />,
       color: '#6366f1',
       bg: '#6366f1',
-      href: '/posts/contact',
+      href: '/enquiry',
     },
   ];
 
@@ -131,8 +120,8 @@ export default function DashboardPage() {
                   justifyContent: 'center',
                   color: '#fff',
                   flexShrink: 0,
-                  boxShadow: `0 8px 16px -4px ${stat.color}60`, // colored drop shadow
-                  aspectRatio: '1 / 1', // enforce square shape
+                  boxShadow: `0 8px 16px -4px ${stat.color}60`,
+                  aspectRatio: '1 / 1',
                 }}
               >
                 {stat.icon}
@@ -144,7 +133,7 @@ export default function DashboardPage() {
                   {stat.label}
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text)', lineHeight: 1 }}>
-                  {stat.value}
+                  {statsLoading ? '…' : stat.value}
                 </div>
               </div>
             </div>
@@ -161,7 +150,7 @@ export default function DashboardPage() {
                 style={{
                   fontSize: '0.8125rem',
                   fontWeight: 500,
-                  color: '#6366f1', // purple-ish link color like the screenshot
+                  color: '#6366f1',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
@@ -176,9 +165,9 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <UserGrowthChart />
+      <UserGrowthChart data={s.userGrowth} loading={statsLoading} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px', alignItems: 'stretch' }} className="mb-6">
-        <PostActivityChart />
+        <PostActivityChart data={s.postActivity} loading={statsLoading} />
 
         <div className="card" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', height: '100%', display: 'flex', flexDirection: 'column' }}>
           <div className="card-header" style={{ padding: '24px 24px 16px 24px', borderBottom: 'none' }}>
@@ -189,48 +178,54 @@ export default function DashboardPage() {
               <thead>
                 <tr>
                   <th>Title</th>
-                  <th>Author</th>
                   <th>Type</th>
                   <th>Status</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody>
-                {recentPosts.length === 0 ? (
+                {recentLoading ? (
                   <tr>
-                    <td colSpan={5} className="data-table-empty">
+                    <td colSpan={4} className="data-table-empty">
+                      Loading…
+                    </td>
+                  </tr>
+                ) : recentPosts.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="data-table-empty">
                       No posts yet
                     </td>
                   </tr>
                 ) : (
                   recentPosts.map((post) => (
-                    <tr key={post.id}>
+                    <tr key={`${post.post_type}-${post.id}`}>
                       <td style={{ fontWeight: 500, color: 'var(--color-text)' }}>
                         {post.title}
                       </td>
-                      <td>{post.author}</td>
                       <td>
                         <span className="badge badge-info">{post.post_type}</span>
                       </td>
                       <td>
                         <span
                           className={`badge ${
-                            post.status === 'published'
+                            (post.status || '').toLowerCase() === 'published'
                               ? 'badge-success'
-                              : post.status === 'draft'
+                              : (post.status || '').toLowerCase() === 'draft'
                               ? 'badge-warning'
                               : 'badge-primary'
                           }`}
                         >
-                          {post.status}
+                          {post.status || 'Draft'}
                         </span>
                       </td>
                       <td>
-                        {new Date(post.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
+                        {post.created_at
+                          ? new Date(post.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })
+                          : '—'}
                       </td>
                     </tr>
                   ))

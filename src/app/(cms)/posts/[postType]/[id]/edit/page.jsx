@@ -3,6 +3,14 @@
 import React from 'react';
 import { PostForm } from '@/components/posts/PostForm';
 import { notFound, useParams } from 'next/navigation';
+import { useApi } from '@/lib/useApi';
+
+// Map frontend postType slug to API path
+const POST_API = {
+  news: '/news',
+  event: '/events',
+  'press-release': '/press-releases',
+};
 
 export default function EditPostPage() {
   const params = useParams();
@@ -11,74 +19,83 @@ export default function EditPostPage() {
   
   if (isNaN(postId)) return notFound();
 
-  // Mock data
-  let initialData = {
-    id: postId,
-    title: `Mock ${postType} Title`,
-    slug: `mock-${postType}-title`,
-    content: 'This is the mock content for the post.',
-    excerpt: 'This is a mock excerpt.',
-    status: 'published',
-    category: '',
-  };
+  const apiPath = POST_API[postType] || '/press-releases';
+  const { data, loading, error } = useApi(`${apiPath}/${postId}`);
 
+  if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
+  if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load record'}</p>;
+  if (!data) return notFound();
+
+  // Map backend fields to the form's expected field names
+  let initialData;
   if (postType === 'event') {
     initialData = {
-      id: postId,
-      title: 'Global Developer Summit 2026',
-      slug: 'global-developer-summit-2026',
-      category: 'Conferences',
-      excerpt: 'The premier conference for developers, engineers, and tech leaders.',
-      content: '<p>Join us at the <strong>Global Developer Summit 2026</strong> where we will cover cutting-edge technologies, cloud infrastructure, AI integration, and the future of web standards.</p><ul><li>Hands-on Workshops</li><li>Keynote Speeches</li><li>Networking Sessions</li></ul>',
-      featured_image: '',
-      event_start_date: '2026-08-15',
-      event_end_date: '2026-08-17',
-      reg_start_date: '2026-06-01',
-      reg_end_date: '2026-08-01',
-      venue: 'Metropolitan Convention Hall',
-      address: '789 Innovation Parkway, San Francisco, CA',
-      map_url: 'https://maps.google.com/?q=metropolitan+convention+hall',
-      organizer_name: 'DevTech Alliance',
-      organizer_email: 'summit@devtechalliance.org',
-      organizer_contact: '+1-800-555-0144',
-      registration_link: 'https://devtechalliance.org/summit2026',
-      max_participants: '500',
-      event_status: 'Upcoming',
-      status: 'published',
+      id: data.id,
+      title: data.title || '',
+      slug: data.slug || '',
+      category: data.event_type_id ? String(data.event_type_id) : '',
+      excerpt: data.short_description || '',
+      content: data.description || '',
+      featured_image: data.banner_image || '',
+      event_start_date: data.event_start_date ? data.event_start_date.split('T')[0] : '',
+      event_end_date: data.event_end_date ? data.event_end_date.split('T')[0] : '',
+      reg_start_date: data.registration_start_date ? data.registration_start_date.split('T')[0] : '',
+      reg_end_date: data.registration_end_date ? data.registration_end_date.split('T')[0] : '',
+      venue: data.venue || '',
+      address: data.address || '',
+      map_url: data.google_map_url || '',
+      organizer_name: data.organizer_name || '',
+      organizer_email: data.organizer_email || '',
+      organizer_contact: data.organizer_contact || '',
+      registration_link: data.registration_link || '',
+      max_participants: data.maximum_participants ? String(data.maximum_participants) : '',
+      event_status: data.event_status || 'Upcoming',
+      status: (data.publish_status || 'Draft').toLowerCase() === 'published' ? 'published' : 'draft',
+      seo_title: data.seo_title || '',
+      seo_keywords: data.seo_keywords || '',
+      seo_description: data.seo_description || '',
+      tags: data.tags || '',
+      featured: data.featured ? 'yes' : 'no',
     };
   } else if (postType === 'news') {
     initialData = {
-      id: postId,
-      title: 'Tech Breakthrough of the Year',
-      slug: 'tech-breakthrough-of-the-year',
-      category: 'National News',
-      excerpt: 'Scientists discover a new superconducting material operating at room temperature.',
-      content: '<p>Researchers have announced a breakthrough in material science with the discovery of a stable, room-temperature superconductor. This has massive implications for power transmission, quantum computing, and transportation.</p>',
-      news_source: 'Science Daily',
-      author: 'Dr. Evelyn Carter',
-      publish_date: '2026-06-21',
-      featured_image: '',
-      gallery_images: '',
-      tags: 'science, physics, tech',
-      featured: 'yes',
-      status: 'published',
+      id: data.id,
+      title: data.title || '',
+      slug: data.slug || '',
+      category: data.category_id ? String(data.category_id) : '',
+      excerpt: data.summary || '',
+      content: data.full_content || '',
+      featured_image: data.featured_image || '',
+      news_source: data.news_source || '',
+      author: data.author || '',
+      publish_date: data.publish_date ? data.publish_date.split('T')[0] : '',
+      gallery_images: data.gallery ? data.gallery.map(img => img.image_path).join(',') : '',
+      tags: data.tags || '',
+      featured: data.featured ? 'yes' : 'no',
+      status: (data.status || 'Draft').toLowerCase() === 'published' ? 'published' : 'draft',
+      seo_title: data.seo_title || '',
+      seo_keywords: data.seo_keywords || '',
+      seo_description: data.seo_description || '',
     };
   } else {
     // press release
     initialData = {
-      id: postId,
-      title: 'Acme Corp Announces Strategic Partnership',
-      slug: 'acme-corp-announces-strategic-partnership',
-      category: 'Press Releases',
-      excerpt: 'Acme Corp is proud to partner with Beta Corp to deliver next-generation AI platforms.',
-      content: '<p>Acme Corp, a leader in cloud services, today announced a strategic partnership with Beta Corp, pioneers in artificial intelligence models. Together, the companies plan to launch an integrated AI suite in Q4 2026.</p>',
-      publish_date: '2026-06-20',
-      expiry_date: '2026-12-31',
-      featured_image: '',
-      attachment: '',
-      tags: 'partnership, ai, press',
-      featured: 'no',
-      status: 'published',
+      id: data.id,
+      title: data.title || '',
+      slug: data.slug || '',
+      category: data.category_id ? String(data.category_id) : '',
+      excerpt: data.short_description || '',
+      content: data.detailed_content || '',
+      featured_image: data.featured_image || '',
+      publish_date: data.publish_date ? data.publish_date.split('T')[0] : '',
+      expiry_date: data.expiry_date ? data.expiry_date.split('T')[0] : '',
+      attachment: data.attachment || '',
+      tags: data.tags || '',
+      featured: data.featured ? 'yes' : 'no',
+      status: (data.status || 'Draft').toLowerCase() === 'published' ? 'published' : 'draft',
+      seo_title: data.seo_title || '',
+      seo_keywords: data.seo_keywords || '',
+      seo_description: data.seo_description || '',
     };
   }
 

@@ -3,35 +3,60 @@
 import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
+import { useApi } from '@/lib/useApi';
+import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/context/ConfirmContext';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function RoleListPage() {
-  // Mock data
-  const roles = [
-    { id: 1, name: 'Superadmin', code: '10001', description: 'System administrator with full access.', status: 'active', permissions: Array(25).fill(1) },
-    { id: 2, name: 'Editor', code: '10002', description: 'Can edit and publish content.', status: 'active', permissions: Array(10).fill(1) },
-    { id: 3, name: 'Author', code: '10003', description: 'Can write and submit content.', status: 'active', permissions: Array(5).fill(1) },
-    { id: 4, name: 'Subscriber', code: '10004', description: 'Can read public content.', status: 'inactive', permissions: Array(1).fill(1) },
-  ];
+  const { data, loading, error, reload } = useApi('/roles');
+  const roles = data || [];
+  const { addToast } = useToast();
+  const { confirmDelete } = useConfirm();
+
+  const handleDelete = (id) => {
+    confirmDelete('Are you sure you want to delete this role?', async () => {
+      try {
+        await api.del(`/roles/${id}`);
+        addToast('Role deleted successfully', 'success');
+        reload();
+      } catch (err) {
+        addToast(err.message || 'Delete failed', 'danger');
+      }
+    });
+  };
 
   const columns = [
     { header: 'Role Name', accessorKey: 'name' },
     { header: 'Role Code', accessorKey: 'code' },
     { header: 'Description', accessorKey: 'description' },
     {
+      header: 'Users',
+      render: (row) => <span className="badge badge-info">{row.userCount ?? 0}</span>
+    },
+    {
       header: 'Status',
-      render: (row) => (
-        <span className={`badge badge-${row.status === 'active' ? 'success' : row.status === 'pending' ? 'warning' : row.status === 'inactive' ? 'danger' : 'secondary'}`}>
-          {row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : 'Active'}
-        </span>
-      )
+      render: (row) => {
+        const raw = row.status;
+        const s = typeof raw === 'boolean' ? (raw ? 'active' : 'inactive') : (raw || 'active');
+        return (
+          <span className={`badge badge-${s === 'active' ? 'success' : s === 'pending' ? 'warning' : s === 'inactive' ? 'danger' : 'secondary'}`}>
+            {s.charAt(0).toUpperCase() + s.slice(1)}
+          </span>
+        );
+      }
     },
     {
       header: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
-          <Link href={`/roles/${row.id}/edit`} className="btn btn-secondary btn-sm">
-            Edit
+          <Link href={`/roles/${row.id}/edit`} className="btn btn-secondary btn-sm flex items-center gap-1">
+            <Pencil size={14} /> Edit
           </Link>
+          <button className="btn btn-danger btn-sm flex items-center gap-1" onClick={() => handleDelete(row.id)}>
+            <Trash2 size={14} /> Delete
+          </button>
         </div>
       ),
     },
@@ -49,7 +74,13 @@ export default function RoleListPage() {
         </Link>
       </div>
 
-      <DataTable data={roles} columns={columns} searchKey="name" />
+      {error ? (
+        <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load roles'}</p>
+      ) : loading ? (
+        <p className="text-muted" style={{ padding: '16px 0' }}>Loading roles…</p>
+      ) : (
+        <DataTable data={roles} columns={columns} searchKey="name" />
+      )}
     </>
   );
 }

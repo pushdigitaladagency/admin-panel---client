@@ -4,15 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { BarChart3, ChevronDown, SlidersHorizontal } from 'lucide-react';
 
-const userGrowthData = [
-  { name: 'Jan 2026', users: 45 },
-  { name: 'Feb 2026', users: 33 },
-  { name: 'Mar 2026', users: 55 },
-  { name: 'Apr 2026', users: 47 },
-  { name: 'May 2026', users: 52 },
-  { name: 'Jun 2026', users: 35 },
-];
-
 const filterOptions = [
   'Last 6 months',
   'Last 12 months',
@@ -23,7 +14,7 @@ const filterOptions = [
   'This month'
 ];
 
-export function UserGrowthChart() {                                                                                                                                                                                                                                                                                                                         
+export function UserGrowthChart({ data = [], loading = false }) {                                                                                                                                                                                                                                                                                          
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('Last 6 months');
   const [isChartVisible, setIsChartVisible] = useState(true);
@@ -38,6 +29,33 @@ export function UserGrowthChart() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Filter data based on selection
+  let chartData = data || [];
+  if (selectedFilter === 'Last 6 months') {
+    chartData = chartData.slice(-6);
+  } else if (selectedFilter === 'Last 12 months') {
+    chartData = chartData.slice(-12);
+  } else if (selectedFilter === 'This year') {
+    const currentYear = new Date().getFullYear().toString();
+    chartData = chartData.filter(d => d.key && d.key.startsWith(currentYear));
+  } else if (selectedFilter === 'Last year') {
+    const lastYear = (new Date().getFullYear() - 1).toString();
+    chartData = chartData.filter(d => d.key && d.key.startsWith(lastYear));
+  } else if (selectedFilter === 'Last 30 days' || selectedFilter === 'This month') {
+    chartData = chartData.slice(-1);
+  } else if (selectedFilter === 'Last 7 days') {
+    chartData = chartData.slice(-1);
+  }
+
+  // Ensure we have at least 2 points to draw a line in recharts
+  if (chartData.length === 1) {
+    // Duplicate the single point so it draws a flat line
+    chartData = [{ ...chartData[0], name: `Start ${chartData[0].name}` }, chartData[0]];
+  }
+
+  const maxVal = chartData.reduce((max, item) => Math.max(max, item.users || 0), 0);
+  const chartDomain = [0, maxVal > 0 ? Math.ceil(maxVal * 1.1) : 10];
 
   return (
     <div className="card mb-6" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', position: 'relative' }}>
@@ -67,7 +85,7 @@ export function UserGrowthChart() {
           >
             <ChevronDown size={20} style={{ transform: isChartVisible ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
           </button>
-
+ 
           {/* Dropdown Menu */}
           {isFilterOpen && (
             <div style={{
@@ -105,7 +123,7 @@ export function UserGrowthChart() {
                       transition: 'background 0.2s'
                     }}
                     onMouseEnter={(e) => {
-                      if (!isActive) e.currentTarget.style.background = '#f8fafc';
+                      if (!isActive) e.currentTarget.style.background = 'var(--color-surface-hover)';
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) e.currentTarget.style.background = 'var(--color-bg-alt)';
@@ -119,11 +137,29 @@ export function UserGrowthChart() {
           )}
         </div>
       </div>
-
+ 
       {isChartVisible && (
-        <div style={{ padding: '24px', width: '100%', height: 350 }}>
+        <div style={{ padding: '24px', width: '100%', height: 350, position: 'relative' }}>
+          {loading && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.05)',
+              backdropFilter: 'blur(2px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 5,
+              borderRadius: '0 0 12px 12px'
+            }}>
+              <span style={{ color: '#6366f1', fontWeight: 600 }}>Loading chart data...</span>
+            </div>
+          )}
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={userGrowthData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
@@ -141,11 +177,11 @@ export function UserGrowthChart() {
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: 'var(--color-text)', fontSize: 13, fontWeight: 500 }}
-                tickCount={12}
-                domain={[0, 55]}
+                tickCount={6}
+                domain={chartDomain}
               />
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
               />
               <Area 
                 type="monotone" 

@@ -4,18 +4,20 @@ import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Label } from 'recharts';
 import { BarChart3, ChevronDown } from 'lucide-react';
 
-const postActivityData = [
-  { name: 'Jan 2026', news: 2, events: 1, pressReleases: 2 },
-  { name: 'Feb 2026', news: 1, events: 0, pressReleases: 1 },
-  { name: 'Mar 2026', news: 0, events: 1, pressReleases: 1 },
-  { name: 'Apr 2026', news: 0, events: 0, pressReleases: 1 },
-  { name: 'May 2026', news: 1, events: 0, pressReleases: 0 },
-  { name: 'Jun 2026', news: 3, events: 1, pressReleases: 4 },
-];
-
-export function PostActivityChart() {
+export function PostActivityChart({ data = [], loading = false }) {
   const [isChartVisible, setIsChartVisible] = useState(true);
   const [hasBorder, setHasBorder] = useState(true);
+
+  const chartData = (data || []).slice(-6);
+
+  const maxVal = chartData.reduce((max, item) => {
+    return Math.max(max, item.news || 0, item.events || 0, item.pressReleases || 0);
+  }, 0);
+  
+  const yMax = maxVal > 0 ? Math.ceil(maxVal * 1.1) : 10;
+  const tickStep = Math.max(1, Math.ceil(yMax / 5));
+  const yTicks = Array.from({ length: 6 }, (_, i) => i * tickStep);
+  const yDomain = [0, yTicks[5]];
 
   return (
     <div 
@@ -73,9 +75,27 @@ export function PostActivityChart() {
 
       {/* Chart container */}
       {isChartVisible && (
-        <div style={{ padding: '24px 24px 24px 12px', width: '100%', height: 350 }}>
+        <div style={{ padding: '24px 24px 24px 12px', width: '100%', height: 350, position: 'relative' }}>
+          {loading && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.05)',
+              backdropFilter: 'blur(2px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 5,
+              borderRadius: '0 0 12px 12px'
+            }}>
+              <span style={{ color: '#22c55e', fontWeight: 600 }}>Loading chart data...</span>
+            </div>
+          )}
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={postActivityData} margin={{ top: 10, right: 10, left: 15, bottom: 10 }} style={{ outline: 'none' }}>
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 15, bottom: 10 }} style={{ outline: 'none' }}>
               {/* Grid removed */}
               
               <XAxis 
@@ -90,8 +110,8 @@ export function PostActivityChart() {
                 axisLine={false} 
                 tickLine={false} 
                 tick={{ fill: 'var(--color-text-muted)', fontSize: 13, fontWeight: 500 }}
-                domain={[0, 10]}
-                ticks={[0, 2, 4, 6, 8, 10]}
+                domain={yDomain}
+                ticks={yTicks}
               >
                 <Label 
                   value="Number of Posts" 
@@ -104,7 +124,7 @@ export function PostActivityChart() {
               
               <Tooltip 
                 cursor={false}
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', background: 'var(--color-bg-alt)', color: 'var(--color-text)' }}
                 formatter={(value, name) => {
                   const displayName = 
                     name === 'news' ? 'News' :

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import DataTable from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
@@ -8,13 +9,16 @@ import { useConfirm } from '@/context/ConfirmContext';
 import { AlbumForm } from '@/components/media/AlbumForm';
 import { ImageForm } from '@/components/media/ImageForm';
 import { VideoForm } from '@/components/media/VideoForm';
+import { useApi } from '@/lib/useApi';
+import { api, BASE_URL, uploadFile } from '@/lib/api';
 import { 
   FolderOpen, 
   Image as ImageIcon, 
   Video, 
   Plus, 
   Pencil, 
-  Trash2 
+  Trash2,
+  FolderTree
 } from 'lucide-react';
 
 export default function MediaPage() {
@@ -24,26 +28,34 @@ export default function MediaPage() {
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formType, setFormType] = useState(null); // 'album', 'image', 'video'
+  const [formType, setFormType] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
 
-  // States for list items
-  const [albums, setAlbums] = useState([
-    { id: 1, title: 'Global Developer Summit 2026 Photos', category: 'Conferences', description: 'Photos from the main developer stage and workshops.', cover_image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=120&auto=format&fit=crop&q=60', event_ref: 'Global Developer Summit 2026', status: 'Active', created_at: '2026-06-10T09:00:00Z' },
-    { id: 2, title: 'Next.js 16 Launch Event', category: 'Webinars', description: 'Screenshots and promo assets for the virtual launch event.', cover_image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=120&auto=format&fit=crop&q=60', event_ref: 'Webinar: Intro to Next.js 16', status: 'Active', created_at: '2026-06-15T14:30:00Z' },
-    { id: 3, title: 'Tailwind CSS Workshop Gallery', category: 'Workshops', description: 'Group photos and presentation slides.', cover_image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=120&auto=format&fit=crop&q=60', event_ref: 'Tailwind CSS Workshop', status: 'Inactive', created_at: '2026-06-08T10:00:00Z' },
-  ]);
+  // Fetch from API
+  const { data: albumsData, loading: albumsLoading, reload: reloadAlbums } = useApi('/gallery-albums');
+  const { data: videosData, loading: videosLoading, reload: reloadVideos } = useApi('/gallery-videos');
+  const { data: categoriesData } = useApi('/gallery-categories');
+  const { data: eventsData } = useApi('/events');
 
-  const [images, setImages] = useState([
-    { id: 1, album_id: 1, title: 'Keynote Speaker on Stage', caption: 'Opening keynote talking about AI standards.', alt_text: 'Speaker gesturing on stage with slides', display_order: 1, status: 'Active', image_url: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=120&auto=format&fit=crop&q=60' },
-    { id: 2, album_id: 1, title: 'Q&A Panel Session', caption: 'Panel of 4 experts taking audience questions.', alt_text: 'Four experts seated on high chairs holding microphones', display_order: 2, status: 'Active', image_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=120&auto=format&fit=crop&q=60' },
-    { id: 3, album_id: 2, title: 'Demo Interface Preview', caption: 'A screenshot showing the new Turbopack compilation times.', alt_text: 'IDE editor and terminal showing build outputs', display_order: 1, status: 'Active', image_url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=120&auto=format&fit=crop&q=60' },
-  ]);
+  const albums = albumsData || [];
+  const videos = videosData || [];
 
-  const [videos, setVideos] = useState([
-    { id: 1, title: 'Global Developer Summit 2026 - Highlight Reel', video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', thumbnail: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=120&auto=format&fit=crop&q=60', description: 'A recap of the best moments from this year\'s summit.', status: 'Active' },
-    { id: 2, title: 'Next.js 16 Features Breakdown', video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=120&auto=format&fit=crop&q=60', description: 'Detailed visual walk-through of state features and layout shifts.', status: 'Active' },
-  ]);
+  // Flatten images from albums for the images tab
+  const images = albums.reduce((acc, album) => {
+    const isAlbumActive = album.status === true || album.status === 1 || String(album.status).toLowerCase() === 'active';
+    if (album.images && album.images.length) {
+      const mappedImages = album.images.map((img) => {
+        const isImageActive = img.status === true || img.status === 1 || String(img.status).toLowerCase() === 'active';
+        return {
+          ...img,
+          album_title: album.title,
+          status: (isAlbumActive && isImageActive) ? 'Active' : 'Inactive'
+        };
+      });
+      return [...acc, ...mappedImages];
+    }
+    return acc;
+  }, []);
 
   // Handlers
   const handleOpenCreate = (type) => {
@@ -64,132 +76,176 @@ export default function MediaPage() {
     setEditingItem(null);
   };
 
-  // Submit operations
-  const handleAlbumSubmit = async (data) => {
-    await new Promise((res) => setTimeout(res, 500));
-    const coverUrl = data.cover_image?.[0] 
-      ? URL.createObjectURL(data.cover_image[0])
-      : editingItem?.cover_image || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=120&auto=format&fit=crop&q=60';
+  // --- Submit operations (real API calls) ---
 
-    if (editingItem) {
-      setAlbums((prev) =>
-        prev.map((a) =>
-          a.id === editingItem.id
-            ? { ...a, ...data, cover_image: coverUrl }
-            : a
-        )
-      );
-      addToast('Gallery album updated successfully (mock)', 'success');
-    } else {
-      const newAlbum = {
-        id: Date.now(),
-        ...data,
-        cover_image: coverUrl,
-        created_at: new Date().toISOString(),
+  const handleAlbumSubmit = async (data) => {
+    try {
+      let coverImagePath = editingItem?.cover_image || '';
+      if (data.cover_image?.[0] instanceof File) {
+        const uploaded = await uploadFile(data.cover_image[0]);
+        coverImagePath = uploaded?.path || uploaded?.filename || '';
+      }
+
+      const payload = {
+        title: data.title,
+        category_id: data.category_id ? Number(data.category_id) : null,
+        description: data.description,
+        cover_image: coverImagePath,
+        event_id: data.event_id ? Number(data.event_id) : null,
+        status: data.status === 'Active' || data.status === true,
       };
-      setAlbums((prev) => [newAlbum, ...prev]);
-      addToast('Gallery album created successfully (mock)', 'success');
+
+      if (editingItem) {
+        await api.put(`/gallery-albums/${editingItem.id}`, payload);
+        addToast('Gallery album updated successfully', 'success');
+      } else {
+        await api.post('/gallery-albums', payload);
+        addToast('Gallery album created successfully', 'success');
+      }
+      reloadAlbums();
+      handleCloseModal();
+    } catch (err) {
+      addToast(err.message || 'Operation failed', 'danger');
     }
-    handleCloseModal();
   };
 
   const handleImageSubmit = async (data) => {
-    await new Promise((res) => setTimeout(res, 500));
-    const imgUrl = data.image_file?.[0]
-      ? URL.createObjectURL(data.image_file[0])
-      : editingItem?.image_url || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=120&auto=format&fit=crop&q=60';
+    try {
+      let imagePath = editingItem?.image_path || '';
+      if (data.image_file?.[0] instanceof File) {
+        const uploaded = await uploadFile(data.image_file[0]);
+        imagePath = uploaded?.path || uploaded?.filename || '';
+      }
 
-    if (editingItem) {
-      setImages((prev) =>
-        prev.map((img) =>
-          img.id === editingItem.id
-            ? { ...img, ...data, image_url: imgUrl }
-            : img
-        )
-      );
-      addToast('Gallery image updated successfully (mock)', 'success');
-    } else {
-      const newImage = {
-        id: Date.now(),
-        ...data,
-        image_url: imgUrl,
-      };
-      setImages((prev) => [newImage, ...prev]);
-      addToast('Gallery image uploaded successfully (mock)', 'success');
+      if (editingItem) {
+        await api.put(`/gallery-images/${editingItem.id}`, {
+          image_path: imagePath,
+          image_title: data.title,
+          caption: data.caption,
+          alt_text: data.alt_text,
+          display_order: data.display_order ? Number(data.display_order) : 0,
+          status: data.status === 'Active' || data.status === true,
+        });
+        addToast('Gallery image updated successfully', 'success');
+      } else {
+        const albumId = data.album_id || (albums[0]?.id);
+        if (!albumId) {
+          addToast('Please create an album first', 'danger');
+          return;
+        }
+        await api.post(`/gallery-albums/${albumId}/images`, {
+          image_path: imagePath,
+          image_title: data.title,
+          caption: data.caption,
+          alt_text: data.alt_text,
+          display_order: data.display_order ? Number(data.display_order) : 0,
+        });
+        addToast('Gallery image uploaded successfully', 'success');
+      }
+      reloadAlbums();
+      handleCloseModal();
+    } catch (err) {
+      addToast(err.message || 'Operation failed', 'danger');
     }
-    handleCloseModal();
   };
 
   const handleVideoSubmit = async (data) => {
-    await new Promise((res) => setTimeout(res, 500));
-    const thumbUrl = data.thumbnail_file?.[0]
-      ? URL.createObjectURL(data.thumbnail_file[0])
-      : editingItem?.thumbnail || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=120&auto=format&fit=crop&q=60';
+    try {
+      let thumbnailPath = editingItem?.thumbnail_image || '';
+      if (data.thumbnail_file?.[0] instanceof File) {
+        const uploaded = await uploadFile(data.thumbnail_file[0]);
+        thumbnailPath = uploaded?.path || uploaded?.filename || '';
+      }
 
-    if (editingItem) {
-      setVideos((prev) =>
-        prev.map((v) =>
-          v.id === editingItem.id
-            ? { ...v, ...data, thumbnail: thumbUrl }
-            : v
-        )
-      );
-      addToast('Gallery video updated successfully (mock)', 'success');
-    } else {
-      const newVideo = {
-        id: Date.now(),
-        ...data,
-        thumbnail: thumbUrl,
+      const payload = {
+        title: data.title,
+        video_url: data.video_url,
+        thumbnail_image: thumbnailPath,
+        description: data.description,
+        status: data.status === 'Active' || data.status === true,
       };
-      setVideos((prev) => [newVideo, ...prev]);
-      addToast('Gallery video added successfully (mock)', 'success');
+
+      if (editingItem) {
+        await api.put(`/gallery-videos/${editingItem.id}`, payload);
+        addToast('Gallery video updated successfully', 'success');
+      } else {
+        await api.post('/gallery-videos', payload);
+        addToast('Gallery video added successfully', 'success');
+      }
+      reloadVideos();
+      handleCloseModal();
+    } catch (err) {
+      addToast(err.message || 'Operation failed', 'danger');
     }
-    handleCloseModal();
   };
 
-  const handleDeleteAlbum = async (id) => {
+  const handleDeleteAlbum = (id) => {
     confirmDelete('Are you sure you want to delete this album? This will not delete the images inside it.', async () => {
-      await new Promise((res) => setTimeout(res, 300));
-      setAlbums((prev) => prev.filter((a) => a.id !== id));
-      addToast('Album deleted successfully (mock)', 'success');
+      try {
+        await api.del(`/gallery-albums/${id}`);
+        addToast('Album deleted successfully', 'success');
+        reloadAlbums();
+      } catch (err) {
+        addToast(err.message || 'Delete failed', 'danger');
+      }
     });
   };
 
-  const handleDeleteImage = async (id) => {
+  const handleDeleteImage = (id) => {
     confirmDelete('Are you sure you want to delete this image?', async () => {
-      await new Promise((res) => setTimeout(res, 300));
-      setImages((prev) => prev.filter((img) => img.id !== id));
-      addToast('Image deleted successfully (mock)', 'success');
+      try {
+        await api.del(`/gallery-images/${id}`);
+        addToast('Image deleted successfully', 'success');
+        reloadAlbums();
+      } catch (err) {
+        addToast(err.message || 'Delete failed', 'danger');
+      }
     });
   };
 
-  const handleDeleteVideo = async (id) => {
+  const handleDeleteVideo = (id) => {
     confirmDelete('Are you sure you want to delete this video?', async () => {
-      await new Promise((res) => setTimeout(res, 300));
-      setVideos((prev) => prev.filter((v) => v.id !== id));
-      addToast('Video deleted successfully (mock)', 'success');
+      try {
+        await api.del(`/gallery-videos/${id}`);
+        addToast('Video deleted successfully', 'success');
+        reloadVideos();
+      } catch (err) {
+        addToast(err.message || 'Delete failed', 'danger');
+      }
     });
   };
 
-  const handleBulkDeleteAlbums = async (ids) => {
-    confirmDelete(`Are you sure you want to delete ${ids.length} albums?`, () => {
-      setAlbums((prev) => prev.filter((a) => !ids.includes(a.id)));
-      addToast(`${ids.length} albums deleted (mock)`, 'success');
+  const handleBulkDeleteAlbums = (ids) => {
+    confirmDelete(`Are you sure you want to delete ${ids.length} albums?`, async () => {
+      await Promise.allSettled(ids.map((id) => api.del(`/gallery-albums/${id}`)));
+      addToast(`${ids.length} albums deleted`, 'success');
+      reloadAlbums();
     });
   };
 
-  const handleBulkDeleteImages = async (ids) => {
-    confirmDelete(`Are you sure you want to delete ${ids.length} images?`, () => {
-      setImages((prev) => prev.filter((img) => !ids.includes(img.id)));
-      addToast(`${ids.length} images deleted (mock)`, 'success');
+  const handleBulkDeleteImages = (ids) => {
+    confirmDelete(`Are you sure you want to delete ${ids.length} images?`, async () => {
+      await Promise.allSettled(ids.map((id) => api.del(`/gallery-images/${id}`)));
+      addToast(`${ids.length} images deleted`, 'success');
+      reloadAlbums();
     });
   };
 
-  const handleBulkDeleteVideos = async (ids) => {
-    confirmDelete(`Are you sure you want to delete ${ids.length} videos?`, () => {
-      setVideos((prev) => prev.filter((v) => !ids.includes(v.id)));
-      addToast(`${ids.length} videos deleted (mock)`, 'success');
+  const handleBulkDeleteVideos = (ids) => {
+    confirmDelete(`Are you sure you want to delete ${ids.length} videos?`, async () => {
+      await Promise.allSettled(ids.map((id) => api.del(`/gallery-videos/${id}`)));
+      addToast(`${ids.length} videos deleted`, 'success');
+      reloadVideos();
     });
+  };
+
+  // Helper to resolve image paths to full URL
+  const resolveImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    // Build URL from the API base (strip /api suffix)
+    const baseHost = BASE_URL.replace(/\/api$/, '');
+    return `${baseHost}/${path.replace(/^\/?/, '')}`;
   };
 
   // Columns Configuration
@@ -198,23 +254,22 @@ export default function MediaPage() {
       header: 'Cover Image',
       render: (row) => (
         <img
-          src={row.cover_image || 'https://placehold.co/120x80'}
+          src={resolveImageUrl(row.cover_image) || 'https://placehold.co/120x80'}
           alt={row.title}
-          className="w-14 h-10 object-cover rounded shadow-sm border border-border"
-          style={{ borderColor: 'var(--color-border)' }}
+          style={{ width: '56px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
         />
       ),
     },
     { header: 'Album Title', accessorKey: 'title' },
-    { header: 'Album Category', accessorKey: 'category' },
-    { header: 'Event Reference', render: (row) => row.event_ref || <span className="text-muted text-xs">—</span> },
+    { header: 'Category', render: (row) => row.category?.name || '—' },
+    { header: 'Event', render: (row) => row.event?.title || <span className="text-muted text-xs">—</span> },
+    { header: 'Images', render: (row) => row.images?.length ?? 0 },
     {
       header: 'Status',
-      render: (row) => (
-        <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-danger'}`}>
-          {row.status}
-        </span>
-      ),
+      render: (row) => {
+        const active = row.status === true || row.status === 1 || row.status === 'Active';
+        return <span className={`badge ${active ? 'badge-success' : 'badge-danger'}`}>{active ? 'Active' : 'Inactive'}</span>;
+      },
     },
     {
       header: 'Actions',
@@ -236,30 +291,25 @@ export default function MediaPage() {
       header: 'Image',
       render: (row) => (
         <img
-          src={row.image_url || 'https://placehold.co/80x80'}
-          alt={row.title || 'Gallery image'}
-          className="w-10 h-10 object-cover rounded border border-border"
-          style={{ borderColor: 'var(--color-border)' }}
+          src={resolveImageUrl(row.image_path) || 'https://placehold.co/80x80'}
+          alt={row.image_title || 'Gallery image'}
+          style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
         />
       ),
     },
     {
       header: 'Album',
-      render: (row) => {
-        const album = albums.find((a) => a.id === Number(row.album_id));
-        return album ? album.title : <span className="text-red-500 font-medium">Unknown Album</span>;
-      },
+      render: (row) => row.album_title || '—',
     },
-    { header: 'Image Title', render: (row) => row.title || <span className="text-muted text-xs">—</span> },
+    { header: 'Image Title', render: (row) => row.image_title || <span className="text-muted text-xs">—</span> },
     { header: 'Caption', render: (row) => row.caption || <span className="text-muted text-xs">—</span> },
     { header: 'Order', accessorKey: 'display_order' },
     {
       header: 'Status',
-      render: (row) => (
-        <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-secondary'}`}>
-          {row.status}
-        </span>
-      ),
+      render: (row) => {
+        const active = row.status === true || row.status === 1 || row.status === 'Active';
+        return <span className={`badge ${active ? 'badge-success' : 'badge-secondary'}`}>{active ? 'Active' : 'Inactive'}</span>;
+      },
     },
     {
       header: 'Actions',
@@ -281,29 +331,33 @@ export default function MediaPage() {
       header: 'Thumbnail',
       render: (row) => (
         <img
-          src={row.thumbnail || 'https://placehold.co/120x80'}
+          src={resolveImageUrl(row.thumbnail_image) || 'https://placehold.co/120x80'}
           alt={row.title}
-          className="w-14 h-10 object-cover rounded shadow-sm border border-border"
-          style={{ borderColor: 'var(--color-border)' }}
+          style={{ width: '56px', height: '40px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
         />
       ),
     },
     { header: 'Video Title', accessorKey: 'title' },
     {
       header: 'YouTube/Vimeo URL',
-      render: (row) => (
-        <a href={row.video_url} target="_blank" rel="noopener noreferrer" className="link font-mono text-xs">
-          {row.video_url}
-        </a>
-      ),
+      render: (row) => {
+        const url = row.video_url || '';
+        const href = url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')
+          ? url
+          : `https://${url}`;
+        return (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="link font-mono text-xs">
+            {url}
+          </a>
+        );
+      },
     },
     {
       header: 'Status',
-      render: (row) => (
-        <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-secondary'}`}>
-          {row.status}
-        </span>
-      ),
+      render: (row) => {
+        const active = row.status === true || row.status === 1 || row.status === 'Active';
+        return <span className={`badge ${active ? 'badge-success' : 'badge-secondary'}`}>{active ? 'Active' : 'Inactive'}</span>;
+      },
     },
     {
       header: 'Actions',
@@ -320,6 +374,8 @@ export default function MediaPage() {
     },
   ];
 
+  const isLoading = albumsLoading || videosLoading;
+
   return (
     <>
       <div className="page-header">
@@ -329,9 +385,14 @@ export default function MediaPage() {
         </div>
         <div className="flex gap-2">
           {activeTab === 'albums' && (
-            <button className="btn btn-primary flex items-center gap-2" onClick={() => handleOpenCreate('album')}>
-              <Plus size={18} /> New Album
-            </button>
+            <div className="flex gap-2">
+              <Link href="/terms/gallery-category" className="btn btn-secondary flex items-center gap-2">
+                <FolderTree size={18} /> Manage Categories
+              </Link>
+              <button className="btn btn-primary flex items-center gap-2" onClick={() => handleOpenCreate('album')}>
+                <Plus size={18} /> New Album
+              </button>
+            </div>
           )}
           {activeTab === 'images' && (
             <button className="btn btn-primary flex items-center gap-2" onClick={() => handleOpenCreate('image')}>
@@ -363,22 +424,25 @@ export default function MediaPage() {
               </tr>
             </thead>
             <tbody>
-              {albums.map((album) => {
-                const albumImageCount = images.filter((img) => img.album_id === album.id).length;
-                return (
+              {isLoading ? (
+                <tr><td colSpan={5} className="data-table-empty">Loading…</td></tr>
+              ) : albums.length === 0 ? (
+                <tr><td colSpan={5} className="data-table-empty">No albums yet</td></tr>
+              ) : (
+                albums.map((album) => (
                   <tr key={album.id}>
                     <td style={{ fontWeight: 500, color: 'var(--color-text)' }}>{album.title}</td>
-                    <td>{album.category}</td>
-                    <td>{albumImageCount}</td>
-                    <td>{new Date(album.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td>{album.category?.name || '—'}</td>
+                    <td>{album.images?.length ?? 0}</td>
+                    <td>{album.created_at ? new Date(album.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
                     <td>
-                      <span className={`badge ${album.status === 'Active' ? 'badge-success' : 'badge-danger'}`}>
-                        {album.status}
+                      <span className={`badge ${album.status ? 'badge-success' : 'badge-danger'}`}>
+                        {album.status ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                   </tr>
-                );
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -420,7 +484,7 @@ export default function MediaPage() {
         <DataTable
           data={images}
           columns={imageColumns}
-          searchKey="title"
+          searchKey="image_title"
           onBulkDelete={handleBulkDeleteImages}
         />
       )}
@@ -456,6 +520,8 @@ export default function MediaPage() {
       >
         {formType === 'album' && (
           <AlbumForm
+            categories={categoriesData || []}
+            events={eventsData || []}
             initialData={editingItem}
             onSubmit={handleAlbumSubmit}
             onCancel={handleCloseModal}

@@ -3,11 +3,12 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 
 export function RoleForm({ initialData }) {
   const isEdit = !!initialData;
@@ -17,18 +18,13 @@ export function RoleForm({ initialData }) {
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef(null);
 
-  const AVAILABLE_PERMISSIONS = [
-    { id: 1, name: 'post.view', label: 'post.view - Can view posts' },
-    { id: 2, name: 'post.create', label: 'post.create - Can create posts' },
-    { id: 3, name: 'post.edit', label: 'post.edit - Can edit posts' },
-    { id: 4, name: 'post.delete', label: 'post.delete - Can delete posts' },
-    { id: 5, name: 'user.view', label: 'user.view - Can view users' },
-    { id: 6, name: 'user.create', label: 'user.create - Can create users' },
-    { id: 7, name: 'user.edit', label: 'user.edit - Can edit users' },
-    { id: 8, name: 'user.delete', label: 'user.delete - Can delete users' },
-    { id: 9, name: 'role.view', label: 'role.view - Can view roles' },
-    { id: 10, name: 'settings.edit', label: 'settings.edit - Can modify settings' },
-  ];
+  // Fetch all permissions from backend
+  const { data: permissionsData } = useApi('/permissions');
+  const AVAILABLE_PERMISSIONS = (permissionsData || []).map((p) => ({
+    id: p.id,
+    name: p.code || p.name,
+    label: `${p.code || p.name} - ${p.description || p.name}`,
+  }));
 
   const {
     register,
@@ -43,7 +39,7 @@ export function RoleForm({ initialData }) {
           name: initialData?.name || '',
           code: initialData?.code || '',
           description: initialData?.description || '',
-          status: initialData?.status || 'active',
+          status: initialData?.status === false || initialData?.status === 'inactive' ? 'inactive' : 'active',
           permissions: initialData?.permissions ?? [],
         }
       : { name: '', code: '', description: '', status: 'active', permissions: [] },
@@ -56,13 +52,11 @@ export function RoleForm({ initialData }) {
     if (roleName !== undefined) {
       const trimmed = roleName.trim();
       if (trimmed) {
-        let hash = 0;
-        for (let i = 0; i < trimmed.length; i++) {
-          hash = (hash << 5) - hash + trimmed.charCodeAt(i);
-          hash = hash & hash;
-        }
-        const numericCode = (Math.abs(hash) % 90000) + 10000;
-        setValue('code', numericCode.toString(), { shouldDirty: true, shouldValidate: true });
+        const slug = trimmed
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        setValue('code', slug, { shouldDirty: true, shouldValidate: true });
       } else {
         setValue('code', '', { shouldDirty: true, shouldValidate: true });
       }
@@ -85,13 +79,29 @@ export function RoleForm({ initialData }) {
 
   const onSubmit = async (data) => {
     try {
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-      
+      const payload = {
+        name: data.name,
+        code: data.code,
+        description: data.description,
+        status: data.status === 'active' || data.status === true,
+      };
+
       if (isEdit) {
-        addToast('Role updated successfully (mock)', 'success');
+        await api.put(`/roles/${initialData.id}`, payload);
+        // Save permission assignments
+        await api.put(`/roles/${initialData.id}/permissions`, {
+          permissionIds: data.permissions,
+        });
+        addToast('Role updated successfully', 'success');
       } else {
-        addToast('Role created successfully (mock)', 'success');
+        const res = await api.post('/roles', payload);
+        // Save permission assignments for the new role
+        if (res.data?.id && data.permissions.length > 0) {
+          await api.put(`/roles/${res.data.id}/permissions`, {
+            permissionIds: data.permissions,
+          });
+        }
+        addToast('Role created successfully', 'success');
       }
       router.push('/roles');
     } catch (err) {

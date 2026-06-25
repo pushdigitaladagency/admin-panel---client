@@ -1,14 +1,19 @@
+'use client';
+
 import React from 'react';
 import { UserForm } from '@/components/users/UserForm';
-
-export const dynamic = 'force-dynamic';
+import { useAuth } from '@/context/AuthContext';
+import { useApi } from '@/lib/useApi';
 
 export default function ProfilePage() {
-  const mockRoles = [
-    { id: 1, name: 'Superadmin' },
-    { id: 2, name: 'Editor' },
-    { id: 3, name: 'Author' },
-  ];
+  const { user, refreshMe } = useAuth();
+  const { data: rolesData, loading: rolesLoading } = useApi('/roles');
+
+  const roles = rolesData || [];
+
+  if (!user || rolesLoading) {
+    return <div className="text-muted" style={{ padding: '24px' }}>Loading profile…</div>;
+  }
 
   return (
     <>
@@ -19,7 +24,14 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <UserForm availableRoles={mockRoles} successPath="/profile" cancelPath="/profile" />
+      <UserForm 
+        initialData={user} 
+        availableRoles={roles} 
+        isProfile={true} 
+        onSuccess={refreshMe}
+        successPath="/profile" 
+        cancelPath="/dashboard" 
+      />
     </>
   );
 }

@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Menu, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { BASE_URL } from '@/lib/api';
+
+const resolveImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const baseHost = BASE_URL.replace(/\/api$/, '');
+  return `${baseHost}/${path.replace(/^\/?/, '')}`;
+};
 
 export default function Navbar({ onMenuToggle }) {
-  const router = useRouter();
+  const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -46,13 +54,18 @@ export default function Navbar({ onMenuToggle }) {
     }
   };
 
-  const userName = 'Admin User';
-  const userRole = 'Superadmin';
-  const initials = 'AU';
+  const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+  const userName = fullName || user?.username || user?.email || 'User';
+  const userRole = user?.role?.name || '—';
+  const initials = (
+    `${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`.trim() ||
+    (user?.username || user?.email || 'U').slice(0, 2)
+  ).toUpperCase();
+
+  const avatarUrl = user?.profile_image || user?.profile_img ? resolveImageUrl(user.profile_image || user.profile_img) : '';
 
   const handleSignOut = () => {
-    // Mock sign out
-    router.push('/login');
+    logout();
   };
 
   return (
@@ -84,7 +97,17 @@ export default function Navbar({ onMenuToggle }) {
             className="user-menu-btn"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
-            <div className="user-avatar">{initials}</div>
+            <div className="user-avatar">
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt="" 
+                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }} 
+                />
+              ) : (
+                initials
+              )}
+            </div>
             <div className="user-info">
               <div className="user-name">{userName}</div>
               <div className="user-role">{userRole}</div>

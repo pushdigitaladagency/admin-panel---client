@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
+import { api } from '@/lib/api';
 
 export function SettingsForm({ initialSettings = {} }) {
   const { addToast } = useToast();
@@ -16,16 +17,13 @@ export function SettingsForm({ initialSettings = {} }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    
     defaultValues: { settings: initialSettings },
   });
 
   const onSubmit = async (data) => {
     try {
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-
-      addToast('Settings saved successfully (mock)', 'success');
+      await api.put('/settings', data.settings);
+      addToast('Settings saved successfully', 'success');
     } catch (err) {
       addToast(err.message || 'Failed to save settings', 'danger');
     }

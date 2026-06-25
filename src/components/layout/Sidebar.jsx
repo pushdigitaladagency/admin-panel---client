@@ -50,8 +50,23 @@ const NAV_SECTIONS = [
           { label: 'Categories', href: '/terms/event-category', icon: <FolderTree size={16} /> },
         ],
       },
-      { label: 'Press Releases', href: '/posts/press-release', icon: <Megaphone size={20} /> },
-      { label: 'Gallery', href: '/media', icon: <ImageIcon size={20} /> },
+      {
+        label: 'Press Releases',
+        icon: <Megaphone size={20} />,
+        children: [
+          { label: 'All Releases', href: '/posts/press-release', icon: <List size={16} /> },
+          { label: 'Add Release', href: '/posts/press-release/create', icon: <Plus size={16} /> },
+          { label: 'Categories', href: '/terms/press-release-category', icon: <FolderTree size={16} /> },
+        ],
+      },
+      {
+        label: 'Gallery',
+        icon: <ImageIcon size={20} />,
+        children: [
+          { label: 'Media Manager', href: '/media', icon: <List size={16} /> },
+          { label: 'Categories', href: '/terms/gallery-category', icon: <FolderTree size={16} /> },
+        ],
+      },
       { label: 'Enquiries', href: '/enquiry', icon: <Mail size={20} /> },
     ],
   },

@@ -8,15 +8,31 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
+import { api, uploadFile, BASE_URL } from '@/lib/api';
 
-export function UserForm({ initialData, availableRoles = [], successPath = '/users', cancelPath = '/users' }) {
+const resolveImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const baseHost = BASE_URL.replace(/\/api$/, '');
+  return `${baseHost}/${path.replace(/^\/?/, '')}`;
+};
+
+export function UserForm({ 
+  initialData, 
+  availableRoles = [], 
+  isProfile = false, 
+  onSuccess,
+  successPath = '/users', 
+  cancelPath = '/users' 
+}) {
   const isEdit = !!initialData;
   const router = useRouter();
   const { addToast } = useToast();
 
-  const [dropdownOpen, setDropdownOpen] = React.useState(false);
-  const [profilePreview, setProfilePreview] = React.useState(initialData?.profile_img || '');
-  const dropdownRef = React.useRef(null);
+  const initialImage = initialData?.profile_image || initialData?.profile_img || '';
+  const [profilePreview, setProfilePreview] = React.useState(
+    initialImage ? resolveImageUrl(initialImage) : ''
+  );
 
   const {
     register,
@@ -32,37 +48,20 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
           last_name: initialData?.last_name || '',
           email: initialData?.email || '',
           username: initialData?.username || '',
-          phone: initialData?.phone || '',
-          profile_img: initialData?.profile_img || '',
-          status: initialData?.status || 'active',
+          phone: initialData?.mobile_number || initialData?.phone || '',
+          profile_img: initialData?.profile_image || initialData?.profile_img || '',
+          status: initialData?.status === false || initialData?.status === 'inactive' ? 'inactive' : 'active',
           notes: initialData?.notes || '',
-          roles: initialData?.roles ?? [],
+          role_id: initialData?.role_id ? String(initialData.role_id) : (initialData?.roles?.[0] ? String(initialData.roles[0]) : ''),
         }
-      : { first_name: '', last_name: '', email: '', username: '', password: '', password_confirmation: '', phone: '', profile_img: '', status: 'active', notes: '', roles: [] },
+      : { first_name: '', last_name: '', email: '', username: '', password: '', password_confirmation: '', phone: '', profile_img: '', status: 'active', notes: '', role_id: '' },
   });
 
-  const selectedRoles = watch('roles') || [];
   const password = watch('password') || '';
   const firstName = watch('first_name') || '';
   const lastName = watch('last_name') || '';
   const username = watch('username') || '';
   const avatarInitials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim().toUpperCase() || username.slice(0, 2).toUpperCase();
-
-  React.useEffect(() => {
-    register('roles', {
-      validate: (value) => (value?.length > 0) || 'Select at least one role',
-    });
-  }, [register]);
-
-  React.useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -72,18 +71,59 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
     };
   }, [profilePreview]);
 
-
   const onSubmit = async (data) => {
     try {
-      void data;
-      // Mock network delay
-      await new Promise(res => setTimeout(res, 500));
-
-      if (isEdit) {
-        addToast('User updated successfully (mock)', 'success');
-      } else {
-        addToast('User created successfully (mock)', 'success');
+      let profileImagePath = initialData?.profile_image || initialData?.profile_img || '';
+      
+      // Upload the profile image file if selected
+      if (data.profile_img?.[0] instanceof File) {
+        const uploaded = await uploadFile(data.profile_img[0]);
+        profileImagePath = uploaded?.path || uploaded?.filename || '';
       }
+
+      if (isProfile) {
+        // Self profile update payload mapping
+        const payload = {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          username: data.username,
+          mobile_number: data.phone || null,
+          profile_image: profileImagePath,
+        };
+        if (data.password) {
+          payload.password_hash = data.password;
+        }
+
+        await api.put('/me', payload);
+        addToast('Profile updated successfully', 'success');
+        if (onSuccess) await onSuccess();
+      } else {
+        // Admin user management payload mapping
+        const payload = {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          username: data.username,
+          mobile_number: data.phone || null,
+          profile_image: profileImagePath,
+          role_id: data.role_id ? Number(data.role_id) : null,
+          status: data.status === 'active' || data.status === true,
+          notes: data.notes || '',
+        };
+        if (data.password) {
+          payload.password_hash = data.password;
+        }
+
+        if (isEdit) {
+          await api.put(`/users/${initialData.id}`, payload);
+          addToast('User updated successfully', 'success');
+        } else {
+          await api.post('/users', payload);
+          addToast('User created successfully', 'success');
+        }
+      }
+      
       router.push(successPath);
     } catch (err) {
       addToast(err.message || 'Operation failed', 'danger');
@@ -93,15 +133,15 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
   const profileImgRegistration = register('profile_img', {
     validate: (value) => {
       const file = value?.[0];
-      if (!file) return true;
-      return file.type.startsWith('image/') || 'Select a valid image file';
+      if (!file || !(file instanceof File)) return true;
+      return file.type?.startsWith('image/') || 'Select a valid image file';
     },
   });
 
   return (
     <div className="card max-w-3xl user-form-card">
       <div className="card-header">
-        <h3 className="card-title">{isEdit ? 'Edit User' : 'Create User'}</h3>
+        <h3 className="card-title">{isProfile ? 'Edit Profile' : isEdit ? 'Edit User' : 'Create User'}</h3>
       </div>
       <div className="card-body">
         <form onSubmit={handleSubmit(onSubmit)} className="user-profile-form-layout" noValidate>
@@ -251,7 +291,7 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
 
             <section className="user-form-section">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-group">
+                <div className="form-group" style={{ gridColumn: isProfile ? 'span 2' : 'span 1' }}>
                   <label className="form-label">Phone Number</label>
                   <Input
                     type="tel"
@@ -270,115 +310,122 @@ export function UserForm({ initialData, availableRoles = [], successPath = '/use
                   )}
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Status</label>
-                  <select
-                    {...register('status', {
-                      required: 'Status is required',
-                    })}
-                    className={`form-select ${errors.status ? 'error' : ''}`}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                  {errors.status && (
-                    <p className="form-error">{errors.status.message}</p>
-                  )}
-                </div>
+                {!isProfile && (
+                  <div className="form-group">
+                    <label className="form-label">Status</label>
+                    <select
+                      {...register('status', {
+                        required: 'Status is required',
+                      })}
+                      className={`form-select ${errors.status ? 'error' : ''}`}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                    {errors.status && (
+                      <p className="form-error">{errors.status.message}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Roles</label>
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    type="button"
-                    className="form-select text-left w-full flex items-center justify-between cursor-pointer"
+              {isProfile ? (
+                <div className="form-group">
+                  <label className="form-label">Role</label>
+                  <div
+                    className="profile-readonly-field"
                     style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 14px',
                       background: 'var(--color-surface)',
                       border: '1px solid var(--color-border)',
                       borderRadius: 'var(--radius-md)',
-                      padding: '10px 14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
+                      minHeight: '40px',
+                      color: 'var(--color-text)',
+                      opacity: 0.8,
+                      cursor: 'default',
                     }}
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
                   >
-                    <span className="truncate">
-                      {selectedRoles.length === 0
-                        ? 'Select roles...'
-                        : selectedRoles.map(rid => availableRoles.find(r => r.id === rid)?.name || `Role #${rid}`).join(', ')}
-                    </span>
-                    <span className="ml-2 text-gray-500 font-semibold" style={{ fontSize: '10px' }}>v</span>
-                  </button>
-
-                  {dropdownOpen && (
-                    <div
-                      className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto p-2"
+                    <span
                       style={{
-                        backgroundColor: 'var(--color-bg-alt)',
-                        borderColor: 'var(--color-border)',
-                        borderRadius: 'var(--radius-md)',
-                        boxShadow: 'var(--shadow-md)',
-                        position: 'absolute',
-                        width: '100%',
-                        boxSizing: 'border-box'
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'linear-gradient(135deg, var(--color-primary), #3b82f6)',
+                        color: '#fff',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.02em',
                       }}
                     >
-                      {availableRoles.map((role) => {
-                        const isChecked = selectedRoles.includes(role.id);
-                        return (
-                          <label
-                            key={role.id}
-                            className="flex items-center gap-2 p-2 rounded-md cursor-pointer text-sm text-gray-700 hover:bg-gray-100"
-                            style={{
-                              transition: 'background-color var(--transition-fast)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '6px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              cursor: 'pointer'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-glow)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <input
-                              type="checkbox"
-                              className="form-checkbox h-4 w-4 text-blue-600 rounded"
-                              checked={isChecked}
-                              onChange={() => {
-                                const newSelection = isChecked
-                                  ? selectedRoles.filter((id) => id !== role.id)
-                                  : [...selectedRoles, role.id];
-                                setValue('roles', newSelection, {
-                                  shouldValidate: true,
-                                  shouldDirty: true,
-                                });
-                              }}
-                            />
-                            <span style={{ color: 'var(--color-text)' }}>{role.name}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                      {(() => {
+                        const roleId = initialData?.role_id;
+                        const roleName = availableRoles.find(r => r.id === roleId)?.name
+                          || initialData?.role?.name
+                          || 'Unknown';
+                        return roleName;
+                      })()}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginLeft: 'auto' }}>Read-only</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label className="form-label">Role</label>
+                  <select
+                    {...register('role_id', {
+                      required: 'Role selection is required',
+                    })}
+                    className={`form-select ${errors.role_id ? 'error' : ''}`}
+                  >
+                    <option value="">Select role...</option>
+                    {availableRoles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.role_id && (
+                    <p className="form-error">{errors.role_id.message}</p>
                   )}
                 </div>
-                {errors.roles && (
-                  <p className="form-error">{errors.roles.message}</p>
-                )}
-              </div>
+              )}
             </section>
 
             <section className="user-form-section">
               <div className="form-group">
-                <label className="form-label">Notes</label>
-                <textarea
-                  {...register('notes')}
-                  className="form-textarea"
-                  placeholder="Internal notes about this user..."
-                  style={{ minHeight: '44px' }}
-                />
+                <label className="form-label">Notes {isProfile && <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 400 }}>(Read-only)</span>}</label>
+                {isProfile ? (
+                  <div
+                    className="profile-readonly-field"
+                    style={{
+                      padding: '10px 14px',
+                      background: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      minHeight: '44px',
+                      color: initialData?.notes ? 'var(--color-text)' : 'var(--color-text-muted)',
+                      opacity: 0.8,
+                      fontSize: '0.875rem',
+                      lineHeight: 1.5,
+                      whiteSpace: 'pre-wrap',
+                      cursor: 'default',
+                    }}
+                  >
+                    {initialData?.notes || 'No notes'}
+                  </div>
+                ) : (
+                  <textarea
+                    {...register('notes')}
+                    className="form-textarea"
+                    placeholder="Internal notes about this user..."
+                    style={{ minHeight: '44px' }}
+                  />
+                )}
               </div>
             </section>
 

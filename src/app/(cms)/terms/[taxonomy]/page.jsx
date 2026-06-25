@@ -22,22 +22,37 @@ export default function TermListPage() {
   const taxonomyPluralLabel = pluralizeTaxonomyLabel(taxonomy);
 
   const handleDelete = async (id) => {
-    confirmDelete('Are you sure you want to delete this term?', () => {
-      deleteTerm(taxonomy, id);
-      addToast('Term deleted successfully (mock)', 'success');
+    confirmDelete('Are you sure you want to delete this term?', async () => {
+      try {
+        await deleteTerm(taxonomy, id);
+        addToast('Term deleted successfully', 'success');
+      } catch (err) {
+        addToast(err.message || 'Delete failed', 'danger');
+      }
     });
   };
 
   const handleBulkDelete = async (ids) => {
-    confirmDelete(`Are you sure you want to delete ${ids.length} terms?`, () => {
-      deleteTerms(taxonomy, ids);
-      addToast(`${ids.length} terms deleted (mock)`, 'success');
+    confirmDelete(`Are you sure you want to delete ${ids.length} terms?`, async () => {
+      try {
+        await deleteTerms(taxonomy, ids);
+        addToast(`${ids.length} terms deleted`, 'success');
+      } catch (err) {
+        addToast(err.message || 'Bulk delete failed', 'danger');
+      }
     });
   };
 
   const columns = [
     { header: 'Name', accessorKey: 'name' },
     { header: 'Slug', accessorKey: 'slug' },
+    {
+      header: 'Status',
+      render: (row) => {
+        const active = row.status === true || row.status === 'active' || row.status === 1;
+        return <span className={`badge ${active ? 'badge-success' : 'badge-danger'}`}>{active ? 'Active' : 'Inactive'}</span>;
+      }
+    },
     {
       header: 'Actions',
       render: (row) => (

@@ -1,23 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // If already signed in, skip the login screen.
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setError('');
     setLoading(true);
 
-    // Mock network delay
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await login(email, password);
       router.push('/dashboard');
-    }, 800);
+    } catch (err) {
+      setError(err?.message || 'Login failed. Please try again.');
+      setLoading(false);
+    }
   }
 
   return (
@@ -74,6 +87,10 @@ export default function LoginPage() {
                 required
               />
             </div>
+
+            {error && (
+              <p className="form-error" style={{ marginBottom: '8px' }}>{error}</p>
+            )}
 
             <button
               type="submit"
