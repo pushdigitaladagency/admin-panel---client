@@ -152,8 +152,12 @@ export function PostForm({ initialData, postType }) {
       },
   });
 
-  const { ref: featuredRef, ...featuredRegister } = register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
-  const { ref: galleryRef, ...galleryRegister } = register('gallery_images');
+  // Register featured_image and gallery_images as custom virtual fields since they are populated via MediaSelectModal
+  React.useEffect(() => {
+    register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
+    register('gallery_images');
+  }, [register, isEdit, postType]);
+
   const attachmentRegister = register('attachment');
 
   const handleMediaModalSelect = (media) => {
@@ -684,16 +688,9 @@ export function PostForm({ initialData, postType }) {
                       <input
                         type="file"
                         accept="image/*"
-                        {...featuredRegister}
-                        ref={(e) => {
-                          featuredRef(e);
-                          featuredImageInputRef.current = e;
-                        }}
+                        ref={featuredImageInputRef}
                         style={{ display: 'none' }}
-                        onChange={(e) => {
-                          featuredRegister.onChange(e);
-                          handleFeaturedImageChange(e);
-                        }}
+                        onChange={handleFeaturedImageChange}
                       />
 
                       {/* Custom Dashed Image Upload Dropzone */}
@@ -732,16 +729,9 @@ export function PostForm({ initialData, postType }) {
                           type="file"
                           accept="image/*"
                           multiple
-                          {...galleryRegister}
-                          ref={(e) => {
-                            galleryRef(e);
-                            galleryImagesInputRef.current = e;
-                          }}
+                          ref={galleryImagesInputRef}
                           style={{ display: 'none' }}
-                          onChange={(e) => {
-                            galleryRegister.onChange(e);
-                            handleGalleryImagesChange(e);
-                          }}
+                          onChange={handleGalleryImagesChange}
                         />
 
                         {/* Custom Dashed Image Upload Dropzone */}
