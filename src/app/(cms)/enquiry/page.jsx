@@ -56,7 +56,13 @@ export default function EnquiryListPage() {
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading enquiries…</p>
       ) : (
-        <DataTable columns={columns} data={enquiries} searchKey="name" />
+        <DataTable 
+          columns={columns} 
+          data={enquiries} 
+          searchKey="name" 
+          filterOptions={['New', 'In Progress', 'Responded', 'Resolved']}
+          filterKey={(row) => row.status || 'New'}
+        />
       )}
     </>
   );

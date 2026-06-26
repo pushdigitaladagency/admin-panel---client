@@ -79,7 +79,17 @@ export default function RoleListPage() {
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading roles…</p>
       ) : (
-        <DataTable data={roles} columns={columns} searchKey="name" />
+        <DataTable 
+          data={roles} 
+          columns={columns} 
+          searchKey="name" 
+          filterOptions={['Active', 'Inactive', 'Pending']}
+          filterKey={(row) => {
+            const raw = row.status;
+            const s = typeof raw === 'boolean' ? (raw ? 'active' : 'inactive') : (raw || 'active');
+            return s.charAt(0).toUpperCase() + s.slice(1);
+          }}
+        />
       )}
     </>
   );

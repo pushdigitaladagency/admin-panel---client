@@ -177,7 +177,23 @@ export default function PostListPage() {
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading {postTypeLabel.toLowerCase()}…</p>
       ) : (
-        <DataTable data={posts} columns={columns} searchKey="title" />
+        <DataTable 
+          data={posts} 
+          columns={columns} 
+          searchKey="title" 
+          filterOptions={
+            postType === 'event' 
+              ? ['Draft', 'Ongoing', 'Upcoming', 'Completed', 'Published']
+              : postType === 'news'
+                ? ['Draft', 'Published', 'Archived']
+                : ['Draft', 'Published']
+          }
+          filterKey={
+            postType === 'event'
+              ? (row) => row.event_status || row.publish_status || 'Draft'
+              : (row) => row.status || 'Draft'
+          }
+        />
       )}
     </>
   );

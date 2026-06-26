@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
 /**
  * Reusable DataTable with search, sort, pagination, and bulk selection.
@@ -20,22 +21,49 @@ export default function DataTable({
   perPage = 10,
   onBulkDelete,
   idKey = 'id',
+  filterOptions,
+  filterKey = 'status',
 }) {
   const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [sortCol, setSortCol] = useState(null);
   const [sortDir, setSortDir] = useState('asc');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [filterRef]);
 
   // Filter
   const filtered = useMemo(() => {
-    if (!search.trim()) return data;
+    let result = data;
+
+    if (filterOptions && filterStatus !== '') {
+      result = result.filter((row) => {
+        const val = typeof filterKey === 'function' ? filterKey(row) : row[filterKey];
+        const strVal = typeof val === 'boolean' ? (val ? 'Active' : 'Inactive') : String(val);
+        return strVal.toLowerCase() === filterStatus.toLowerCase();
+      });
+    }
+
+    if (!search.trim()) return result;
     const q = search.toLowerCase();
-    return data.filter((row) => {
+    return result.filter((row) => {
       const val = row[searchKey];
       return val && String(val).toLowerCase().includes(q);
     });
-  }, [data, search, searchKey]);
+  }, [data, search, searchKey, filterOptions, filterStatus, filterKey]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -81,8 +109,8 @@ export default function DataTable({
     <div className="card">
       {/* Toolbar */}
       <div className="card-header">
-        <div className="data-table-toolbar" style={{ width: '100%' }}>
-          <div className="data-table-search">
+        <div className="data-table-toolbar" style={{ width: '100%', display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div className="data-table-search" style={{ display: 'flex', gap: '10px', flex: 1 }}>
             <input
               type="text"
               className="form-input"
@@ -92,8 +120,117 @@ export default function DataTable({
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              style={{ paddingLeft: '14px' }}
+              style={{ paddingLeft: '14px', maxWidth: '300px' }}
             />
+            {filterOptions && (
+              <div className="custom-filter-dropdown" ref={filterRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: '#e9ecef',
+                    color: '#1e293b',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    padding: '8px 14px',
+                    fontWeight: '500',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    outline: 'none'
+                  }}
+                >
+                  <Filter size={16} style={{ color: '#475569' }} />
+                  Status
+                  {isFilterOpen ? <ChevronUp size={16} style={{ color: '#475569' }} /> : <ChevronDown size={16} style={{ color: '#475569' }} />}
+                </button>
+                
+                {isFilterOpen && (
+                  <div
+                    className="custom-filter-menu"
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '6px',
+                      backgroundColor: '#fff',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                      minWidth: '180px',
+                      maxHeight: '160px',
+                      overflowY: 'auto',
+                      zIndex: 50,
+                      padding: '6px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px'
+                    }}
+                  >
+                    <div
+                      onClick={() => {
+                        setFilterStatus('');
+                        setPage(1);
+                        setIsFilterOpen(false);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                        fontWeight: filterStatus === '' ? '600' : '400',
+                        backgroundColor: filterStatus === '' ? '#e2e8f0' : 'transparent',
+                        color: filterStatus === '' ? '#1e293b' : '#334155',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (filterStatus !== '') e.target.style.backgroundColor = '#f1f5f9';
+                      }}
+                      onMouseLeave={(e) => {
+                        if (filterStatus !== '') e.target.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      All Statuses
+                    </div>
+                    {filterOptions.map((opt) => {
+                      const val = typeof opt === 'object' ? opt.value : opt;
+                      const label = typeof opt === 'object' ? opt.label : opt;
+                      const isSelected = filterStatus === val;
+                      return (
+                        <div
+                          key={val}
+                          onClick={() => {
+                            setFilterStatus(val);
+                            setPage(1);
+                            setIsFilterOpen(false);
+                          }}
+                          style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            fontWeight: isSelected ? '600' : '400',
+                            backgroundColor: isSelected ? '#e2e8f0' : 'transparent',
+                            color: isSelected ? '#1e293b' : '#334155',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.target.style.backgroundColor = '#f1f5f9';
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.target.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          {label}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="data-table-actions">

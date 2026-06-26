@@ -2637,3 +2637,18 @@ html.dark textarea:disabled::placeholder {
   border: none !important;
   background: transparent !important;
 }
+
+/* -- Custom Filter Menu Scrollbar -- */
+.custom-filter-menu::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-filter-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-filter-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+.custom-filter-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}

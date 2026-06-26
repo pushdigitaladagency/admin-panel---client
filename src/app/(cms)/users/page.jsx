@@ -78,7 +78,13 @@ export default function UserListPage() {
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading users…</p>
       ) : (
-        <DataTable data={users} columns={columns} searchKey="email" />
+        <DataTable 
+          data={users} 
+          columns={columns} 
+          searchKey="email" 
+          filterOptions={['Active', 'Inactive']}
+          filterKey={(row) => row.status ? 'Active' : 'Inactive'}
+        />
       )}
     </>
   );
