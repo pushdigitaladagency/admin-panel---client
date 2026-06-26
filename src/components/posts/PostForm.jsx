@@ -63,6 +63,8 @@ export function PostForm({ initialData, postType }) {
 
   const summaryEditorRef = React.useRef(null);
   const contentEditorRef = React.useRef(null);
+  const summaryToolbarRef = React.useRef(null);
+  const contentToolbarRef = React.useRef(null);
   const summaryEditorInstRef = React.useRef(null);
   const contentEditorInstRef = React.useRef(null);
 
@@ -184,14 +186,14 @@ export function PostForm({ initialData, postType }) {
 
   const postTitle = watch('title');
 
-  // Load CKEditor 5 from CDN
+  // Load CKEditor 5 Decoupled Document from CDN
   React.useEffect(() => {
-    if (window.ClassicEditor) {
+    if (window.DecoupledEditor) {
       setEditorLoaded(true);
       return;
     }
     const script = document.createElement('script');
-    script.src = 'https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js';
+    script.src = 'https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-decoupled-document@36.0.1/build/ckeditor.js';
     script.async = true;
     script.onload = () => setEditorLoaded(true);
     document.head.appendChild(script);
@@ -220,19 +222,33 @@ export function PostForm({ initialData, postType }) {
 
   // Initialize and Sync CKEditors
   React.useEffect(() => {
-    if (!editorLoaded || !window.ClassicEditor) return;
+    if (!editorLoaded || !window.DecoupledEditor) return;
 
     let summaryEditor = null;
     let contentEditor = null;
 
+    const toolbarConfig = [
+      'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+      'alignment', '|',
+      'bold', 'italic', 'underline', '|',
+      'bulletedList', 'numberedList', '|',
+      'undo', 'redo', 'link'
+    ];
+
     // Initialize Summary Editor
     if (summaryEditorRef.current && !summaryEditorInstRef.current) {
-      window.ClassicEditor.create(summaryEditorRef.current, {
-        toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo', 'link']
+      window.DecoupledEditor.create(summaryEditorRef.current, {
+        toolbar: toolbarConfig
       })
         .then(editor => {
           summaryEditorInstRef.current = editor;
           summaryEditor = editor;
+
+          if (summaryToolbarRef.current) {
+            summaryToolbarRef.current.innerHTML = '';
+            summaryToolbarRef.current.appendChild(editor.ui.view.toolbar.element);
+          }
+
           editor.setData(initialData?.excerpt || '');
           editor.model.document.on('change:data', () => {
             setValue('excerpt', editor.getData(), { shouldDirty: true, shouldValidate: true });
@@ -243,25 +259,18 @@ export function PostForm({ initialData, postType }) {
 
     // Initialize Content Editor
     if (contentEditorRef.current && !contentEditorInstRef.current) {
-      window.ClassicEditor.create(contentEditorRef.current, {
-        toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo', 'link', 'uploadImage', 'insertTable', 'blockQuote'],
-        extraPlugins: [function(editor) {
-          editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-            return {
-              upload: () => loader.file.then(file => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve({ default: reader.result });
-                reader.onerror = err => reject(err);
-                reader.readAsDataURL(file);
-              })),
-              abort: () => {}
-            };
-          };
-        }]
+      window.DecoupledEditor.create(contentEditorRef.current, {
+        toolbar: toolbarConfig
       })
         .then(editor => {
           contentEditorInstRef.current = editor;
           contentEditor = editor;
+
+          if (contentToolbarRef.current) {
+            contentToolbarRef.current.innerHTML = '';
+            contentToolbarRef.current.appendChild(editor.ui.view.toolbar.element);
+          }
+
           editor.setData(initialData?.content || '');
           editor.model.document.on('change:data', () => {
             setValue('content', editor.getData(), { shouldDirty: true, shouldValidate: true });
@@ -926,7 +935,8 @@ export function PostForm({ initialData, postType }) {
                         {postType === 'event' ? 'Short Description' : postType === 'news' ? 'Summary' : 'Short Description'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
                       <div className="ck-editor-wrapper">
-                        <div ref={summaryEditorRef} />
+                        <div ref={summaryToolbarRef} className="ck-toolbar-container" />
+                        <div ref={summaryEditorRef} className="ck-editor-editable-area" />
                       </div>
                       {errors.excerpt && <p className="form-error">{errors.excerpt.message}</p>}
                     </div>
@@ -936,7 +946,8 @@ export function PostForm({ initialData, postType }) {
                         {postType === 'event' ? 'Event Description' : postType === 'news' ? 'Full Content' : 'Detailed Content'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
                       <div className="ck-editor-wrapper">
-                        <div ref={contentEditorRef} />
+                        <div ref={contentToolbarRef} className="ck-toolbar-container" />
+                        <div ref={contentEditorRef} className="ck-editor-editable-area" />
                       </div>
                       {errors.content && <p className="form-error">{errors.content.message}</p>}
                     </div>
