@@ -12,9 +12,9 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
-import { useTerms } from '@/context/TermsContext';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
 import { api, BASE_URL, uploadFile } from '@/lib/api';
+import { useApi } from '@/lib/useApi';
 
 const resolveImageUrl = (path) => {
   if (!path) return '';
@@ -36,7 +36,6 @@ export function PostForm({ initialData, postType }) {
   const isEdit = !!initialData;
   const router = useRouter();
   const { addToast } = useToast();
-  const { getTerms } = useTerms();
 
   const featuredImageInputRef = React.useRef(null);
   const galleryImagesInputRef = React.useRef(null);
@@ -383,7 +382,9 @@ export function PostForm({ initialData, postType }) {
         // Enquiry edit only — map form fields to backend fields
         const payload = {
           status: data.enquiry_status,
-          assigned_to: data.assigned_to || null,
+          // assigned_to is a BIGINT user-id FK on the server — coerce to a number
+          // (or null) so a non-numeric value can never break the PUT.
+          assigned_to: data.assigned_to ? (Number(data.assigned_to) || null) : null,
           follow_up_notes: data.follow_up_notes,
           response_date: data.response_date || null,
         };
@@ -402,7 +403,8 @@ export function PostForm({ initialData, postType }) {
         const payload = {};
         payload.title = data.title;
         payload.status = data.status === 'published' ? 'Published' : 'Draft';
-        payload.featured = data.featured === 'yes';
+        // `featured` is an ENUM('Yes','No') column on the server, not a boolean.
+        payload.featured = data.featured === 'yes' ? 'Yes' : 'No';
         payload.seo_title = data.seo_title;
         payload.seo_keywords = data.seo_keywords;
         payload.seo_description = data.seo_description;
@@ -470,13 +472,17 @@ export function PostForm({ initialData, postType }) {
     }
   };
 
-  const taxonomyKey = postType === 'news'
-    ? 'news-category'
+  // Categories/types come from the real backend, keyed by post type.
+  const categoryEndpoint = postType === 'news'
+    ? '/news-categories?limit=100'
     : postType === 'event'
-      ? 'event-category'
-      : 'press-release-category';
+      ? '/event-types?limit=100'
+      : postType === 'press-release'
+        ? '/press-release-categories?limit=100'
+        : null;
 
-  const CATEGORIES = getTerms(taxonomyKey);
+  const { data: categoriesData } = useApi(categoryEndpoint, { enabled: !!categoryEndpoint });
+  const CATEGORIES = categoriesData || [];
 
   const renderSeoConfigurations = () => (
     <div className="card" style={{ background: 'rgba(0, 0, 0, 0.01)', borderStyle: 'dashed' }}>

@@ -117,7 +117,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <div className="sidebar-logo-mark">
             <img src="/sidebar-logo.svg" alt="Airfloa logo" className="sidebar-logo-image" />
           </div>
-          <span className="sidebar-logo">Airfloa</span>
+          <span className="sidebar-logo">Airfloa - Admin Dashboard</span>
         </div>
 
         {/* Navigation */}

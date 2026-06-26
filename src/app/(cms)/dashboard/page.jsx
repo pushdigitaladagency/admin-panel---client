@@ -6,8 +6,10 @@ import { UserGrowthChart } from '@/components/dashboard/UserGrowthChart';
 import { PostActivityChart } from '@/components/dashboard/PostActivityChart';
 import { RecentPostsCard } from '@/components/dashboard/RecentPostsCard';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const { data: statsData, loading: statsLoading } = useApi('/dashboard/stats');
   const { data: recentData, loading: recentLoading } = useApi('/dashboard/recent');
 
@@ -80,13 +82,14 @@ export default function DashboardPage() {
       href: '/enquiry',
     },
   ];
+  console.log(user);
 
   return (
     <>
       <div className="page-header" style={{ marginBottom: '24px' }}>
         <div>
           <h1 className="page-title" style={{ fontSize: '2rem', fontWeight: '800', background: 'linear-gradient(135deg, var(--color-primary), #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '8px' }}>Dashboard</h1>
-          <p className="page-subtitle" style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>Welcome back! Here's an overview.</p>
+          <p className="page-subtitle" style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>Welcome back {user?.role?.name || 'User'} ! Here's an overview.</p>
         </div>
       </div>
 
