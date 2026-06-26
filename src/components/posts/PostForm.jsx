@@ -243,12 +243,9 @@ export function PostForm({ initialData, postType }) {
     }
   }, [postTitle, setValue, isEdit]);
 
-  // Initialize and Sync CKEditors
+  // Initialize CKEditors (StrictMode-safe).
   React.useEffect(() => {
     if (!editorLoaded || !window.DecoupledEditor) return;
-
-    let summaryEditor = null;
-    let contentEditor = null;
 
     const toolbarConfig = [
       'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
@@ -257,99 +254,62 @@ export function PostForm({ initialData, postType }) {
       'bulletedList', 'numberedList', '|',
       'undo', 'redo', 'link'
     ];
+    const editorConfig = {
+      toolbar: toolbarConfig,
+      list: { properties: { styles: false, startIndex: false, reversed: false } }
+    };
 
-    // Initialize Summary Editor
-    if (summaryEditorRef.current && !summaryEditorInstRef.current) {
-      window.DecoupledEditor.create(summaryEditorRef.current, {
-        toolbar: toolbarConfig,
-        list: {
-          properties: {
-            styles: false,
-            startIndex: false,
-            reversed: false
-          }
-        }
-      })
+    // Mount one decoupled editor. The synchronous 'pending' sentinel on the
+    // instance ref blocks a second create() on the same element — without it,
+    // React StrictMode's double-invoke in dev spawns two editors on one node and
+    // the field becomes non-editable.
+    const mountEditor = (editableEl, toolbarEl, instRef, field, initialValue) => {
+      if (!editableEl || instRef.current) return;
+      instRef.current = 'pending';
+      window.DecoupledEditor.create(editableEl, editorConfig)
         .then(editor => {
-          summaryEditorInstRef.current = editor;
-          summaryEditor = editor;
-
-          if (summaryToolbarRef.current) {
-            summaryToolbarRef.current.innerHTML = '';
-            summaryToolbarRef.current.appendChild(editor.ui.view.toolbar.element);
+          instRef.current = editor;
+          if (toolbarEl) {
+            toolbarEl.innerHTML = '';
+            toolbarEl.appendChild(editor.ui.view.toolbar.element);
           }
-
-          editor.setData(initialData?.excerpt || '');
+          editor.setData(initialValue || '');
           editor.model.document.on('change:data', () => {
-            setValue('excerpt', editor.getData(), { shouldDirty: true, shouldValidate: true });
+            setValue(field, editor.getData(), { shouldDirty: true, shouldValidate: true });
           });
         })
-        .catch(err => console.error('Error initializing summary CKEditor:', err));
-    }
+        .catch(err => {
+          instRef.current = null;
+          console.error('Error initializing CKEditor:', err);
+        });
+    };
 
-    // Initialize Content Editor
-    if (contentEditorRef.current && !contentEditorInstRef.current) {
-      window.DecoupledEditor.create(contentEditorRef.current, {
-        toolbar: toolbarConfig,
-        list: {
-          properties: {
-            styles: false,
-            startIndex: false,
-            reversed: false
-          }
-        }
-      })
-        .then(editor => {
-          contentEditorInstRef.current = editor;
-          contentEditor = editor;
-
-          if (contentToolbarRef.current) {
-            contentToolbarRef.current.innerHTML = '';
-            contentToolbarRef.current.appendChild(editor.ui.view.toolbar.element);
-          }
-
-          editor.setData(initialData?.content || '');
-          editor.model.document.on('change:data', () => {
-            setValue('content', editor.getData(), { shouldDirty: true, shouldValidate: true });
-          });
-        })
-        .catch(err => console.error('Error initializing content CKEditor:', err));
-    }
+    mountEditor(summaryEditorRef.current, summaryToolbarRef.current, summaryEditorInstRef, 'excerpt', initialData?.excerpt);
+    mountEditor(contentEditorRef.current, contentToolbarRef.current, contentEditorInstRef, 'content', initialData?.content);
 
     return () => {
-      if (summaryEditor) {
-        summaryEditor.destroy()
-          .then(() => {
-            if (summaryEditorInstRef.current === summaryEditor) {
-              summaryEditorInstRef.current = null;
-            }
-          })
-          .catch(err => console.error(err));
-      }
-      if (contentEditor) {
-        contentEditor.destroy()
-          .then(() => {
-            if (contentEditorInstRef.current === contentEditor) {
-              contentEditorInstRef.current = null;
-            }
-          })
-          .catch(err => console.error(err));
-      }
+      // Only destroy fully-initialized editors; skipping the 'pending' sentinel
+      // avoids racing an in-flight create() during a StrictMode remount.
+      [summaryEditorInstRef, contentEditorInstRef].forEach((instRef) => {
+        const inst = instRef.current;
+        if (inst && inst !== 'pending' && typeof inst.destroy === 'function') {
+          instRef.current = null;
+          inst.destroy().catch(() => {});
+        }
+      });
     };
-  }, [editorLoaded, initialData]);
+  }, [editorLoaded]);
 
   // Keep editors synced if initialData changes after initialization
   React.useEffect(() => {
-    if (summaryEditorInstRef.current && initialData?.excerpt !== undefined) {
-      if (summaryEditorInstRef.current.getData() !== (initialData.excerpt || '')) {
-        summaryEditorInstRef.current.setData(initialData.excerpt || '');
+    const sync = (instRef, value) => {
+      const inst = instRef.current;
+      if (inst && inst !== 'pending' && typeof inst.getData === 'function' && value !== undefined) {
+        if (inst.getData() !== (value || '')) inst.setData(value || '');
       }
-    }
-    if (contentEditorInstRef.current && initialData?.content !== undefined) {
-      if (contentEditorInstRef.current.getData() !== (initialData.content || '')) {
-        contentEditorInstRef.current.setData(initialData.content || '');
-      }
-    }
+    };
+    sync(summaryEditorInstRef, initialData?.excerpt);
+    sync(contentEditorInstRef, initialData?.content);
   }, [initialData]);
 
   const syncNewsGallery = async (newsId, galleryImagesString) => {
