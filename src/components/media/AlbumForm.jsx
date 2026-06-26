@@ -139,11 +139,11 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border" style={{ borderColor: 'var(--color-border)' }}>
-        <Button type="button" variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
         <Button type="submit" variant="primary">
           {isEdit ? 'Save' : 'Create Album'}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
         </Button>
       </div>
     </form>

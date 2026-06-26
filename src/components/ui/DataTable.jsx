@@ -59,11 +59,21 @@ export default function DataTable({
 
     if (!search.trim()) return result;
     const q = search.toLowerCase();
-    return result.filter((row) => {
-      const val = row[searchKey];
-      return val && String(val).toLowerCase().includes(q);
-    });
-  }, [data, search, searchKey, filterOptions, filterStatus, filterKey]);
+    
+    // Deep search function to check all string/number values in the row object
+    const searchInObject = (obj) => {
+      if (obj === null || obj === undefined) return false;
+      if (typeof obj === 'string' || typeof obj === 'number') {
+        return String(obj).toLowerCase().includes(q);
+      }
+      if (typeof obj === 'object') {
+        return Object.values(obj).some(val => searchInObject(val));
+      }
+      return false;
+    };
+
+    return result.filter((row) => searchInObject(row));
+  }, [data, search, filterOptions, filterStatus, filterKey]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -138,6 +148,7 @@ export default function DataTable({
                     padding: '8px 14px',
                     fontWeight: '500',
                     fontSize: '14px',
+                    fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                     cursor: 'pointer',
                     outline: 'none'
                   }}

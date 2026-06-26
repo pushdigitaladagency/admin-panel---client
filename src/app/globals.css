@@ -2652,3 +2652,9 @@ html.dark textarea:disabled::placeholder {
 .custom-filter-menu::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
 }
+
+
+/* Dark mode sidebar border fix */
+html.dark .sidebar {
+  border-right: none !important;
+}
