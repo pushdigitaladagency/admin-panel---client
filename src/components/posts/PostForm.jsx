@@ -575,7 +575,7 @@ export function PostForm({ initialData, postType }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Response Date</label>
-                <Controller control={control} name="response_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                <Controller control={control} name="response_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Assigned To</label>
@@ -676,7 +676,7 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Controller control={control} name="event_start_date" rules={{ required: 'Event Start Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_start_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                      <Controller control={control} name="event_start_date" rules={{ required: 'Event Start Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_start_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
                       {errors.event_start_date && <p className="form-error">{errors.event_start_date.message}</p>}
                     </div>
 
@@ -684,18 +684,18 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event End Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Controller control={control} name="event_end_date" rules={{ required: 'Event End Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_end_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                      <Controller control={control} name="event_end_date" rules={{ required: 'Event End Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_end_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
                       {errors.event_end_date && <p className="form-error">{errors.event_end_date.message}</p>}
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration Start Date</label>
-                      <Controller control={control} name="reg_start_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                      <Controller control={control} name="reg_start_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration End Date</label>
-                      <Controller control={control} name="reg_end_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                      <Controller control={control} name="reg_end_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
                     </div>
 
                     <div className="form-group md:col-span-2">
@@ -745,20 +745,63 @@ export function PostForm({ initialData, postType }) {
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Organizer Email</label>
+                      <label className="form-label">
+                        Organizer Email <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
+                      </label>
                       <Input
                         type="email"
-                        {...register('organizer_email')}
+                        {...register('organizer_email', {
+                          required: 'Organizer Email is required',
+                          pattern: {
+                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                            message: 'Enter a valid email',
+                          },
+                        })}
                         placeholder="organizer@example.com"
+                        className={errors.organizer_email ? 'error' : ''}
                       />
+                      {errors.organizer_email && <p className="form-error">{errors.organizer_email.message}</p>}
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Organizer Contact</label>
                       <Input
-                        {...register('organizer_contact')}
+                        {...register('organizer_contact', {
+                          pattern: {
+                            value: /^\+91\s?\d{3}\s?\d{3}\s?\d{4}$/,
+                            message: 'Enter a valid +91 phone number',
+                          },
+                        })}
                         placeholder="+91 234 567 8900"
+                        className={errors.organizer_contact ? 'error' : ''}
+                        onChange={(e) => {
+                          let val = e.target.value;
+                          if (val === '' || val === '+9' || val === '+' || val === '+91') {
+                            e.target.value = '';
+                            register('organizer_contact').onChange(e);
+                            return;
+                          }
+                          if (!val.startsWith('+91 ')) {
+                            val = '+91 ' + val.replace(/^\+91\s?/, '');
+                          }
+                          const prefix = '+91 ';
+                          const rest = val.substring(4).replace(/[^0-9]/g, '');
+                          const limitedRest = rest.substring(0, 10);
+                          let formatted = prefix;
+                          if (limitedRest.length > 0) {
+                            if (limitedRest.length <= 3) {
+                              formatted += limitedRest;
+                            } else if (limitedRest.length <= 6) {
+                              formatted += `${limitedRest.slice(0, 3)} ${limitedRest.slice(3)}`;
+                            } else {
+                              formatted += `${limitedRest.slice(0, 3)} ${limitedRest.slice(3, 6)} ${limitedRest.slice(6)}`;
+                            }
+                          }
+                          e.target.value = formatted;
+                          register('organizer_contact').onChange(e);
+                        }}
                       />
+                      {errors.organizer_contact && <p className="form-error">{errors.organizer_contact.message}</p>}
                     </div>
                   </div>
                 </>
@@ -770,14 +813,14 @@ export function PostForm({ initialData, postType }) {
                     <label className="form-label">
                       Publish Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                     </label>
-                    <Controller control={control} name="publish_date" rules={{ required: 'Publish Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.publish_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                    <Controller control={control} name="publish_date" rules={{ required: 'Publish Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.publish_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
                     {errors.publish_date && <p className="form-error">{errors.publish_date.message}</p>}
                   </div>
 
                   {postType !== 'news' && (
                     <div className="form-group">
                       <label className="form-label">Expiry Date</label>
-                      <Controller control={control} name="expiry_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                      <Controller control={control} name="expiry_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
                     </div>
                   )}
                 </div>

@@ -361,6 +361,11 @@ export function UserForm({
                     placeholder="+91 234 567 8900"
                     className={errors.phone ? 'error' : ''}
                     disabled={!isEditing}
+                    onChange={(e) => {
+                      const cleaned = e.target.value.replace(/[^0-9+\s]/g, '');
+                      e.target.value = cleaned;
+                      register('phone').onChange(e);
+                    }}
                   />
                   {errors.phone && (
                     <p className="form-error">{errors.phone.message}</p>
