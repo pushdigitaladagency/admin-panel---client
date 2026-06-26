@@ -125,6 +125,18 @@ export function PostForm({ initialData, postType }) {
         registration_link: initialData?.registration_link || '',
         max_participants: initialData?.max_participants || '',
         event_status: initialData?.event_status || 'Upcoming',
+        
+        // Enquiry fields
+        enquiry_name: initialData?.enquiry_name || '',
+        enquiry_email: initialData?.enquiry_email || '',
+        enquiry_mobile: initialData?.enquiry_mobile || '',
+        enquiry_subject: initialData?.enquiry_subject || '',
+        enquiry_status: initialData?.enquiry_status || 'New',
+        enquiry_message: initialData?.enquiry_message || '',
+        submitted_date: initialData?.submitted_date || '',
+        response_date: initialData?.response_date || '',
+        assigned_to: initialData?.assigned_to || '',
+        follow_up_notes: initialData?.follow_up_notes || '',
       }
       : {
         title: '',
@@ -160,6 +172,18 @@ export function PostForm({ initialData, postType }) {
         registration_link: '',
         max_participants: '',
         event_status: 'Upcoming',
+
+        // Enquiry fields
+        enquiry_name: '',
+        enquiry_email: '',
+        enquiry_mobile: '',
+        enquiry_subject: '',
+        enquiry_status: 'New',
+        enquiry_message: '',
+        submitted_date: '',
+        response_date: '',
+        assigned_to: '',
+        follow_up_notes: '',
       },
   });
 
@@ -510,31 +534,30 @@ export function PostForm({ initialData, postType }) {
               <div className="form-group">
                 <label className="form-label">Name <span style={{ color: 'var(--color-danger)' }}>*</span></label>
                 <Input 
-                  {...register('enquiry_name', { required: 'Name is required' })} 
+                  {...register('enquiry_name')} 
                   placeholder="Enter your name"
-                  className={errors.enquiry_name ? 'error' : ''} 
+                  disabled
                 />
-                {errors.enquiry_name && <p className="form-error">{errors.enquiry_name.message}</p>}
               </div>
               <div className="form-group">
                 <label className="form-label">Email</label>
-                <Input type="email" {...register('enquiry_email')} />
+                <Input type="email" {...register('enquiry_email')} disabled />
               </div>
               <div className="form-group">
                 <label className="form-label">Mobile</label>
-                <Input {...register('enquiry_mobile')} placeholder="+91 234 567 8900" />
+                <Input {...register('enquiry_mobile')} placeholder="+91 234 567 8900" disabled />
               </div>
               <div className="form-group">
                 <label className="form-label">Subject</label>
-                <Input {...register('enquiry_subject')} />
+                <Input {...register('enquiry_subject')} disabled />
               </div>
               <div className="form-group md:col-span-2">
                 <label className="form-label">Message</label>
-                <textarea {...register('enquiry_message')} className="form-textarea" rows={4} />
+                <textarea {...register('enquiry_message')} className="form-textarea" rows={4} disabled />
               </div>
               <div className="form-group">
                 <label className="form-label">Submitted Date</label>
-                <Controller control={control} name="submitted_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" />)} />
+                <Controller control={control} name="submitted_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" disabled />)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Response Date</label>
@@ -547,25 +570,6 @@ export function PostForm({ initialData, postType }) {
               <div className="form-group md:col-span-2">
                 <label className="form-label">Follow-up Notes</label>
                 <textarea {...register('follow_up_notes')} className="form-textarea" rows={3} />
-              </div>
-              <div className="form-group md:col-span-2">
-                <input
-                  id="enquiry-attachment-input"
-                  type="file"
-                  {...attachmentRegister}
-                  style={{ display: 'none' }}
-                  onChange={(event) => {
-                    attachmentRegister.onChange(event);
-                    const file = event.target.files?.[0];
-                    setEnquiryAttachmentName(file ? file.name : '');
-                  }}
-                />
-                <label htmlFor="enquiry-attachment-input" className="premium-dropzone">
-                  <ImagePlus size={24} className="premium-dropzone-icon" />
-                  <span className="premium-dropzone-text">
-                    {enquiryAttachmentName || 'Featured Image'}
-                  </span>
-                </label>
               </div>
               
               <div className="form-group md:col-span-2 pt-4 flex gap-4">
