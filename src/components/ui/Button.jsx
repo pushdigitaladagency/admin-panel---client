@@ -7,6 +7,7 @@ import React from 'react';
 export const Button = ({
   variant = 'primary',
   className = '',
+  type = 'button',
   children,
   ...rest
 }) => {
@@ -19,7 +20,7 @@ export const Button = ({
   }[variant] || 'btn-primary';
 
   return (
-    <button className={`${baseClasses} ${variantClasses} ${className}`} {...rest}>
+    <button type={type} className={`${baseClasses} ${variantClasses} ${className}`} {...rest}>
       {children}
     </button>
   );

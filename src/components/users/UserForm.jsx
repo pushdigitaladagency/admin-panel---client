@@ -29,6 +29,8 @@ export function UserForm({
   const router = useRouter();
   const { addToast } = useToast();
 
+  const [isEditing, setIsEditing] = React.useState(!isProfile);
+
   const initialImage = initialData?.profile_image || initialData?.profile_img || '';
   const [profilePreview, setProfilePreview] = React.useState(
     initialImage ? resolveImageUrl(initialImage) : ''
@@ -39,6 +41,7 @@ export function UserForm({
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: isEdit
@@ -62,6 +65,36 @@ export function UserForm({
   const lastName = watch('last_name') || '';
   const username = watch('username') || '';
   const avatarInitials = `${firstName.charAt(0)}${lastName.charAt(0)}`.trim().toUpperCase() || username.slice(0, 2).toUpperCase();
+
+  React.useEffect(() => {
+    if (!isEditing && initialData) {
+      const mapped = isProfile
+        ? {
+            id: initialData?.id,
+            first_name: initialData?.first_name || '',
+            last_name: initialData?.last_name || '',
+            email: initialData?.email || '',
+            username: initialData?.username || '',
+            phone: initialData?.mobile_number || initialData?.phone || '',
+            profile_img: initialData?.profile_image || initialData?.profile_img || '',
+          }
+        : {
+            id: initialData?.id,
+            first_name: initialData?.first_name || '',
+            last_name: initialData?.last_name || '',
+            email: initialData?.email || '',
+            username: initialData?.username || '',
+            phone: initialData?.mobile_number || initialData?.phone || '',
+            profile_img: initialData?.profile_image || initialData?.profile_img || '',
+            status: initialData?.status === false || initialData?.status === 'inactive' ? 'inactive' : 'active',
+            notes: initialData?.notes || '',
+            role_id: initialData?.role_id ? String(initialData.role_id) : (initialData?.roles?.[0] ? String(initialData.roles[0]) : ''),
+          };
+      reset(mapped);
+      const img = initialData?.profile_image || initialData?.profile_img || '';
+      setProfilePreview(img ? resolveImageUrl(img) : '');
+    }
+  }, [initialData, reset, isProfile, isEditing]);
 
   React.useEffect(() => {
     return () => {
@@ -97,6 +130,7 @@ export function UserForm({
 
         await api.put('/me', payload);
         addToast('Profile updated successfully', 'success');
+        setIsEditing(false);
         if (onSuccess) await onSuccess();
       } else {
         // Admin user management payload mapping
@@ -130,6 +164,16 @@ export function UserForm({
     }
   };
 
+  const handleCancel = () => {
+    if (isProfile) {
+      reset();
+      setProfilePreview(initialImage ? resolveImageUrl(initialImage) : '');
+      setIsEditing(false);
+    } else {
+      router.push(cancelPath);
+    }
+  };
+
   const profileImgRegistration = register('profile_img', {
     validate: (value) => {
       const file = value?.[0];
@@ -157,6 +201,7 @@ export function UserForm({
                 type="file"
                 accept="image/*"
                 {...profileImgRegistration}
+                disabled={!isEditing}
                 onChange={(event) => {
                   profileImgRegistration.onChange(event);
                   const file = event.target.files?.[0];
@@ -169,7 +214,15 @@ export function UserForm({
                 }}
                 className="user-profile-file-input"
               />
-              <label htmlFor="profile-image-input" className="premium-dropzone user-profile-dropzone">
+              <label 
+                htmlFor={isEditing ? "profile-image-input" : undefined} 
+                className="premium-dropzone user-profile-dropzone"
+                style={{ 
+                  cursor: isEditing ? 'pointer' : 'default', 
+                  opacity: isEditing ? 1 : 0.6,
+                  pointerEvents: isEditing ? 'auto' : 'none'
+                }}
+              >
                 <ImagePlus size={28} className="premium-dropzone-icon" />
                 <span className="premium-dropzone-text">Select profile image</span>
               </label>
@@ -190,6 +243,7 @@ export function UserForm({
                     })}
                     placeholder="Enter your first name"
                     className={errors.first_name ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.first_name && (
                     <p className="form-error">{errors.first_name.message}</p>
@@ -204,6 +258,7 @@ export function UserForm({
                     })}
                     placeholder="Enter your last name"
                     className={errors.last_name ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.last_name && (
                     <p className="form-error">{errors.last_name.message}</p>
@@ -225,6 +280,7 @@ export function UserForm({
                     })}
                     placeholder="Enter your email"
                     className={errors.email ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.email && (
                     <p className="form-error">{errors.email.message}</p>
@@ -239,6 +295,7 @@ export function UserForm({
                     })}
                     placeholder="Enter username"
                     className={errors.username ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.username && (
                     <p className="form-error">{errors.username.message}</p>
@@ -260,6 +317,7 @@ export function UserForm({
                     })}
                     placeholder="********"
                     className={errors.password ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.password && (
                     <p className="form-error">{errors.password.message}</p>
@@ -278,6 +336,7 @@ export function UserForm({
                     })}
                     placeholder="********"
                     className={errors.password_confirmation ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.password_confirmation && (
                     <p className="form-error">{errors.password_confirmation.message}</p>
@@ -301,6 +360,7 @@ export function UserForm({
                     })}
                     placeholder="+91 234 567 8900"
                     className={errors.phone ? 'error' : ''}
+                    disabled={!isEditing}
                   />
                   {errors.phone && (
                     <p className="form-error">{errors.phone.message}</p>
@@ -427,16 +487,54 @@ export function UserForm({
             </section>
 
             <div className="mt-6 flex justify-end gap-3 user-form-actions">
-              <Button type="submit" variant="primary" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => router.push(cancelPath)}
-              >
-                Cancel
-              </Button>
+              {isProfile && !isEditing ? (
+                <>
+                  <Button
+                    key="btn-edit-profile"
+                    type="button"
+                    variant="primary"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsEditing(true);
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
+                  <Button
+                    key="btn-dashboard"
+                    type="button"
+                    variant="secondary"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      router.push(cancelPath);
+                    }}
+                  >
+                    Dashboard
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    key="btn-save"
+                    type="submit"
+                    variant="primary"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    key="btn-cancel"
+                    type="button"
+                    variant="secondary"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleCancel();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </form>
