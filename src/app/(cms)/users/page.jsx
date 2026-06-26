@@ -4,9 +4,13 @@ import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function UserListPage() {
-  const { data, loading, error } = useApi('/users');
+  const { can } = useAuth();
+  const canView = can('users', 'view');
+  const { data, loading, error } = useApi('/users', { enabled: canView });
   const users = data || [];
 
   const columns = [
@@ -68,12 +72,16 @@ export default function UserListPage() {
           <h1 className="page-title">Users</h1>
           <p className="page-subtitle">Manage system users and access</p>
         </div>
-        <Link href="/users/create" className="btn btn-primary">
-          + New User
-        </Link>
+        {canView && error?.status !== 403 && (
+          <Link href="/users/create" className="btn btn-primary">
+            + New User
+          </Link>
+        )}
       </div>
 
-      {error ? (
+      {(!canView || error?.status === 403) ? (
+        <NoAccess module="users" action="view" />
+      ) : error ? (
         <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load users'}</p>
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading users…</p>

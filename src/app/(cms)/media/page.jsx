@@ -10,32 +10,39 @@ import { AlbumForm } from '@/components/media/AlbumForm';
 import { ImageForm } from '@/components/media/ImageForm';
 import { VideoForm } from '@/components/media/VideoForm';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 import { api, BASE_URL, uploadFile } from '@/lib/api';
 import { 
   FolderOpen, 
   Image as ImageIcon, 
   Video, 
-  Plus, 
-  Pencil, 
+  Plus,
+  Pencil,
   Trash2,
-  FolderTree
+  FolderTree,
+  ImagePlus
 } from 'lucide-react';
 
 export default function MediaPage() {
   const [activeTab, setActiveTab] = useState('albums');
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
+  const { can } = useAuth();
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formType, setFormType] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [preselectedAlbumId, setPreselectedAlbumId] = useState(null);
 
-  // Fetch from API
-  const { data: albumsData, loading: albumsLoading, reload: reloadAlbums } = useApi('/gallery-albums');
-  const { data: videosData, loading: videosLoading, reload: reloadVideos } = useApi('/gallery-videos');
-  const { data: categoriesData } = useApi('/gallery-categories');
-  const { data: eventsData } = useApi('/events');
+  const canViewGallery = can('gallery', 'view');
+
+  // Fetch from API (skip the calls entirely when the user can't view the gallery)
+  const { data: albumsData, loading: albumsLoading, error: albumsError, reload: reloadAlbums } = useApi('/gallery-albums', { enabled: canViewGallery });
+  const { data: videosData, loading: videosLoading, reload: reloadVideos } = useApi('/gallery-videos', { enabled: canViewGallery });
+  const { data: categoriesData } = useApi('/gallery-categories', { enabled: canViewGallery });
+  const { data: eventsData } = useApi('/events', { enabled: canViewGallery });
 
   const albums = albumsData || [];
   const videos = videosData || [];
@@ -70,10 +77,19 @@ export default function MediaPage() {
     setIsModalOpen(true);
   };
 
+  // Open the image upload modal pre-targeted to a specific album.
+  const handleUploadToAlbum = (album) => {
+    setFormType('image');
+    setEditingItem(null);
+    setPreselectedAlbumId(album.id);
+    setIsModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setFormType(null);
     setEditingItem(null);
+    setPreselectedAlbumId(null);
   };
 
   // --- Submit operations (real API calls) ---
@@ -275,6 +291,9 @@ export default function MediaPage() {
       header: 'Actions',
       render: (row) => (
         <div className="flex gap-2">
+          <button className="btn btn-primary btn-sm flex items-center gap-1" onClick={() => handleUploadToAlbum(row)}>
+            <ImagePlus size={14} /> Upload Image
+          </button>
           <button className="btn btn-secondary btn-sm flex items-center gap-1" onClick={() => handleOpenEdit('album', row)}>
             <Pencil size={14} /> Edit
           </button>
@@ -383,6 +402,7 @@ export default function MediaPage() {
           <h1 className="page-title">Gallery & Media Manager</h1>
           <p className="page-subtitle">Manage gallery albums, images, and videos</p>
         </div>
+        {canViewGallery && albumsError?.status !== 403 && (
         <div className="flex gap-2">
           {activeTab === 'albums' && (
             <div className="flex gap-2">
@@ -405,8 +425,13 @@ export default function MediaPage() {
             </button>
           )}
         </div>
+        )}
       </div>
 
+      {(!canViewGallery || albumsError?.status === 403) ? (
+        <NoAccess module="gallery" action="view" />
+      ) : (
+      <>
       {/* Album Details Overview */}
       <div className="card" style={{ marginBottom: '24px' }}>
         <div className="card-header">
@@ -497,6 +522,8 @@ export default function MediaPage() {
           onBulkDelete={handleBulkDeleteVideos}
         />
       )}
+      </>
+      )}
 
       {/* Interactive Forms Modal */}
       <Modal
@@ -529,7 +556,9 @@ export default function MediaPage() {
         )}
         {formType === 'image' && (
           <ImageForm
+            key={editingItem?.id || `album-${preselectedAlbumId || 'new'}`}
             albums={albums}
+            defaultAlbumId={preselectedAlbumId}
             initialData={editingItem}
             onSubmit={handleImageSubmit}
             onCancel={handleCloseModal}

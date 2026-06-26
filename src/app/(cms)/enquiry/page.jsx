@@ -4,10 +4,14 @@ import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 import { Pencil } from 'lucide-react';
 
 export default function EnquiryListPage() {
-  const { data, loading, error } = useApi('/enquiries');
+  const { can } = useAuth();
+  const canView = can('enquiries', 'view');
+  const { data, loading, error } = useApi('/enquiries', { enabled: canView });
   const enquiries = data || [];
 
   const columns = [
@@ -51,7 +55,9 @@ export default function EnquiryListPage() {
         </div>
       </div>
 
-      {error ? (
+      {(!canView || error?.status === 403) ? (
+        <NoAccess module="enquiries" action="view" />
+      ) : error ? (
         <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load enquiries'}</p>
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading enquiries…</p>

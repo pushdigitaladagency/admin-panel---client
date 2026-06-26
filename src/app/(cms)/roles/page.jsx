@@ -4,13 +4,17 @@ import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/context/ConfirmContext';
 import { Pencil, Trash2 } from 'lucide-react';
 
 export default function RoleListPage() {
-  const { data, loading, error, reload } = useApi('/roles');
+  const { can } = useAuth();
+  const canView = can('roles', 'view');
+  const { data, loading, error, reload } = useApi('/roles', { enabled: canView });
   const roles = data || [];
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
@@ -69,12 +73,16 @@ export default function RoleListPage() {
           <h1 className="page-title">Roles Management</h1>
           <p className="page-subtitle">Manage user roles and permissions</p>
         </div>
-        <Link href="/roles/create" className="btn btn-primary">
-          + New Role
-        </Link>
+        {canView && error?.status !== 403 && (
+          <Link href="/roles/create" className="btn btn-primary">
+            + New Role
+          </Link>
+        )}
       </div>
 
-      {error ? (
+      {(!canView || error?.status === 403) ? (
+        <NoAccess module="roles" action="view" />
+      ) : error ? (
         <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load roles'}</p>
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading roles…</p>

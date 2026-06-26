@@ -4,13 +4,17 @@ import React from 'react';
 import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/context/ConfirmContext';
 import { Pencil, Trash2 } from 'lucide-react';
 
 export default function PermissionsListPage() {
-  const { data, loading, error, reload } = useApi('/permissions');
+  const { can } = useAuth();
+  const canView = can('roles', 'view');
+  const { data, loading, error, reload } = useApi('/permissions', { enabled: canView });
   const permissions = data || [];
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
@@ -60,12 +64,16 @@ export default function PermissionsListPage() {
           <h1 className="page-title">Permissions</h1>
           <p className="page-subtitle">View all available system permissions</p>
         </div>
-        <Link href="/permissions/create" className="btn btn-primary">
-          + New Permission
-        </Link>
+        {canView && error?.status !== 403 && (
+          <Link href="/permissions/create" className="btn btn-primary">
+            + New Permission
+          </Link>
+        )}
       </div>
 
-      {error ? (
+      {(!canView || error?.status === 403) ? (
+        <NoAccess module="roles" action="view" />
+      ) : error ? (
         <p className="form-error" style={{ padding: '16px 0' }}>{error.message || 'Failed to load permissions'}</p>
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading permissions…</p>

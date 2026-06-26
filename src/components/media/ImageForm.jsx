@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 
-export function ImageForm({ albums = [], initialData, onSubmit, onCancel }) {
+export function ImageForm({ albums = [], initialData, defaultAlbumId, onSubmit, onCancel }) {
   const isEdit = !!initialData;
 
   const getImageUrl = (path) => {
@@ -26,7 +26,7 @@ export function ImageForm({ albums = [], initialData, onSubmit, onCancel }) {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      album_id: initialData?.album_id ? String(initialData.album_id) : '',
+      album_id: initialData?.album_id ? String(initialData.album_id) : (defaultAlbumId ? String(defaultAlbumId) : ''),
       title: initialData?.image_title || initialData?.title || '',
       caption: initialData?.caption || '',
       alt_text: initialData?.alt_text || '',

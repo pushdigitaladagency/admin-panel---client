@@ -5,6 +5,8 @@ import DataTable from '@/components/ui/DataTable';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/context/ConfirmContext';
@@ -17,14 +19,24 @@ const POST_API = {
   'press-release': '/press-releases',
 };
 
+// Map frontend postType slug to RBAC module code
+const POST_MODULE = {
+  news: 'news',
+  event: 'events',
+  'press-release': 'press_releases',
+};
+
 export default function PostListPage() {
   const params = useParams();
   const postType = params.postType || 'post';
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
+  const { can } = useAuth();
 
   const apiPath = POST_API[postType] || '/press-releases';
-  const { data, loading, error, reload } = useApi(apiPath);
+  const moduleCode = POST_MODULE[postType] || 'press_releases';
+  const canView = can(moduleCode, 'view');
+  const { data, loading, error, reload } = useApi(apiPath, { enabled: canView });
   const posts = data || [];
 
   const postTypeLabel = postType === 'news'
@@ -167,12 +179,16 @@ export default function PostListPage() {
           <h1 className="page-title">{postTypeLabel}</h1>
           <p className="page-subtitle">Manage your {singularPostTypeLabel.toLowerCase()} content</p>
         </div>
-        <Link href={`/posts/${postType}/create`} className="btn btn-primary">
-          + New {singularPostTypeLabel}
-        </Link>
+        {canView && error?.status !== 403 && (
+          <Link href={`/posts/${postType}/create`} className="btn btn-primary">
+            + New {singularPostTypeLabel}
+          </Link>
+        )}
       </div>
 
-      {error ? (
+      {(!canView || error?.status === 403) ? (
+        <NoAccess module={moduleCode} action="view" />
+      ) : error ? (
         <p className="form-error" style={{ padding: '16px 0' }}>{error.message || `Failed to load ${postTypeLabel.toLowerCase()}`}</p>
       ) : loading ? (
         <p className="text-muted" style={{ padding: '16px 0' }}>Loading {postTypeLabel.toLowerCase()}…</p>
