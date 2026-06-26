@@ -262,7 +262,14 @@ export function PostForm({ initialData, postType }) {
     // Initialize Summary Editor
     if (summaryEditorRef.current && !summaryEditorInstRef.current) {
       window.DecoupledEditor.create(summaryEditorRef.current, {
-        toolbar: toolbarConfig
+        toolbar: toolbarConfig,
+        list: {
+          properties: {
+            styles: false,
+            startIndex: false,
+            reversed: false
+          }
+        }
       })
         .then(editor => {
           summaryEditorInstRef.current = editor;
@@ -284,7 +291,14 @@ export function PostForm({ initialData, postType }) {
     // Initialize Content Editor
     if (contentEditorRef.current && !contentEditorInstRef.current) {
       window.DecoupledEditor.create(contentEditorRef.current, {
-        toolbar: toolbarConfig
+        toolbar: toolbarConfig,
+        list: {
+          properties: {
+            styles: false,
+            startIndex: false,
+            reversed: false
+          }
+        }
       })
         .then(editor => {
           contentEditorInstRef.current = editor;

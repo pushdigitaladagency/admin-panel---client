@@ -2590,22 +2590,21 @@ html.dark textarea:disabled::placeholder {
 
 /* Bullet and list styling for content inside CKEditor */
 .ck-content ul {
-  list-style-type: disc !important;
-  padding-left: 20px !important;
-  margin-top: 8px !important;
-  margin-bottom: 8px !important;
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .ck-content ol {
-  list-style-type: decimal !important;
-  padding-left: 20px !important;
-  margin-top: 8px !important;
-  margin-bottom: 8px !important;
+  list-style-type: decimal;
+  padding-left: 20px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .ck-content li {
-  display: list-item !important;
-  margin-bottom: 4px !important;
+  margin-bottom: 4px;
 }
 
 /* Decoupled Editor Styling */
