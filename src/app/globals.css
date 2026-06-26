@@ -781,6 +781,46 @@ img {
   box-shadow: 0 0 0 3px var(--color-danger-glow);
 }
 
+/* Styles for disabled/non-editable fields (ash color style) */
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: rgba(241, 245, 249, 0.65) !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+.form-input:disabled::placeholder,
+.form-textarea:disabled::placeholder,
+input:disabled::placeholder,
+textarea:disabled::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode overrides for disabled fields */
+html.dark .form-input:disabled,
+html.dark .form-select:disabled,
+html.dark .form-textarea:disabled,
+html.dark input:disabled,
+html.dark select:disabled,
+html.dark textarea:disabled {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  color: #64748b !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+html.dark .form-input:disabled::placeholder,
+html.dark .form-textarea:disabled::placeholder,
+html.dark input:disabled::placeholder,
+html.dark textarea:disabled::placeholder {
+  color: #64748b !important;
+}
+
 .form-error {
   font-size: 0.75rem;
   color: var(--color-danger);
