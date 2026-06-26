@@ -82,10 +82,10 @@ export default function Navbar({ onMenuToggle }) {
 
       <div className="navbar-right">
         {/* Theme Toggle */}
-        <button 
-          className="user-menu-btn" 
+        <button
+          className="user-menu-btn"
           onClick={toggleTheme}
-          style={{ width: '40px', height: '40px', padding: 0, justifyContent: 'center' }}
+          style={{ width: '40px', height: '40px', minHeight: '40px', padding: 0, justifyContent: 'center', borderRadius: '50%' }}
           aria-label="Toggle dark mode"
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
@@ -94,15 +94,15 @@ export default function Navbar({ onMenuToggle }) {
         {/* User menu */}
         <div className="user-menu" ref={dropdownRef}>
           <button
-            className={`user-menu-btn ${dropdownOpen ? 'open' : ''}`}
+            className={`user-menu-btn admin-profile-btn ${dropdownOpen ? 'open' : ''}`}
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             <div className="user-avatar">
               {avatarUrl ? (
-                <img 
-                  src={avatarUrl} 
-                  alt="" 
-                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }} 
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }}
                 />
               ) : (
                 initials
