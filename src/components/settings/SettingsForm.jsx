@@ -32,7 +32,7 @@ export function SettingsForm({ initialSettings = {} }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
       {/* General Settings */}
       <div className="card">
@@ -66,7 +66,7 @@ export function SettingsForm({ initialSettings = {} }) {
 
       {/* SEO Settings */}
       <div className="card">
-        <div className="card-body">
+        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="form-group">
             <label className="form-label">Default SEO Title</label>
             <Input
@@ -74,7 +74,7 @@ export function SettingsForm({ initialSettings = {} }) {
               placeholder="Default title"
             />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Default SEO Description</label>
             <textarea
               {...register('settings.seo_default_description')}
