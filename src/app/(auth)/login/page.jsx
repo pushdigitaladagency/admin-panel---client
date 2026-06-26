@@ -47,6 +47,9 @@ export default function LoginPage() {
       <div className="card" style={{ width: '100%', maxWidth: '420px' }}>
         <div className="card-body" style={{ padding: '40px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <img src="/sidebar-logo.svg" alt="Airfloa logo" style={{ height: '56px', width: 'auto' }} />
+            </div>
             <h1
               style={{
                 fontSize: '1.5rem',
@@ -57,7 +60,7 @@ export default function LoginPage() {
                 marginBottom: '8px',
               }}
             >
-              CMS Dashboard
+              Admin Dashboard
             </h1>
             <p className="text-muted text-sm">Sign in to your account</p>
           </div>

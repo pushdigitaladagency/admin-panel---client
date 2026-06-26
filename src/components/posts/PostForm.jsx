@@ -59,11 +59,12 @@ export function PostForm({ initialData, postType }) {
 
   const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
   const [mediaTarget, setMediaTarget] = React.useState(null); // 'featured' or 'gallery'
-  const [activeFormats, setActiveFormats] = React.useState({
-    bold: false,
-    italic: false,
-    underline: false,
-  });
+  const [editorLoaded, setEditorLoaded] = React.useState(false);
+
+  const summaryEditorRef = React.useRef(null);
+  const contentEditorRef = React.useRef(null);
+  const summaryEditorInstRef = React.useRef(null);
+  const contentEditorInstRef = React.useRef(null);
 
   const handleFeaturedImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -182,20 +183,31 @@ export function PostForm({ initialData, postType }) {
   };
 
   const postTitle = watch('title');
-  const editorRef = React.useRef(null);
 
+  // Load CKEditor 5 from CDN
   React.useEffect(() => {
+    if (window.ClassicEditor) {
+      setEditorLoaded(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js';
+    script.async = true;
+    script.onload = () => setEditorLoaded(true);
+    document.head.appendChild(script);
+  }, []);
+
+  // Register form fields
+  React.useEffect(() => {
+    register('excerpt', {
+      required: postType === 'event' ? 'Short Description is required' : postType === 'news' ? 'Summary is required' : 'Short Description is required'
+    });
     register('content', {
       required: postType === 'event' ? 'Event Description is required' : postType === 'news' ? 'Full Content is required' : 'Detailed Content is required'
     });
   }, [register, postType]);
 
-  React.useEffect(() => {
-    if (editorRef.current && initialData?.content) {
-      editorRef.current.innerHTML = initialData.content;
-    }
-  }, [initialData]);
-
+  // Handle Slug generation
   React.useEffect(() => {
     if (!isEdit && postTitle !== undefined) {
       const generatedSlug = postTitle
@@ -206,22 +218,93 @@ export function PostForm({ initialData, postType }) {
     }
   }, [postTitle, setValue, isEdit]);
 
-  const handleFormat = (e, command) => {
-    e.preventDefault();
-    document.execCommand(command, false, null);
-    updateActiveFormats();
-    if (editorRef.current) {
-      setValue('content', editorRef.current.innerHTML, { shouldDirty: true, shouldValidate: true });
-    }
-  };
+  // Initialize and Sync CKEditors
+  React.useEffect(() => {
+    if (!editorLoaded || !window.ClassicEditor) return;
 
-  const updateActiveFormats = () => {
-    setActiveFormats({
-      bold: document.queryCommandState('bold'),
-      italic: document.queryCommandState('italic'),
-      underline: document.queryCommandState('underline'),
-    });
-  };
+    let summaryEditor = null;
+    let contentEditor = null;
+
+    // Initialize Summary Editor
+    if (summaryEditorRef.current && !summaryEditorInstRef.current) {
+      window.ClassicEditor.create(summaryEditorRef.current, {
+        toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo', 'link']
+      })
+        .then(editor => {
+          summaryEditorInstRef.current = editor;
+          summaryEditor = editor;
+          editor.setData(initialData?.excerpt || '');
+          editor.model.document.on('change:data', () => {
+            setValue('excerpt', editor.getData(), { shouldDirty: true, shouldValidate: true });
+          });
+        })
+        .catch(err => console.error('Error initializing summary CKEditor:', err));
+    }
+
+    // Initialize Content Editor
+    if (contentEditorRef.current && !contentEditorInstRef.current) {
+      window.ClassicEditor.create(contentEditorRef.current, {
+        toolbar: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'undo', 'redo', 'link', 'uploadImage', 'insertTable', 'blockQuote'],
+        extraPlugins: [function(editor) {
+          editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+            return {
+              upload: () => loader.file.then(file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve({ default: reader.result });
+                reader.onerror = err => reject(err);
+                reader.readAsDataURL(file);
+              })),
+              abort: () => {}
+            };
+          };
+        }]
+      })
+        .then(editor => {
+          contentEditorInstRef.current = editor;
+          contentEditor = editor;
+          editor.setData(initialData?.content || '');
+          editor.model.document.on('change:data', () => {
+            setValue('content', editor.getData(), { shouldDirty: true, shouldValidate: true });
+          });
+        })
+        .catch(err => console.error('Error initializing content CKEditor:', err));
+    }
+
+    return () => {
+      if (summaryEditor) {
+        summaryEditor.destroy()
+          .then(() => {
+            if (summaryEditorInstRef.current === summaryEditor) {
+              summaryEditorInstRef.current = null;
+            }
+          })
+          .catch(err => console.error(err));
+      }
+      if (contentEditor) {
+        contentEditor.destroy()
+          .then(() => {
+            if (contentEditorInstRef.current === contentEditor) {
+              contentEditorInstRef.current = null;
+            }
+          })
+          .catch(err => console.error(err));
+      }
+    };
+  }, [editorLoaded, initialData]);
+
+  // Keep editors synced if initialData changes after initialization
+  React.useEffect(() => {
+    if (summaryEditorInstRef.current && initialData?.excerpt !== undefined) {
+      if (summaryEditorInstRef.current.getData() !== (initialData.excerpt || '')) {
+        summaryEditorInstRef.current.setData(initialData.excerpt || '');
+      }
+    }
+    if (contentEditorInstRef.current && initialData?.content !== undefined) {
+      if (contentEditorInstRef.current.getData() !== (initialData.content || '')) {
+        contentEditorInstRef.current.setData(initialData.content || '');
+      }
+    }
+  }, [initialData]);
 
   const syncNewsGallery = async (newsId, galleryImagesString) => {
     try {
@@ -842,12 +925,9 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         {postType === 'event' ? 'Short Description' : postType === 'news' ? 'Summary' : 'Short Description'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <textarea
-                        {...register('excerpt', { required: 'Short Description is required' })}
-                        className={`form-textarea ${errors.excerpt ? 'error' : ''}`}
-                        placeholder={postType === 'news' ? 'Brief summary...' : 'Brief description...'}
-                        style={{ minHeight: '268px', height: 'calc(100% - 24px)' }}
-                      />
+                      <div className="ck-editor-wrapper">
+                        <div ref={summaryEditorRef} />
+                      </div>
                       {errors.excerpt && <p className="form-error">{errors.excerpt.message}</p>}
                     </div>
 
@@ -855,35 +935,9 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         {postType === 'event' ? 'Event Description' : postType === 'news' ? 'Full Content' : 'Detailed Content'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <div className="flex flex-wrap gap-1 p-2 border border-b-0 rounded-t-md" style={{ backgroundColor: 'var(--color-editor-toolbar-bg)', borderColor: 'var(--color-border)' }}>
-                        <button type="button" className={`btn btn-sm btn-secondary rich-text-toolbar-btn ${activeFormats.bold ? 'active' : ''}`} onMouseDown={(e) => handleFormat(e, 'bold')}><b>B</b></button>
-                        <button type="button" className={`btn btn-sm btn-secondary rich-text-toolbar-btn ${activeFormats.italic ? 'active' : ''}`} onMouseDown={(e) => handleFormat(e, 'italic')}><i>I</i></button>
-                        <button type="button" className={`btn btn-sm btn-secondary rich-text-toolbar-btn ${activeFormats.underline ? 'active' : ''}`} onMouseDown={(e) => handleFormat(e, 'underline')}><u>U</u></button>
+                      <div className="ck-editor-wrapper">
+                        <div ref={contentEditorRef} />
                       </div>
-                      <div
-                        id="rich-text-editor"
-                        ref={editorRef}
-                        contentEditable
-                        data-placeholder={postType === 'event' ? 'Enter event description...' : postType === 'news' ? 'Enter full news content...' : 'Enter detailed content...'}
-                        className={`form-textarea ${errors.content ? 'error' : ''}`}
-                        style={{
-                          minHeight: '220px',
-                          borderTopLeftRadius: 0,
-                          borderTopRightRadius: 0,
-                          outline: 'none',
-                          overflowY: 'auto',
-                          backgroundColor: 'var(--color-surface)',
-                          border: '1px solid var(--color-border)',
-                          padding: '12px',
-                          fontSize: '0.875rem'
-                        }}
-                        onInput={(e) => {
-                          updateActiveFormats();
-                          setValue('content', e.currentTarget.innerHTML, { shouldDirty: true, shouldValidate: true });
-                        }}
-                        onKeyUp={updateActiveFormats}
-                        onMouseUp={updateActiveFormats}
-                      />
                       {errors.content && <p className="form-error">{errors.content.message}</p>}
                     </div>
                   </div>

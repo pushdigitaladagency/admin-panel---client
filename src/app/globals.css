@@ -2224,3 +2224,74 @@ gap: 7px; }
   background-color: var(--color-primary) !important;
   color: #fff !important;
 }
+
+/* ---------- CKEditor Styling ---------- */
+.ck-reset_all :not(.ck-reset_all-child) {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+.ck.ck-editor__main>.ck-editor__editable {
+  background: var(--color-bg-alt) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+  min-height: 200px;
+}
+
+.ck.ck-editor__main>.ck-editor__editable:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-glow) !important;
+}
+
+.ck.ck-toolbar {
+  background: var(--color-bg-alt) !important;
+  border-color: var(--color-border) !important;
+}
+
+.ck.ck-button {
+  color: var(--color-text) !important;
+  cursor: pointer;
+}
+
+.ck.ck-button:hover {
+  background: var(--color-surface-hover) !important;
+}
+
+.ck.ck-button.ck-on {
+  background: var(--color-surface-hover) !important;
+  color: var(--color-primary) !important;
+}
+
+/* Fix dropdowns and panels in CKEditor */
+.ck.ck-dropdown__panel {
+  background: var(--color-bg-alt) !important;
+  border-color: var(--color-border) !important;
+}
+
+.ck.ck-list {
+  background: var(--color-bg-alt) !important;
+}
+
+.ck.ck-list__item .ck-button:hover {
+  background: var(--color-surface-hover) !important;
+}
+
+/* Bullet and list styling for content inside CKEditor */
+.ck-content ul {
+  list-style-type: disc !important;
+  padding-left: 20px !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.ck-content ol {
+  list-style-type: decimal !important;
+  padding-left: 20px !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.ck-content li {
+  display: list-item !important;
+  margin-bottom: 4px !important;
+}
+
