@@ -183,10 +183,8 @@ export default function PostListPage() {
           searchKey="title" 
           filterOptions={
             postType === 'event' 
-              ? ['Draft', 'Ongoing', 'Upcoming', 'Completed', 'Published']
-              : postType === 'news'
-                ? ['Draft', 'Published', 'Archived']
-                : ['Draft', 'Published']
+              ? ['Ongoing', 'Upcoming', 'Completed']
+              : ['Draft', 'Published']
           }
           filterKey={
             postType === 'event'
