@@ -24,7 +24,7 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       title: initialData?.title || '',
@@ -116,10 +116,10 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border" style={{ borderColor: 'var(--color-border)' }}>
-        <Button type="submit" variant="primary">
-          {isEdit ? 'Save' : 'Add Video'}
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : isEdit ? 'Save' : 'Add Video'}
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
       </div>

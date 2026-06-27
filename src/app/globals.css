@@ -2680,3 +2680,26 @@ html.dark textarea:disabled::placeholder {
 html.dark .sidebar {
   border-right: none !important;
 }
+
+
+/* Mobile Responsive Layout (640px) */
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    width: 260px;
+    max-width: 85vw;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+}
