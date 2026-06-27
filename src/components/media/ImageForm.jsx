@@ -23,7 +23,7 @@ export function ImageForm({ albums = [], initialData, defaultAlbumId, onSubmit, 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       album_id: initialData?.album_id ? String(initialData.album_id) : (defaultAlbumId ? String(defaultAlbumId) : ''),
@@ -147,10 +147,10 @@ export function ImageForm({ albums = [], initialData, defaultAlbumId, onSubmit, 
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border" style={{ borderColor: 'var(--color-border)' }}>
-        <Button type="submit" variant="primary">
-          {isEdit ? 'Save' : 'Upload Image'}
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? (isEdit ? 'Saving...' : 'Uploading...') : (isEdit ? 'Save' : 'Upload Image')}
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
       </div>

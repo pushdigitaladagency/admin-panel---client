@@ -834,6 +834,28 @@ html.dark .navbar::after {
   border-radius: var(--radius-sm);
 }
 
+/* Loading state: inline spinner for async actions (e.g. saving) */
+.btn-loading {
+  cursor: progress;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: btnSpin 0.6s linear infinite;
+}
+
+@keyframes btnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* -- Form Elements -- */
 .form-group {
   display: flex;
@@ -2664,4 +2686,27 @@ html.dark textarea:disabled::placeholder {
 /* Dark mode sidebar border fix */
 html.dark .sidebar {
   border-right: none !important;
+}
+
+
+/* Mobile Responsive Layout (640px) */
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    width: 260px;
+    max-width: 85vw;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+  }
 }

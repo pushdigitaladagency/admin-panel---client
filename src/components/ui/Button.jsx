@@ -8,6 +8,9 @@ export const Button = ({
   variant = 'primary',
   className = '',
   type = 'button',
+  loading = false,
+  loadingText,
+  disabled = false,
   children,
   ...rest
 }) => {
@@ -19,9 +22,18 @@ export const Button = ({
     ghost: 'btn-ghost',
   }[variant] || 'btn-primary';
 
+  const loadingClass = loading ? 'btn-loading' : '';
+
   return (
-    <button type={type} className={`${baseClasses} ${variantClasses} ${className}`} {...rest}>
-      {children}
+    <button
+      type={type}
+      className={`${baseClasses} ${variantClasses} ${loadingClass} ${className}`}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...rest}
+    >
+      {loading && <span className="btn-spinner" aria-hidden="true" />}
+      {loading ? (loadingText ?? children) : children}
     </button>
   );
 };

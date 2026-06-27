@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { BASE_URL } from '@/lib/api';
 
 export function VideoForm({ initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
@@ -13,7 +14,7 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
-    const baseHost = (process.env.NEXT_PUBLIC_API_URL || 'http://63.141.242.203:6001/api').replace(/\/api$/, '');
+    const baseHost = BASE_URL.replace(/\/api$/, '');
     return `${baseHost}/${path.replace(/^\/?/, '')}`;
   };
 
@@ -23,7 +24,7 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       title: initialData?.title || '',
@@ -115,10 +116,10 @@ export function VideoForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border" style={{ borderColor: 'var(--color-border)' }}>
-        <Button type="submit" variant="primary">
-          {isEdit ? 'Save' : 'Add Video'}
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : isEdit ? 'Save' : 'Add Video'}
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
       </div>
