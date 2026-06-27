@@ -30,7 +30,7 @@ export default function EnquiryListPage() {
       header: 'Status',
       render: (row) => {
         const s = row.status || 'New';
-        const badgeColor = s === 'New' ? 'badge-primary' : s === 'In Progress' ? 'badge-warning' : s === 'Responded' ? 'badge-info' : 'badge-success';
+        const badgeColor = s === 'New' ? 'badge-primary' : s === 'In Progress' ? 'badge-warning' : s === 'Responded' ? 'badge-info' : 'badge-success'; // 'Closed' -> badge-success
         return <span className={`badge ${badgeColor}`}>{s}</span>;
       }
     },
@@ -66,7 +66,7 @@ export default function EnquiryListPage() {
           columns={columns} 
           data={enquiries} 
           searchKey="name" 
-          filterOptions={['New', 'In Progress', 'Responded', 'Resolved']}
+          filterOptions={['New', 'In Progress', 'Responded', 'Closed']}
           filterKey={(row) => row.status || 'New'}
         />
       )}

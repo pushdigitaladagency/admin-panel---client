@@ -186,8 +186,10 @@ export function PostForm({ initialData, postType }) {
       },
   });
 
-  // Register featured_image and gallery_images as custom virtual fields since they are populated via MediaSelectModal
+  // Register featured_image and gallery_images as custom virtual fields since they are populated via MediaSelectModal.
+  // Enquiry has no image fields, so skip — a required virtual field that's never rendered silently blocks handleSubmit.
   React.useEffect(() => {
+    if (postType === 'enquiry') return;
     register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
     register('gallery_images');
   }, [register, isEdit, postType]);
@@ -222,8 +224,11 @@ export function PostForm({ initialData, postType }) {
     document.head.appendChild(script);
   }, []);
 
-  // Register form fields
+  // Register form fields.
+  // Enquiry has no excerpt/content editors, so registering them as required would
+  // silently block handleSubmit (validation fails on fields that are never rendered).
   React.useEffect(() => {
+    if (postType === 'enquiry') return;
     register('excerpt', {
       required: postType === 'event' ? 'Short Description is required' : postType === 'news' ? 'Summary is required' : 'Short Description is required'
     });
@@ -432,6 +437,22 @@ export function PostForm({ initialData, postType }) {
     }
   };
 
+  // Validation guard: surface why a submit was blocked instead of failing silently.
+  const onInvalid = (formErrors) => {
+    const fields = Object.keys(formErrors || {});
+    const labels = {
+      title: 'Title', category: 'Category', excerpt: 'Short description',
+      content: 'Content', featured_image: 'Featured image', publish_date: 'Publish date',
+      venue: 'Venue', organizer_email: 'Organizer email',
+      event_start_date: 'Event start date', event_end_date: 'Event end date',
+    };
+    const names = fields.map((f) => labels[f] || f);
+    addToast(
+      names.length ? `Please fix: ${names.join(', ')}` : 'Please check the form for errors',
+      'danger'
+    );
+  };
+
   // Categories/types come from the real backend, keyed by post type.
   const categoryEndpoint = postType === 'news'
     ? '/news-categories?limit=100'
@@ -499,7 +520,7 @@ export function PostForm({ initialData, postType }) {
         <h3 className="card-title">{isEdit ? `Edit ${postType}` : `Create ${postType}`}</h3>
       </div>
       <div className="card-body">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
                     {postType === 'enquiry' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="form-group">
@@ -569,8 +590,8 @@ export function PostForm({ initialData, postType }) {
               </div>
               
               <div className="form-group md:col-span-2 pt-4 flex gap-4">
-                <Button type="submit" variant="primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : 'Save'}
+                <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving...">
+                  Save
                 </Button>
                 <Button
                   type="button"
@@ -1006,10 +1027,11 @@ export function PostForm({ initialData, postType }) {
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                  loadingText="Saving..."
                   style={{ width: 'auto', minWidth: '72px', padding: '9px 18px' }}
                 >
-                  {isSubmitting ? 'Saving...' : 'Save'}
+                  Save
                 </Button>
                 <Button
                   type="button"

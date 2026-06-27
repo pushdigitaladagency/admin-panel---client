@@ -832,6 +832,28 @@ html.dark .navbar::after {
   border-radius: var(--radius-sm);
 }
 
+/* Loading state: inline spinner for async actions (e.g. saving) */
+.btn-loading {
+  cursor: progress;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: btnSpin 0.6s linear infinite;
+}
+
+@keyframes btnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* -- Form Elements -- */
 .form-group {
   display: flex;

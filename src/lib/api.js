@@ -9,7 +9,7 @@
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://63.141.242.203:6001/api';
 
-const TOKEN_KEY = 'cms_token';
+const TOKEN_KEY = 'cms_keytoauthkenvalitecdodationsadsadefewgbv';
 
 export function getToken() {
   if (typeof window === 'undefined') return null;
