@@ -22,14 +22,15 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
 
   const {
     register,
+    watch,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       title: initialData?.title || '',
-      category_id: initialData?.category_id ? String(initialData.category_id) : '',
+      category_id: initialData?.category_id ? String(initialData.category_id) : initialData?.category?.id ? String(initialData.category.id) : '',
       description: initialData?.description || '',
-      event_id: initialData?.event_id ? String(initialData.event_id) : '',
+      event_id: initialData?.event_id ? String(initialData.event_id) : initialData?.event?.id ? String(initialData.event.id) : '',
       status: (initialData?.status === true || initialData?.status === 'Active' || initialData?.status === undefined) ? 'Active' : 'Inactive',
     },
   });
@@ -52,7 +53,7 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
 
       <div className="form-group">
         <label className="form-label">Album Category</label>
-        <Select {...register('category_id')}>
+        <Select value={watch('category_id') || ''} {...register('category_id')}>
           <option value="">None / Select Category...</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -120,7 +121,7 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
 
       <div className="form-group">
         <label className="form-label">Event Reference</label>
-        <Select {...register('event_id')}>
+        <Select value={watch('event_id') || ''} {...register('event_id')}>
           <option value="">None</option>
           {events.map((evt) => (
             <option key={evt.id} value={evt.id}>
@@ -139,10 +140,10 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border" style={{ borderColor: 'var(--color-border)' }}>
-        <Button type="submit" variant="primary">
-          {isEdit ? 'Save' : 'Create Album'}
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : isEdit ? 'Save' : 'Create Album'}
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
       </div>

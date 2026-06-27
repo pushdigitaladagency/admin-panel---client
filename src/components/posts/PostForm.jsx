@@ -549,7 +549,7 @@ export function PostForm({ initialData, postType }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Assigned To</label>
-                <Select {...register('assigned_to')}>
+                <Select value={watch('assigned_to') || ''} {...register('assigned_to')}>
                   <option value="">Unassigned</option>
                   {initialData?.assigned_to && !enquiryUsers.some((u) => String(u.id) === String(initialData.assigned_to)) && (
                     <option value={initialData.assigned_to}>
@@ -613,7 +613,7 @@ export function PostForm({ initialData, postType }) {
                   <label className="form-label">
                     {postType === 'event' ? 'Event Type' : postType === 'news' ? 'News Category' : 'Category'} {postType !== 'event' && <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>}
                   </label>
-                  <Select {...register('category', postType === 'event' ? {} : { required: 'Category/Type is required' })}>
+                  <Select value={watch('category') || ''} {...register('category', postType === 'event' ? {} : { required: 'Category/Type is required' })}>
                     <option value="">Select type...</option>
                     {CATEGORIES.map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
