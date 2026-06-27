@@ -1002,6 +1002,10 @@ html.dark textarea:disabled::placeholder {
 }
 
 /* -- Data Table -- */
+.data-table-card {
+  overflow: visible;
+}
+
 .data-table-wrapper {
   overflow-x: auto;
 }
