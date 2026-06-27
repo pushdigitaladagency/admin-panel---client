@@ -27,6 +27,7 @@ export default function EditEnquiryPage() {
     submitted_date: data.created_at ? data.created_at.split('T')[0] : '',
     response_date: data.response_date ? data.response_date.split('T')[0] : '',
     assigned_to: data.assigned_to ? String(data.assigned_to) : '',
+    assigned_to_name: data.assignee ? `${data.assignee.first_name || ''} ${data.assignee.last_name || ''}`.trim() : '',
     follow_up_notes: data.follow_up_notes || '',
   };
 

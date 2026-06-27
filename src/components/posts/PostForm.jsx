@@ -444,6 +444,10 @@ export function PostForm({ initialData, postType }) {
   const { data: categoriesData } = useApi(categoryEndpoint, { enabled: !!categoryEndpoint });
   const CATEGORIES = categoriesData || [];
 
+  // Users for the enquiry "Assigned To" picker (assigned_to is a user-id FK on the server).
+  const { data: enquiryUsersData } = useApi('/users', { enabled: postType === 'enquiry' });
+  const enquiryUsers = enquiryUsersData || [];
+
   const renderSeoConfigurations = () => (
     <div className="card" style={{ background: 'rgba(0, 0, 0, 0.01)', borderStyle: 'dashed' }}>
       <div className="card-header" style={{ padding: '12px 18px' }}>
@@ -545,7 +549,19 @@ export function PostForm({ initialData, postType }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Assigned To</label>
-                <Input {...register('assigned_to')} placeholder="e.g. Sales Team" />
+                <Select {...register('assigned_to')}>
+                  <option value="">Unassigned</option>
+                  {initialData?.assigned_to && !enquiryUsers.some((u) => String(u.id) === String(initialData.assigned_to)) && (
+                    <option value={initialData.assigned_to}>
+                      {initialData.assigned_to_name || `User #${initialData.assigned_to}`}
+                    </option>
+                  )}
+                  {enquiryUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {`${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || u.email}
+                    </option>
+                  ))}
+                </Select>
               </div>
               <div className="form-group md:col-span-2">
                 <label className="form-label">Follow-up Notes</label>
