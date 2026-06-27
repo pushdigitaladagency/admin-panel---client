@@ -7,6 +7,7 @@ export const Badge = ({ variant = 'info', className = '', children }) => {
     success: 'badge-success',
     danger: 'badge-danger',
     warning: 'badge-warning',
+    purple: 'badge-purple',
     info: 'badge-info',
   }[variant] || 'badge-info';
 

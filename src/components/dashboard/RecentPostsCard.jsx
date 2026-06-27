@@ -60,6 +60,10 @@ export function RecentPostsCard({ posts = [], loading = false }) {
                             ? 'badge-success'
                             : (post.status || '').toLowerCase() === 'draft'
                             ? 'badge-warning'
+                            : (post.status || '').toLowerCase() === 'ongoing'
+                            ? 'badge-purple'
+                            : (post.status || '').toLowerCase() === 'upcoming'
+                            ? 'badge-primary'
                             : 'badge-primary'
                         }`}
                       >

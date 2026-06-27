@@ -83,7 +83,7 @@ export default function PostListPage() {
       render: (row) => {
         const status = row.event_status || row.publish_status || 'Draft';
         const badgeColor =
-          status === 'Ongoing' ? 'badge-warning' :
+          status === 'Ongoing' ? 'badge-purple' :
           status === 'Upcoming' ? 'badge-primary' :
           status === 'Completed' ? 'badge-success' :
           status === 'Published' ? 'badge-success' : 'badge-secondary';

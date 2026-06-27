@@ -327,7 +327,7 @@ export default function MediaPage() {
       header: 'Status',
       render: (row) => {
         const active = row.status === true || row.status === 1 || row.status === 'Active';
-        return <span className={`badge ${active ? 'badge-success' : 'badge-secondary'}`}>{active ? 'Active' : 'Inactive'}</span>;
+        return <span className={`badge ${active ? 'badge-success' : 'badge-danger'}`}>{active ? 'Active' : 'Inactive'}</span>;
       },
     },
     {
@@ -375,7 +375,7 @@ export default function MediaPage() {
       header: 'Status',
       render: (row) => {
         const active = row.status === true || row.status === 1 || row.status === 'Active';
-        return <span className={`badge ${active ? 'badge-success' : 'badge-secondary'}`}>{active ? 'Active' : 'Inactive'}</span>;
+        return <span className={`badge ${active ? 'badge-success' : 'badge-danger'}`}>{active ? 'Active' : 'Inactive'}</span>;
       },
     },
     {
