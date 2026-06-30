@@ -13,13 +13,20 @@ import {
   Calendar, 
   Image as ImageIcon, 
   Mail, 
-  Settings, 
+  Settings,
   ClipboardList,
   UserCircle,
   ChevronDown,
   List,
   Plus,
-  FolderTree
+  FolderTree,
+  Briefcase,
+  Award,
+  Building2,
+  TrendingUp,
+  Globe,
+  SlidersHorizontal,
+  FileText
 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -71,6 +78,31 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: 'Corporate',
+    items: [
+      {
+        label: 'Careers',
+        icon: <Briefcase size={20} />,
+        children: [
+          { label: 'Job Postings', href: '/career-posts', icon: <List size={16} /> },
+          { label: 'Add Posting', href: '/career-posts/create', icon: <Plus size={16} /> },
+          { label: 'Applications', href: '/career-applications', icon: <FileText size={16} /> },
+        ],
+      },
+      { label: 'Certificates', href: '/certificates', icon: <Award size={20} /> },
+      { label: 'Client & Partner Logos', href: '/client-partner-logos', icon: <Building2 size={20} /> },
+      {
+        label: 'Investors',
+        icon: <TrendingUp size={20} />,
+        children: [
+          { label: 'Documents', href: '/investor-documents', icon: <List size={16} /> },
+          { label: 'Add Document', href: '/investor-documents/create', icon: <Plus size={16} /> },
+          { label: 'Categories', href: '/investor-categories', icon: <FolderTree size={16} /> },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Users & Access',
     items: [
       { label: 'Users', href: '/users', icon: <Users size={20} /> },
@@ -81,6 +113,8 @@ const NAV_SECTIONS = [
   {
     title: 'System',
     items: [
+      { label: 'Meta Mappings', href: '/meta-mappings', icon: <Globe size={20} /> },
+      { label: 'Global Settings', href: '/global-settings', icon: <SlidersHorizontal size={20} /> },
       { label: 'Settings', href: '/settings', icon: <Settings size={20} /> },
       { label: 'Action Log', href: '/action-log', icon: <ClipboardList size={20} /> },
     ],
