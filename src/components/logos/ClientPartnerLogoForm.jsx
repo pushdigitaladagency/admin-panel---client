@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
@@ -23,6 +23,7 @@ export function ClientPartnerLogoForm({ initialData }) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -38,6 +39,9 @@ export function ClientPartnerLogoForm({ initialData }) {
       meta_description: initialData?.meta_description || '',
     },
   });
+
+  const featuredVal = useWatch({ control, name: 'featured', defaultValue: initialData?.featured || 'No' });
+  const statusVal   = useWatch({ control, name: 'status',   defaultValue: initialData?.status   || 'Active' });
 
   const onSubmit = async (data) => {
     if (!logo) {
@@ -69,6 +73,30 @@ export function ClientPartnerLogoForm({ initialData }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Details Summary — colored badges only here */}
+      {isEdit && (
+        <div className="card">
+          <div className="card-header"><h3 className="card-title">Details</h3></div>
+          <div className="card-body">
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span className="form-label" style={{ marginBottom: 0 }}>Featured</span>
+                <span className={`badge ${featuredVal === 'Yes' ? 'badge-success' : 'badge-danger'}`}>
+                  {featuredVal || 'No'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span className="form-label" style={{ marginBottom: 0 }}>Status</span>
+                <span className={`badge ${statusVal === 'Active' ? 'badge-success' : 'badge-danger'}`}>
+                  {statusVal || 'Active'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <div className="card-header"><h3 className="card-title">Logo Details</h3></div>
         <div className="card-body">
@@ -83,11 +111,17 @@ export function ClientPartnerLogoForm({ initialData }) {
             {field('display_order', 'Display Order', { type: 'number' })}
             <div className="form-group">
               <label className="form-label">Featured</label>
-              <select className="form-select" {...register('featured')}><option>No</option><option>Yes</option></select>
+              <select className="form-select" {...register('featured')}>
+                <option>No</option>
+                <option>Yes</option>
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Status</label>
-              <select className="form-select" {...register('status')}><option>Active</option><option>Inactive</option></select>
+              <select className="form-select" {...register('status')}>
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
             </div>
           </div>
           <div className="form-group">

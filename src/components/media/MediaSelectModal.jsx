@@ -9,13 +9,32 @@ import {
   Maximize, 
   X,
   FileImage,
+  FileText,
   CheckCircle2,
   Check
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { api, BASE_URL, uploadFile } from '@/lib/api';
 
-export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple = false }) {
+const IMAGE_TYPES = ['PNG', 'JPG', 'JPEG', 'WEBP', 'GIF', 'SVG'];
+
+const getFileType = (name = '') => {
+  const ext = String(name).split('.').pop();
+  return ext ? ext.toUpperCase() : '';
+};
+
+const isImageType = (type = '') => IMAGE_TYPES.includes(String(type).toUpperCase());
+
+export default function MediaSelectModal({
+  isOpen,
+  onClose,
+  onSelect,
+  multiple = false,
+  accept = 'image/*',
+  allowedTypes = IMAGE_TYPES,
+  invalidFileMessage = 'Only image files are allowed',
+  emptyMessage = 'No images found',
+}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All Files');
   
@@ -57,7 +76,7 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
             // Only show active images whose parent album is also active
             if (isAlbumActive && isImageActive) {
               const fileName = img.image_path.split('/').pop();
-              const ext = fileName.split('.').pop().toUpperCase();
+              const ext = getFileType(fileName);
               imagesList.push({
                 id: img.id,
                 name: img.image_title || fileName,
@@ -150,8 +169,12 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
 
   if (!isOpen) return null;
 
+  const normalizedAllowedTypes = allowedTypes.map(type => String(type).toUpperCase());
+  const filterOptions = normalizedAllowedTypes.length ? normalizedAllowedTypes : IMAGE_TYPES;
+
   // Filter media items
   const filteredItems = mediaItems.filter(item => {
+    if (normalizedAllowedTypes.length && !normalizedAllowedTypes.includes(String(item.type).toUpperCase())) return false;
     if (searchTerm && !item.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     if (filterType !== 'All Files' && item.type !== filterType) return false;
     return true;
@@ -191,18 +214,30 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const selectedFiles = Array.from(files);
+    const invalidFiles = selectedFiles.filter(file => {
+      const type = getFileType(file.name);
+      return normalizedAllowedTypes.length && !normalizedAllowedTypes.includes(type);
+    });
+
+    if (invalidFiles.length > 0) {
+      addToast(invalidFileMessage, 'danger');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     setLoading(true);
     try {
       const uploadedItems = [];
       const baseHost = BASE_URL.replace(/\/api$/, '');
       
-      for (const file of Array.from(files)) {
+      for (const file of selectedFiles) {
         const res = await uploadFile(file);
         const url = `${baseHost}/${res.path.replace(/^\/?/, '')}`;
         uploadedItems.push({
           id: res.filename,
           name: res.filename,
-          type: file.name.split('.').pop().toUpperCase(),
+          type: getFileType(file.name),
           size: (res.size / 1024).toFixed(2) + ' KB',
           url: url,
           path: res.path,
@@ -216,6 +251,7 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
       addToast(err.message || 'Failed to upload file(s)', 'danger');
     } finally {
       setLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -240,7 +276,7 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
               ref={fileInputRef} 
               style={{ display: 'none' }} 
               multiple 
-              accept="image/*"
+              accept={accept}
               onChange={handleFileChange} 
             />
             <button className="media-upload-btn" onClick={handleUploadClick}>
@@ -256,9 +292,9 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
                 className="media-select-input"
               >
                 <option value="All Files">All Files</option>
-                <option value="PNG">PNG</option>
-                <option value="JPG">JPG</option>
-                <option value="SVG">SVG</option>
+                {filterOptions.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
               </select>
             </div>
             
@@ -288,7 +324,7 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
               </div>
             ) : filteredItems.length === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-muted)', fontSize: '0.875rem' }}>
-                No images found
+                {emptyMessage}
               </div>
             ) : (
               <div className="media-grid">
@@ -299,7 +335,13 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
                     onClick={() => handleSelectToggle(item.id)}
                   >
                     <div className="media-grid-item-image-wrapper">
-                      <img src={item.url} alt={item.name} className="media-grid-item-image" />
+                      {isImageType(item.type) ? (
+                        <img src={item.url} alt={item.name} className="media-grid-item-image" />
+                      ) : (
+                        <div className="media-grid-item-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface)' }}>
+                          <FileText size={42} className="text-muted" />
+                        </div>
+                      )}
                       {selectedIds.includes(item.id) && (
                         <div className="media-grid-item-check">
                           <CheckCircle2 size={24} fill="#5A67D8" color="white" />
@@ -321,7 +363,13 @@ export default function MediaSelectModal({ isOpen, onClose, onSelect, multiple =
             {selectedItem ? (
               <div className="media-details">
                 <div className="media-details-preview">
-                  <img src={selectedItem.url} alt={selectedItem.name} />
+                  {isImageType(selectedItem.type) ? (
+                    <img src={selectedItem.url} alt={selectedItem.name} />
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                      <FileText size={58} className="text-muted" />
+                    </div>
+                  )}
                 </div>
                 
                 <div className="media-details-info-list">

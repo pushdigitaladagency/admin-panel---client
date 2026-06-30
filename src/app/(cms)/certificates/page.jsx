@@ -41,7 +41,7 @@ export default function CertificateListPage() {
       header: 'Issue Date',
       render: (row) => row.issue_date ? new Date(row.issue_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—',
     },
-    { header: 'Featured', render: (row) => <span className={`badge ${row.featured === 'Yes' ? 'badge-info' : 'badge-secondary'}`}>{row.featured || 'No'}</span> },
+    { header: 'Featured', render: (row) => <span className={`badge ${row.featured === 'Yes' ? 'badge-info' : 'badge-danger'}`}>{row.featured || 'No'}</span> },
     { header: 'Status', render: (row) => { const s = row.status || 'Active'; return <span className={`badge ${STATUS_BADGE[s] || 'badge-secondary'}`}>{s}</span>; } },
     {
       header: 'Actions',
