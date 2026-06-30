@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { UploadCloud, FileText, X } from 'lucide-react';
+import { UploadCloud, FileText, X, Eye } from 'lucide-react';
 import { uploadFile, BASE_URL } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 
@@ -24,6 +24,7 @@ export function UploadField({
   onChange,
   preview = true,
   hint,
+  readonly = false,
 }) {
   const { addToast } = useToast();
   const [uploading, setUploading] = React.useState(false);
@@ -54,7 +55,7 @@ export function UploadField({
       {value ? (
         <div
           style={{
-            display: 'flex', alignItems: 'center', gap: '12px',
+            display: 'flex', alignItems: 'center', gap: '10px',
             padding: '10px 14px', border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)', background: 'var(--color-surface)',
           }}
@@ -62,12 +63,34 @@ export function UploadField({
           {preview && isImage ? (
             <img src={resolveUploadUrl(value)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 6 }} />
           ) : (
-            <FileText size={22} className="text-muted" />
+            <FileText size={22} className="text-muted" style={{ flexShrink: 0 }} />
           )}
-          <span style={{ flex: 1, fontSize: '0.8125rem', wordBreak: 'break-all' }}>{fileName}</span>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => onChange?.('')} title="Remove">
-            <X size={14} />
-          </button>
+          <span style={{ flex: 1, fontSize: '0.8125rem', wordBreak: 'break-all', minWidth: 0 }}>{fileName}</span>
+
+          {/* View button — shown inline for all document files */}
+          {!isImage && value && (
+            <a
+              href={resolveUploadUrl(value)}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-primary btn-sm"
+              title="View file"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0, textDecoration: 'none' }}
+            >
+              <Eye size={14} />
+              View
+            </a>
+          )}
+
+          {!readonly && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onChange?.('')} title="Remove" style={{ flexShrink: 0 }}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      ) : readonly ? (
+        <div style={{ padding: '10px 14px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>
+          No file uploaded
         </div>
       ) : (
         <label
