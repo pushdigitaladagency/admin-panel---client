@@ -129,13 +129,19 @@ export default function Sidebar({ isOpen, onClose }) {
     setOpenDropdowns((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  // Check if any child is active to auto-expand & highlight parent
-  const isChildActive = (children) =>
-    children?.some(
-      (child) =>
-        pathname === child.href ||
-        (child.href !== '/dashboard' && pathname.startsWith(child.href))
-    );
+  const normalizePath = (path = '') => path.replace(/\/$/, '') || '/';
+  const currentPath = normalizePath(pathname);
+
+  const isRouteActive = (href) => {
+    const targetPath = normalizePath(href);
+    if (targetPath === '/dashboard') return currentPath === targetPath;
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+  };
+
+  const getActiveChildHref = (children = []) =>
+    children
+      .filter((child) => isRouteActive(child.href))
+      .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   return (
     <>
@@ -162,8 +168,9 @@ export default function Sidebar({ isOpen, onClose }) {
               {section.items.map((item) => {
                 // Dropdown item (has children)
                 if (item.children) {
-                  const childActive = isChildActive(item.children);
-                  const isExpanded = openDropdowns[item.label] ?? childActive;
+                  const activeChildHref = getActiveChildHref(item.children);
+                  const childActive = !!activeChildHref;
+                  const isExpanded = childActive || openDropdowns[item.label];
 
                   return (
                     <div key={item.label} className="sidebar-dropdown">
@@ -181,7 +188,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       </button>
                       <div className={`sidebar-dropdown-menu ${isExpanded ? 'open' : ''}`}>
                         {item.children.map((child) => {
-                          const isActive = pathname === child.href;
+                          const isActive = activeChildHref === child.href;
 
                           return (
                             <Link
@@ -201,9 +208,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 }
 
                 // Normal link item
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                const isActive = isRouteActive(item.href);
 
                 return (
                   <Link
@@ -223,7 +228,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Footer */}
         <div className="sidebar-footer">
-          <Link href="/profile" className="sidebar-link">
+          <Link href="/profile" className={`sidebar-link ${isRouteActive('/profile') ? 'active' : ''}`}>
             <span className="icon"><UserCircle size={20} /></span>
             <span>Profile</span>
           </Link>

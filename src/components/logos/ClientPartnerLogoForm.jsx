@@ -75,7 +75,7 @@ export function ClientPartnerLogoForm({ initialData }) {
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* Details Summary — colored badges only here */}
-      {isEdit && (
+      {/* {isEdit && (
         <div className="card">
           <div className="card-header"><h3 className="card-title">Details</h3></div>
           <div className="card-body">
@@ -95,7 +95,7 @@ export function ClientPartnerLogoForm({ initialData }) {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="card">
         <div className="card-header"><h3 className="card-title">Logo Details</h3></div>
@@ -123,13 +123,14 @@ export function ClientPartnerLogoForm({ initialData }) {
                 <option>Inactive</option>
               </select>
             </div>
-          </div>
+         
           <div className="form-group">
             <label className="form-label">Short Description</label>
             <textarea className="form-textarea" style={{ minHeight: 80 }} {...register('short_description')} />
           </div>
         </div>
       </div>
+       </div>
 
       <div className="card">
         <div className="card-header"><h3 className="card-title">Logo Image</h3></div>

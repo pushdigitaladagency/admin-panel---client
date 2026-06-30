@@ -43,8 +43,8 @@ export default function LogoListPage() {
     { header: 'Name', render: (row) => row.client_partner_name },
     { header: 'Category', render: (row) => <span className="badge badge-info">{row.category}</span> },
     { header: 'Order', render: (row) => row.display_order ?? 0 },
-    { header: 'Featured', render: (row) => <span className={`badge ${row.featured === 'Yes' ? 'badge-info' : 'badge-secondary'}`}>{row.featured || 'No'}</span> },
-    { header: 'Status', render: (row) => <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-secondary'}`}>{row.status || 'Active'}</span> },
+    { header: 'Featured', render: (row) => <span className={`badge ${row.featured === 'Yes' ? 'badge-info' : 'badge-danger'}`}>{row.featured || 'No'}</span> },
+    { header: 'Status', render: (row) => <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-danger'}`}>{row.status || 'Active'}</span> },
     {
       header: 'Actions',
       render: (row) => (

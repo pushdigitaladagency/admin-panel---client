@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { UploadCloud, FileText, X, Eye } from 'lucide-react';
+import { UploadCloud, FileText, X } from 'lucide-react';
 import { uploadFile, BASE_URL } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 
@@ -67,21 +67,6 @@ export function UploadField({
           )}
           <span style={{ flex: 1, fontSize: '0.8125rem', wordBreak: 'break-all', minWidth: 0 }}>{fileName}</span>
 
-          {/* View button — shown inline for all document files */}
-          {!isImage && value && (
-            <a
-              href={resolveUploadUrl(value)}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-primary btn-sm"
-              title="View file"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0, textDecoration: 'none' }}
-            >
-              <Eye size={14} />
-              View
-            </a>
-          )}
-
           {!readonly && (
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => onChange?.('')} title="Remove" style={{ flexShrink: 0 }}>
               <X size={14} />
@@ -103,7 +88,7 @@ export function UploadField({
         >
           <UploadCloud size={26} className="text-muted" />
           <span className="text-muted" style={{ fontSize: '0.8125rem' }}>
-            {uploading ? 'Uploading…' : 'Click to upload'}
+            {uploading ? 'Uploading...' : 'Click to upload'}
           </span>
           <input
             ref={inputRef}

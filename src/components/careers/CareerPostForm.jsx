@@ -147,7 +147,7 @@ export function CareerPostForm({ initialData }) {
       {/* Descriptions */}
       <div className="card">
         <div className="card-header"><h3 className="card-title">Description</h3></div>
-        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
           {textArea('job_summary', 'Job Summary', true)}
           {textArea('job_description', 'Job Description', true)}
           {textArea('roles_responsibilities', 'Roles & Responsibilities', true)}
@@ -175,7 +175,7 @@ export function CareerPostForm({ initialData }) {
       {/* Skills */}
       <div className="card">
         <div className="card-header"><h3 className="card-title">Skills</h3></div>
-        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
           {textArea('required_skills', 'Required Skills', true)}
           {textArea('preferred_skills', 'Preferred Skills')}
           {textArea('technologies_tools', 'Technologies / Tools')}
@@ -211,11 +211,12 @@ export function CareerPostForm({ initialData }) {
       {/* SEO */}
       <div className="card">
         <div className="card-header"><h3 className="card-title">SEO</h3></div>
-        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
           {field('meta_title', 'Meta Title')}
+            {field('canonical_url', 'Canonical URL')}
           {textArea('meta_keywords', 'Meta Keywords')}
           {textArea('meta_description', 'Meta Description')}
-          {field('canonical_url', 'Canonical URL')}
+        
         </div>
       </div>
 

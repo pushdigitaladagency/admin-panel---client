@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -22,6 +24,7 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
   const [pdf, setPdf] = React.useState(initialData?.pdf_file || '');
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -94,7 +97,27 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
               {errors.category_id && <p className="form-error">{errors.category_id.message}</p>}
             </div>
             {field('financial_year', 'Financial Year', { required: true, rules: { required: 'Financial year is required' }, })}
-            {field('publish_date', 'Publish Date', { type: 'date', required: true, rules: { required: 'Publish date is required' } })}
+            <div className="form-group">
+              <label className="form-label">Publish Date *</label>
+              <Controller
+                control={control}
+                name="publish_date"
+                rules={{ required: 'Publish date is required' }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <DatePicker
+                    selected={value ? new Date(value) : null}
+                    onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')}
+                    onBlur={onBlur}
+                    className={`form-input w-full ${errors.publish_date ? 'error' : ''}`}
+                    wrapperClassName="w-full"
+                    dateFormat="yyyy-MM-dd"
+                    placeholderText="Select date"
+                    onKeyDown={(e) => e.preventDefault()}
+                  />
+                )}
+              />
+              {errors.publish_date && <p className="form-error">{errors.publish_date.message}</p>}
+            </div>
             {field('display_order', 'Display Order', { type: 'number' })}
             <div className="form-group">
               <label className="form-label">Featured</label>

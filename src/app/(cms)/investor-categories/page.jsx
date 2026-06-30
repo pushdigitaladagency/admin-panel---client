@@ -34,7 +34,9 @@ export default function InvestorCategoryListPage() {
   const columns = [
     { header: 'Category Name', render: (row) => row.category_name },
     { header: 'Order', render: (row) => row.display_order ?? 0 },
-    { header: 'Status', render: (row) => <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-secondary'}`}>{row.status || 'Active'}</span> },
+    { header: 'Status', render: (row) => <span className={`badge ${row.status === 'Active' ? 'badge-success' : row.status === "Inactive"
+          ? "badge-danger":'badge-secondary'}`}>{row.status || 'Active'}</span> },
+    
     {
       header: 'Actions',
       render: (row) => (

@@ -81,11 +81,13 @@ export function InvestorCategoryForm({ initialData }) {
 
       <div className="card">
         <div className="card-header"><h3 className="card-title">SEO</h3></div>
-        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
           {field('meta_title', 'Meta Title')}
-          <div className="form-group"><label className="form-label">Meta Keywords</label><textarea className="form-textarea" {...register('meta_keywords')} /></div>
-          <div className="form-group"><label className="form-label">Meta Description</label><textarea className="form-textarea" {...register('meta_description')} /></div>
           {field('canonical_url', 'Canonical URL')}
+          <div className="form-group"><label className="form-label">Meta Keywords</label><textarea className="form-textarea" {...register('meta_keywords')} /></div>
+          
+          <div className="form-group"><label className="form-label">Meta Description</label><textarea className="form-textarea" {...register('meta_description')} /></div>
+          
         </div>
       </div>
 
