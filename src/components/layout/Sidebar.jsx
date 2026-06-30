@@ -12,8 +12,7 @@ import {
   Newspaper, 
   Calendar, 
   Image as ImageIcon, 
-  Mail, 
-  Settings,
+  Mail,
   ClipboardList,
   UserCircle,
   ChevronDown,
@@ -115,7 +114,6 @@ const NAV_SECTIONS = [
     items: [
       { label: 'Meta Mappings', href: '/meta-mappings', icon: <Globe size={20} /> },
       { label: 'Global Settings', href: '/global-settings', icon: <SlidersHorizontal size={20} /> },
-      { label: 'Settings', href: '/settings', icon: <Settings size={20} /> },
       { label: 'Action Log', href: '/action-log', icon: <ClipboardList size={20} /> },
     ],
   },

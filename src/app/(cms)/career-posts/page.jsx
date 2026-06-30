@@ -15,9 +15,9 @@ const STATUS_BADGE = {
   Published: 'badge-success',
   Open: 'badge-primary',
   Draft: 'badge-warning',
-  Closed: 'badge-danger',
+  Closed: 'badge-secondary',
   'On Hold': 'badge-info',
-  Archived: 'badge-dark',
+  Archived: 'badge-secondary',
 };
 
 export default function CareerPostListPage() {

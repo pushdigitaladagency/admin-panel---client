@@ -3,15 +3,66 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { FileText, ImagePlus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { UploadField } from '@/components/ui/UploadField';
+import MediaSelectModal from '@/components/media/MediaSelectModal';
+import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
 
 const NUMERIC = ['founded_year', 'smtp_port', 'map_zoom_level', 'session_timeout', 'max_login_attempts', 'max_upload_size', 'latitude', 'longitude'];
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
+
+const IMAGE_TYPES = ['PNG', 'JPG', 'JPEG', 'WEBP', 'GIF', 'SVG', 'ICO'];
+
+const fileNameFromPath = (path) => (path ? String(path).split('/').pop() : '');
+const fileTypeFromPath = (path) => (path ? fileNameFromPath(path).split('.').pop().toUpperCase() : '');
+
+function FormMediaField({ label, value, onOpen, onClear, preview = true }) {
+  const fileName = fileNameFromPath(value);
+
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      {value ? (
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '10px 14px', border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)', background: 'var(--color-surface)',
+          }}
+        >
+          {preview ? (
+            <img src={resolveUploadUrl(value)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 6 }} />
+          ) : (
+            <FileText size={22} className="text-muted" />
+          )}
+          <span style={{ flex: 1, fontSize: '0.8125rem', wordBreak: 'break-all' }}>{fileName}</span>
+          
+          <button type="button" className="btn btn-secondary btn-sm" onClick={onClear} title="Remove">
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="premium-dropzone"
+          onClick={onOpen}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: 6, padding: '18px', width: '100%', border: '1px dashed var(--color-border)',
+            borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'center',
+          }}
+        >
+          {preview ? <ImagePlus size={26} className="text-muted" /> : <FileText size={26} className="text-muted" />}
+          <span className="text-muted" style={{ fontSize: '0.8125rem' }}>Select Media</span>
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function GlobalSettingsForm({ initialData }) {
   const router = useRouter();
@@ -23,6 +74,9 @@ export function GlobalSettingsForm({ initialData }) {
   const [mobileLogo, setMobileLogo] = React.useState(s.mobile_logo || '');
   const [favicon, setFavicon] = React.useState(s.favicon || '');
   const [ogImage, setOgImage] = React.useState(s.default_og_image || '');
+
+  const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
+  const [mediaTarget, setMediaTarget] = React.useState(null);
 
   const { register, handleSubmit, formState: { isSubmitting } } = useForm({
     defaultValues: {
@@ -78,6 +132,35 @@ export function GlobalSettingsForm({ initialData }) {
     }
   };
 
+  const openMediaPicker = (target) => {
+    setMediaTarget(target);
+    setIsMediaModalOpen(true);
+  };
+
+  const closeMediaPicker = () => {
+    setIsMediaModalOpen(false);
+    setMediaTarget(null);
+  };
+
+  const handleMediaSelect = (media) => {
+    const selectedPath = media?.path || media?.url || '';
+    if (!selectedPath) return;
+    const selectedType = String(media?.type || fileTypeFromPath(selectedPath)).toUpperCase();
+
+    if (!IMAGE_TYPES.includes(selectedType)) {
+      addToast('Only image files are allowed', 'danger');
+      return;
+    }
+
+    if (mediaTarget === 'siteLogo') setSiteLogo(selectedPath);
+    else if (mediaTarget === 'footerLogo') setFooterLogo(selectedPath);
+    else if (mediaTarget === 'mobileLogo') setMobileLogo(selectedPath);
+    else if (mediaTarget === 'favicon') setFavicon(selectedPath);
+    else if (mediaTarget === 'ogImage') setOgImage(selectedPath);
+
+    closeMediaPicker();
+  };
+
   const field = (name, label, type = 'text') => (
     <div className="form-group">
       <label className="form-label">{label}</label>
@@ -107,172 +190,181 @@ export function GlobalSettingsForm({ initialData }) {
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {section('General', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {field('site_name', 'Site Name')}
-          {field('site_tagline', 'Site Tagline')}
-          {field('default_language', 'Default Language')}
-          {field('timezone', 'Timezone')}
-          {field('date_format', 'Date Format')}
-          {field('time_format', 'Time Format')}
-          {field('currency', 'Currency')}
-        </div>
-      ))}
-
-      {section('Company', (
-        <>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {section('General', (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('company_name', 'Company Name')}
-            {field('company_registration_no', 'Registration No.')}
-            {field('gst_tax_number', 'GST / Tax Number')}
-            {field('founded_year', 'Founded Year', 'number')}
+            {field('site_name', 'Site Name')}
+            {field('site_tagline', 'Site Tagline')}
+            {field('default_language', 'Default Language')}
+            {field('timezone', 'Timezone')}
+            {field('date_format', 'Date Format')}
+            {field('time_format', 'Time Format')}
+            {field('currency', 'Currency')}
           </div>
-          {textArea('about_company', 'About Company')}
-        </>
-      ))}
+        ))}
 
-      {section('Address', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {field('address', 'Address')}
-          {field('city', 'City')}
-          {field('state', 'State')}
-          {field('country', 'Country')}
-          {field('postal_code', 'Postal Code')}
-        </div>
-      ))}
+        {section('Company', (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {field('company_name', 'Company Name')}
+              {field('company_registration_no', 'Registration No.')}
+              {field('gst_tax_number', 'GST / Tax Number')}
+              {field('founded_year', 'Founded Year', 'number')}
+            </div>
+            {textArea('about_company', 'About Company')}
+          </>
+        ))}
 
-      {section('Contact', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {field('primary_email', 'Primary Email', 'email')}
-          {field('secondary_email', 'Secondary Email', 'email')}
-          {field('primary_phone', 'Primary Phone')}
-          {field('secondary_phone', 'Secondary Phone')}
-          {field('whatsapp_number', 'WhatsApp Number')}
-          {field('toll_free_number', 'Toll-free Number')}
-        </div>
-      ))}
-
-      {section('Social Links', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {field('facebook_url', 'Facebook URL')}
-          {field('twitter_url', 'Twitter URL')}
-          {field('linkedin_url', 'LinkedIn URL')}
-          {field('instagram_url', 'Instagram URL')}
-          {field('youtube_url', 'YouTube URL')}
-          {field('pinterest_url', 'Pinterest URL')}
-          {field('whatsapp_url', 'WhatsApp URL')}
-        </div>
-      ))}
-
-      {section('Email / SMTP', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {field('admin_email', 'Admin Email', 'email')}
-          {field('from_name', 'From Name')}
-          {field('from_email', 'From Email', 'email')}
-          {field('reply_to_email', 'Reply-To Email', 'email')}
-          {field('cc_email', 'CC Email')}
-          {field('bcc_email', 'BCC Email')}
-          {field('smtp_host', 'SMTP Host')}
-          {field('smtp_port', 'SMTP Port', 'number')}
-          {field('smtp_username', 'SMTP Username')}
-          {field('smtp_password', 'SMTP Password', 'password')}
-          {selectField('encryption', 'Encryption', ['SSL', 'TLS', 'None'])}
-          {selectField('smtp_status', 'SMTP Status', ['Enabled', 'Disabled'])}
-        </div>
-      ))}
-
-      {section('Branding', (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <UploadField label="Site Logo" accept="image/*" value={siteLogo} onChange={setSiteLogo} />
-          <UploadField label="Footer Logo" accept="image/*" value={footerLogo} onChange={setFooterLogo} />
-          <UploadField label="Mobile Logo" accept="image/*" value={mobileLogo} onChange={setMobileLogo} />
-          <UploadField label="Favicon" accept="image/*" value={favicon} onChange={setFavicon} />
-          <UploadField label="Default OG Image" accept="image/*" value={ogImage} onChange={setOgImage} />
-        </div>
-      ))}
-
-      {section('SEO Defaults', (
-        <>
+        {section('Address', (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('default_meta_title', 'Default Meta Title')}
-            {field('default_canonical_url', 'Default Canonical URL')}
-            {selectField('robots', 'Robots', ['index, follow', 'noindex, nofollow'])}
+            {field('address', 'Address')}
+            {field('city', 'City')}
+            {field('state', 'State')}
+            {field('country', 'Country')}
+            {field('postal_code', 'Postal Code')}
           </div>
-          {textArea('default_meta_keywords', 'Default Meta Keywords')}
-          {textArea('default_meta_description', 'Default Meta Description')}
-        </>
-      ))}
+        ))}
 
-      {section('Analytics & Scripts', (
-        <>
+        {section('Contact', (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {field('primary_email', 'Primary Email', 'email')}
+            {field('secondary_email', 'Secondary Email', 'email')}
+            {field('primary_phone', 'Primary Phone')}
+            {field('secondary_phone', 'Secondary Phone')}
+            {field('whatsapp_number', 'WhatsApp Number')}
+            {field('toll_free_number', 'Toll-free Number')}
+          </div>
+        ))}
+
+        {section('Social Links', (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {field('facebook_url', 'Facebook URL')}
+            {field('twitter_url', 'Twitter URL')}
+            {field('linkedin_url', 'LinkedIn URL')}
+            {field('instagram_url', 'Instagram URL')}
+            {field('youtube_url', 'YouTube URL')}
+            {field('pinterest_url', 'Pinterest URL')}
+            {field('whatsapp_url', 'WhatsApp URL')}
+          </div>
+        ))}
+
+        {section('Email / SMTP', (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {field('admin_email', 'Admin Email', 'email')}
+            {field('from_name', 'From Name')}
+            {field('from_email', 'From Email', 'email')}
+            {field('reply_to_email', 'Reply-To Email', 'email')}
+            {field('cc_email', 'CC Email')}
+            {field('bcc_email', 'BCC Email')}
+            {field('smtp_host', 'SMTP Host')}
+            {field('smtp_port', 'SMTP Port', 'number')}
+            {field('smtp_username', 'SMTP Username')}
+            {field('smtp_password', 'SMTP Password', 'password')}
+            {selectField('encryption', 'Encryption', ['SSL', 'TLS', 'None'])}
+            {selectField('smtp_status', 'SMTP Status', ['Enabled', 'Disabled'])}
+          </div>
+        ))}
+
+        {section('Branding', (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {field('google_analytics_id', 'Google Analytics ID')}
-            {field('google_tag_manager_id', 'Google Tag Manager ID')}
-            {field('facebook_pixel_id', 'Facebook Pixel ID')}
+            <FormMediaField label="Site Logo" value={siteLogo} onOpen={() => openMediaPicker('siteLogo')} onClear={() => setSiteLogo('')} />
+            <FormMediaField label="Footer Logo" value={footerLogo} onOpen={() => openMediaPicker('footerLogo')} onClear={() => setFooterLogo('')} />
+            <FormMediaField label="Mobile Logo" value={mobileLogo} onOpen={() => openMediaPicker('mobileLogo')} onClear={() => setMobileLogo('')} />
+            <FormMediaField label="Favicon" value={favicon} onOpen={() => openMediaPicker('favicon')} onClear={() => setFavicon('')} />
+            <FormMediaField label="Default OG Image" value={ogImage} onOpen={() => openMediaPicker('ogImage')} onClear={() => setOgImage('')} />
           </div>
-          {textArea('header_scripts', 'Header Scripts', true)}
-          {textArea('footer_scripts', 'Footer Scripts', true)}
-        </>
-      ))}
+        ))}
 
-      {section('Maps', (
-        <>
+        {section('SEO Defaults', (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {field('default_meta_title', 'Default Meta Title')}
+              {field('default_canonical_url', 'Default Canonical URL')}
+              {selectField('robots', 'Robots', ['index, follow', 'noindex, nofollow'])}
+            </div>
+            {textArea('default_meta_keywords', 'Default Meta Keywords')}
+            {textArea('default_meta_description', 'Default Meta Description')}
+          </>
+        ))}
+
+        {section('Analytics & Scripts', (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {field('google_analytics_id', 'Google Analytics ID')}
+              {field('google_tag_manager_id', 'Google Tag Manager ID')}
+              {field('facebook_pixel_id', 'Facebook Pixel ID')}
+            </div>
+            {textArea('header_scripts', 'Header Scripts', true)}
+            {textArea('footer_scripts', 'Footer Scripts', true)}
+          </>
+        ))}
+
+        {section('Maps', (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {field('google_maps_api_key', 'Google Maps API Key')}
+              {field('latitude', 'Latitude', 'number')}
+              {field('longitude', 'Longitude', 'number')}
+              {field('map_zoom_level', 'Map Zoom Level', 'number')}
+            </div>
+            {textArea('map_embed_url', 'Map Embed URL')}
+          </>
+        ))}
+
+        {section('Footer', (
+          <>
+            {field('powered_by_text', 'Powered By Text')}
+            {textArea('copyright_text', 'Copyright Text')}
+            {textArea('footer_note', 'Footer Note')}
+          </>
+        ))}
+
+        {section('Maintenance', (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {selectField('maintenance_mode', 'Maintenance Mode', ['Off', 'On'])}
+              {field('expected_back_online', 'Expected Back Online', 'datetime-local')}
+              {field('allowed_ip_addresses', 'Allowed IP Addresses')}
+            </div>
+            {textArea('maintenance_message', 'Maintenance Message')}
+          </>
+        ))}
+
+        {section('Security', (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('google_maps_api_key', 'Google Maps API Key')}
-            {field('latitude', 'Latitude', 'number')}
-            {field('longitude', 'Longitude', 'number')}
-            {field('map_zoom_level', 'Map Zoom Level', 'number')}
+            {selectField('enable_recaptcha', 'Enable reCAPTCHA', ['No', 'Yes'])}
+            {field('recaptcha_site_key', 'reCAPTCHA Site Key')}
+            {field('recaptcha_secret_key', 'reCAPTCHA Secret Key')}
+            {field('session_timeout', 'Session Timeout (min)', 'number')}
+            {field('max_login_attempts', 'Max Login Attempts', 'number')}
+            {selectField('force_https', 'Force HTTPS', ['Yes', 'No'])}
+            {selectField('enable_two_factor', 'Enable Two-Factor', ['No', 'Yes'])}
           </div>
-          {textArea('map_embed_url', 'Map Embed URL')}
-        </>
-      ))}
+        ))}
 
-      {section('Footer', (
-        <>
-          {field('powered_by_text', 'Powered By Text')}
-          {textArea('copyright_text', 'Copyright Text')}
-          {textArea('footer_note', 'Footer Note')}
-        </>
-      ))}
-
-      {section('Maintenance', (
-        <>
+        {section('Uploads', (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {selectField('maintenance_mode', 'Maintenance Mode', ['Off', 'On'])}
-            {field('expected_back_online', 'Expected Back Online', 'datetime-local')}
-            {field('allowed_ip_addresses', 'Allowed IP Addresses')}
+            {field('max_upload_size', 'Max Upload Size (MB)', 'number')}
+            {field('allowed_image_formats', 'Allowed Image Formats')}
+            {field('allowed_document_formats', 'Allowed Document Formats')}
+            {selectField('image_compression', 'Image Compression', ['Yes', 'No'])}
+            {field('max_image_dimensions', 'Max Image Dimensions')}
           </div>
-          {textArea('maintenance_message', 'Maintenance Message')}
-        </>
-      ))}
+        ))}
 
-      {section('Security', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {selectField('enable_recaptcha', 'Enable reCAPTCHA', ['No', 'Yes'])}
-          {field('recaptcha_site_key', 'reCAPTCHA Site Key')}
-          {field('recaptcha_secret_key', 'reCAPTCHA Secret Key')}
-          {field('session_timeout', 'Session Timeout (min)', 'number')}
-          {field('max_login_attempts', 'Max Login Attempts', 'number')}
-          {selectField('force_https', 'Force HTTPS', ['Yes', 'No'])}
-          {selectField('enable_two_factor', 'Enable Two-Factor', ['No', 'Yes'])}
+        <div className="flex justify-end gap-3">
+          <Button type="submit" variant="primary" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Save Settings'}</Button>
+          <Button type="button" variant="secondary" onClick={() => router.push('/dashboard')}>Cancel</Button>
         </div>
-      ))}
+      </form>
 
-      {section('Uploads', (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {field('max_upload_size', 'Max Upload Size (MB)', 'number')}
-          {field('allowed_image_formats', 'Allowed Image Formats')}
-          {field('allowed_document_formats', 'Allowed Document Formats')}
-          {selectField('image_compression', 'Image Compression', ['Yes', 'No'])}
-          {field('max_image_dimensions', 'Max Image Dimensions')}
-        </div>
-      ))}
-
-      <div className="flex justify-end gap-3">
-        <Button type="submit" variant="primary" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Save Settings'}</Button>
-        <Button type="button" variant="secondary" onClick={() => router.push('/dashboard')}>Cancel</Button>
-      </div>
-    </form>
+      <MediaSelectModal
+        isOpen={isMediaModalOpen}
+        onClose={closeMediaPicker}
+        onSelect={handleMediaSelect}
+        multiple={false}
+      />
+    </>
   );
 }
