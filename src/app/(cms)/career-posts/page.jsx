@@ -13,11 +13,11 @@ import { Pencil, Trash2 } from 'lucide-react';
 
 const STATUS_BADGE = {
   Published: 'badge-success',
-  Open: 'badge-primary',
-  Draft: 'badge-warning',
-  Closed: 'badge-secondary',
+  Open:      'badge-primary',
+  Draft:     'badge-warning',
+  Closed:    'badge-danger',
   'On Hold': 'badge-info',
-  Archived: 'badge-secondary',
+  Archived:  'badge-purple',
 };
 
 export default function CareerPostListPage() {

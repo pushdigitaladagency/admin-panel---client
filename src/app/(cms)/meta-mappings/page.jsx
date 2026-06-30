@@ -36,7 +36,7 @@ export default function MetaMappingListPage() {
     { header: 'URL', render: (row) => <span style={{ fontFamily: 'monospace', fontSize: '0.8125rem' }}>{row.url}</span> },
     { header: 'Meta Title', render: (row) => row.meta_title || '—' },
     { header: 'Robots', render: (row) => <span className="badge badge-secondary">{row.robots || 'index, follow'}</span> },
-    { header: 'Status', render: (row) => <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-secondary'}`}>{row.status || 'Active'}</span> },
+    { header: 'Status', render: (row) => <span className={`badge ${row.status === 'Active' ? 'badge-success' : 'badge-danger'}`}>{row.status || 'Active'}</span> },
     {
       header: 'Actions',
       render: (row) => (
