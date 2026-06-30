@@ -81,9 +81,6 @@ export default function CareerApplicationListPage() {
           <h1 className="page-title">Career Applications</h1>
           <p className="page-subtitle">Manage candidate applications</p>
         </div>
-        {canView && error?.status !== 403 && can('career_applications', 'create') && (
-          <Link href="/career-applications/create" className="btn btn-primary">+ New Application</Link>
-        )}
       </div>
 
       {(!canView || error?.status === 403) ? (

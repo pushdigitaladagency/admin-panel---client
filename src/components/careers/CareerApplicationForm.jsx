@@ -102,24 +102,24 @@ export function CareerApplicationForm({ initialData }) {
   const field = (name, label, opts = {}) => (
     <div className="form-group">
       <label className="form-label">{label}{opts.required && ' *'}</label>
-      <Input type={opts.type || 'text'} step={opts.step} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
+      <Input type={opts.type || 'text'} step={opts.step} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} disabled={opts.disabled} />
       {errors[name] && <p className="form-error">{errors[name].message}</p>}
     </div>
   );
 
-  const selectField = (name, label, options, required) => (
+  const selectField = (name, label, options, opts = {}) => (
     <div className="form-group">
-      <label className="form-label">{label}{required && ' *'}</label>
-      <select className="form-select" {...register(name, required ? { required: `${label} is required` } : {})}>
+      <label className="form-label">{label}{opts.required && ' *'}</label>
+      <select className="form-select" {...register(name, opts.required ? { required: `${label} is required` } : {})} disabled={opts.disabled}>
         {options.map((o) => <option key={o} value={o}>{o || '— Select —'}</option>)}
       </select>
     </div>
   );
 
-  const textArea = (name, label) => (
+  const textArea = (name, label, opts = {}) => (
     <div className="form-group">
       <label className="form-label">{label}</label>
-      <textarea className="form-textarea" style={{ minHeight: 80 }} {...register(name)} />
+      <textarea className="form-textarea" style={{ minHeight: 80 }} {...register(name)} disabled={opts.disabled} />
     </div>
   );
 
@@ -130,14 +130,92 @@ export function CareerApplicationForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Candidate</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('full_name', 'Full Name', { required: true, rules: { required: 'Full name is required' } })}
-            {field('email', 'Email', { type: 'email', required: true, rules: { required: 'Email is required' } })}
-            {field('mobile_number', 'Mobile Number', { required: true, rules: { required: 'Mobile number is required' } })}
-            {field('date_of_birth', 'Date of Birth', { type: 'date' })}
-            {selectField('gender', 'Gender', GENDERS)}
-            {field('current_location', 'Current Location')}
-            {field('linkedin_profile', 'LinkedIn Profile')}
-            {field('portfolio_website', 'Portfolio Website')}
+            {field('full_name', 'Full Name', { required: true, rules: { required: 'Full name is required' }, disabled: true })}
+            {field('email', 'Email', { type: 'email', required: true, rules: { required: 'Email is required' }, disabled: true })}
+            {field('mobile_number', 'Mobile Number', { required: true, rules: { required: 'Mobile number is required' }, disabled: true })}
+            {field('date_of_birth', 'Date of Birth', { type: 'date', disabled: true })}
+            {selectField('gender', 'Gender', GENDERS, { disabled: true })}
+            {field('current_location', 'Current Location', { disabled: true })}
+            {/* LinkedIn Profile with Copy + Open */}
+            <div className="form-group">
+              <label className="form-label">LinkedIn Profile</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Input
+                  type="text"
+                  {...register('linkedin_profile')}
+                  disabled
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                {initialData?.linkedin_profile && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      title="Copy URL"
+                      style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(initialData.linkedin_profile);
+                        addToast('LinkedIn URL copied!', 'success');
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy URL
+                    </button>
+                    <a
+                      href={initialData.linkedin_profile}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary btn-sm"
+                      title="Open LinkedIn"
+                      style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none' }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      Open
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+            {/* Portfolio Website with Copy + Open */}
+            <div className="form-group">
+              <label className="form-label">Portfolio Website</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Input
+                  type="text"
+                  {...register('portfolio_website')}
+                  disabled
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                {initialData?.portfolio_website && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      title="Copy URL"
+                      style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(initialData.portfolio_website);
+                        addToast('Portfolio URL copied!', 'success');
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy URL
+                    </button>
+                    <a
+                      href={initialData.portfolio_website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary btn-sm"
+                      title="Open Portfolio"
+                      style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none' }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      Open
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -147,10 +225,10 @@ export function CareerApplicationForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Documents</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <UploadField label="Resume / CV *" accept=".pdf,.doc,.docx" value={resume} onChange={setResume} preview={false} />
-            <UploadField label="Cover Letter Attachment" accept=".pdf,.doc,.docx" value={coverAttachment} onChange={setCoverAttachment} preview={false} />
+            <UploadField label="Resume / CV *" accept=".pdf,.doc,.docx" value={resume} onChange={setResume} preview={false} readonly={true} />
+            <UploadField label="Cover Letter Attachment" accept=".pdf,.doc,.docx" value={coverAttachment} onChange={setCoverAttachment} preview={false} readonly={true} />
           </div>
-          {textArea('cover_letter', 'Cover Letter')}
+          {textArea('cover_letter', 'Cover Letter', { disabled: true })}
         </div>
       </div>
 
@@ -159,10 +237,10 @@ export function CareerApplicationForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Position Applied</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('applied_position', 'Applied Position', { required: true, rules: { required: 'Applied position is required' } })}
-            {field('department', 'Department')}
-            {field('job_code', 'Job Code')}
-            {field('preferred_location', 'Preferred Location')}
+            {field('applied_position', 'Applied Position', { required: true, rules: { required: 'Applied position is required' }, disabled: true })}
+            {field('department', 'Department', { disabled: true })}
+            {field('job_code', 'Job Code', { disabled: true })}
+            {field('preferred_location', 'Preferred Location', { disabled: true })}
           </div>
         </div>
       </div>
@@ -172,12 +250,12 @@ export function CareerApplicationForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Experience</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('total_experience', 'Total Experience (years)', { type: 'number', step: '0.1', required: true, rules: { required: 'Required' } })}
-            {field('current_company', 'Current Company')}
-            {field('current_designation', 'Current Designation')}
-            {field('current_ctc', 'Current CTC', { type: 'number', step: '0.01' })}
-            {field('expected_ctc', 'Expected CTC', { type: 'number', step: '0.01' })}
-            {field('notice_period', 'Notice Period')}
+            {field('total_experience', 'Total Experience (years)', { type: 'number', step: '0.1', required: true, rules: { required: 'Required' }, disabled: true })}
+            {field('current_company', 'Current Company', { disabled: true })}
+            {field('current_designation', 'Current Designation', { disabled: true })}
+            {field('current_ctc', 'Current CTC', { type: 'number', step: '0.01', disabled: true })}
+            {field('expected_ctc', 'Expected CTC', { type: 'number', step: '0.01', disabled: true })}
+            {field('notice_period', 'Notice Period', { disabled: true })}
           </div>
         </div>
       </div>
@@ -187,11 +265,11 @@ export function CareerApplicationForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Education</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('highest_qualification', 'Highest Qualification', { required: true, rules: { required: 'Required' } })}
-            {field('specialization', 'Specialization')}
-            {field('university_institution', 'University / Institution')}
-            {field('year_of_passing', 'Year of Passing', { type: 'number' })}
-            {field('percentage_cgpa', 'Percentage / CGPA')}
+            {field('highest_qualification', 'Highest Qualification', { required: true, rules: { required: 'Required' }, disabled: true })}
+            {field('specialization', 'Specialization', { disabled: true })}
+            {field('university_institution', 'University / Institution', { disabled: true })}
+            {field('year_of_passing', 'Year of Passing', { type: 'number', disabled: true })}
+            {field('percentage_cgpa', 'Percentage / CGPA', { disabled: true })}
           </div>
         </div>
       </div>
