@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { UploadCloud, FileText, X, Eye } from 'lucide-react';
+import { UploadCloud, FileText, X, Eye, ExternalLink, Download } from 'lucide-react';
 import { uploadFile, BASE_URL } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 
@@ -10,9 +10,6 @@ import { useToast } from '@/components/ui/Toast';
 // fall back to open/download links. Closes on overlay click or Escape.
 export function FileViewer({ url, fileName, onClose }) {
   const ext = (fileName || url || '').split('.').pop().toLowerCase();
-  const isPdf = ext === 'pdf';
-  const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'].includes(ext);
-  const isText = ['txt', 'csv', 'log', 'json', 'xml'].includes(ext);
   const isOffice = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext);
 
   // The server forces a download when ?download=1 (reliable cross-origin).
@@ -31,21 +28,35 @@ export function FileViewer({ url, fileName, onClose }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Text files render unreliably in a cross-origin iframe, so fetch and show them
-  // directly. (/uploads is public + CORS-enabled, so this works without a token.)
-  const [textContent, setTextContent] = React.useState(null);
-  const [textError, setTextError] = React.useState(null);
+  // Cross-origin content (localhost:4000 file in a localhost:3000 iframe) renders
+  // blank in Chrome. Fetch the file ourselves (/uploads is public + CORS-enabled)
+  // and render it from a same-origin blob: URL — that always displays. Text is read
+  // straight from the blob. Office files can't be rendered from a blob, so they use
+  // the public Office viewer (or the download fallback).
+  const [blobUrl, setBlobUrl] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState(null);
+
   React.useEffect(() => {
-    if (!isText) return;
+    if (officeSrc) { setLoading(false); return; }   // handled by Office viewer iframe
     let active = true;
-    setTextContent(null);
-    setTextError(null);
+    let created = null;
+    setLoading(true);
+    setLoadError(null);
+    setBlobUrl(null);
+
     fetch(url)
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-      .then((t) => active && setTextContent(t))
-      .catch((e) => active && setTextError(e.message || 'Failed to load file'));
-    return () => { active = false; };
-  }, [isText, url]);
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); })
+      .then((blob) => {
+        if (!active) return;
+        created = URL.createObjectURL(blob);
+        setBlobUrl(created);
+      })
+      .catch((e) => active && setLoadError(e.message || 'Failed to load file'))
+      .finally(() => active && setLoading(false));
+
+    return () => { active = false; if (created) URL.revokeObjectURL(created); };
+  }, [url, officeSrc]);
 
   return (
     <div
@@ -76,26 +87,22 @@ export function FileViewer({ url, fileName, onClose }) {
         </div>
 
         <div style={{ flex: 1, minHeight: 0, background: '#525659' }}>
-          {isText ? (
-            textError ? (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.9rem' }}>
-                Failed to load file ({textError}).
-              </div>
-            ) : textContent === null ? (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.9rem' }}>Loading…</div>
-            ) : (
-              <pre style={{ margin: 0, height: '100%', overflow: 'auto', background: '#fff', color: '#1e293b', padding: '16px 20px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', fontSize: '0.8125rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                {textContent}
-              </pre>
-            )
-          ) : isPdf ? (
-            <iframe src={url} title={fileName} style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} />
-          ) : isImage ? (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={url} alt={fileName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-            </div>
-          ) : officeSrc ? (
+          {officeSrc ? (
             <iframe src={officeSrc} title={fileName} style={{ width: '100%', height: '100%', border: 'none' }} />
+          ) : loading ? (
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.9rem' }}>Loading…</div>
+          ) : loadError ? (
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#fff', textAlign: 'center', padding: 24 }}>
+              <FileText size={40} style={{ opacity: 0.7 }} />
+              <p style={{ fontSize: '0.9rem' }}>Failed to load file ({loadError}).</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <a href={url} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>Open in new tab</a>
+                <a href={downloadUrl} className="btn btn-secondary btn-sm" style={{ textDecoration: 'none' }}>Download</a>
+              </div>
+            </div>
+          ) : blobUrl ? (
+            // Same-origin blob: URL — renders PDFs, text and images inline in the iframe.
+            <iframe src={blobUrl} title={fileName} style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} />
           ) : (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#fff', textAlign: 'center', padding: 24 }}>
               <FileText size={40} style={{ opacity: 0.7 }} />
@@ -190,19 +197,18 @@ export function UploadField({
           )}
           <span style={{ flex: 1, fontSize: '0.8125rem', wordBreak: 'break-all', minWidth: 0 }}>{fileName}</span>
 
-          {/* View button — shown inline for all document files */}
+          {/* View button — opens the in-app modal viewer (NOT a new tab) */}
           {!isImage && value && (
-            <a
-              href={resolveUploadUrl(value)}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={() => setViewerOpen(true)}
               className="btn btn-primary btn-sm"
               title="View file"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0, textDecoration: 'none' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0 }}
             >
               <Eye size={14} />
               View
-            </a>
+            </button>
           )}
 
           {!readonly && (
