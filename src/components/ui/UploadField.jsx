@@ -10,6 +10,9 @@ import { useToast } from '@/components/ui/Toast';
 // fall back to open/download links. Closes on overlay click or Escape.
 export function FileViewer({ url, fileName, onClose }) {
   const ext = (fileName || url || '').split('.').pop().toLowerCase();
+  const isText = ['txt', 'csv', 'log', 'json', 'xml', 'md'].includes(ext);
+  const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'].includes(ext);
+  const isPdf = ext === 'pdf';
   const isOffice = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext);
 
   // The server forces a download when ?download=1 (reliable cross-origin).
@@ -34,6 +37,7 @@ export function FileViewer({ url, fileName, onClose }) {
   // straight from the blob. Office files can't be rendered from a blob, so they use
   // the public Office viewer (or the download fallback).
   const [blobUrl, setBlobUrl] = React.useState(null);
+  const [textContent, setTextContent] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState(null);
 
@@ -44,19 +48,24 @@ export function FileViewer({ url, fileName, onClose }) {
     setLoading(true);
     setLoadError(null);
     setBlobUrl(null);
+    setTextContent(null);
 
     fetch(url)
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); })
-      .then((blob) => {
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return isText ? r.text() : r.blob(); })
+      .then((data) => {
         if (!active) return;
-        created = URL.createObjectURL(blob);
-        setBlobUrl(created);
+        if (isText) {
+          setTextContent(data);                       // render as plain DOM (always works)
+        } else {
+          created = URL.createObjectURL(data);         // same-origin blob: URL for iframe/img
+          setBlobUrl(created);
+        }
       })
       .catch((e) => active && setLoadError(e.message || 'Failed to load file'))
       .finally(() => active && setLoading(false));
 
     return () => { active = false; if (created) URL.revokeObjectURL(created); };
-  }, [url, officeSrc]);
+  }, [url, officeSrc, isText]);
 
   return (
     <div
@@ -100,8 +109,16 @@ export function FileViewer({ url, fileName, onClose }) {
                 <a href={downloadUrl} className="btn btn-secondary btn-sm" style={{ textDecoration: 'none' }}>Download</a>
               </div>
             </div>
+          ) : isText && textContent !== null ? (
+            <pre style={{ margin: 0, height: '100%', overflow: 'auto', background: '#fff', color: '#1e293b', padding: '16px 20px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', fontSize: '0.8125rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {textContent}
+            </pre>
+          ) : isImage && blobUrl ? (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src={blobUrl} alt={fileName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            </div>
           ) : blobUrl ? (
-            // Same-origin blob: URL — renders PDFs, text and images inline in the iframe.
+            // Same-origin blob: URL — renders PDFs inline in the iframe.
             <iframe src={blobUrl} title={fileName} style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} />
           ) : (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, color: '#fff', textAlign: 'center', padding: 24 }}>
