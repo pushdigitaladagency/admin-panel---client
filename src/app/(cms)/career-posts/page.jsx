@@ -15,9 +15,9 @@ const STATUS_BADGE = {
   Published: 'badge-success',
   Open: 'badge-primary',
   Draft: 'badge-warning',
-  Closed: 'badge-secondary',
+  Closed: 'badge-danger',
   'On Hold': 'badge-info',
-  Archived: 'badge-secondary',
+  Archived: 'badge-purple',
 };
 
 export default function CareerPostListPage() {
@@ -54,7 +54,13 @@ export default function CareerPostListPage() {
     {
       header: 'Status',
       render: (row) => {
-        const s = row.status || 'Draft';
+        // Backend sometimes returns all caps (e.g., "ARCHIVED", "CLOSED", "ON HOLD")
+        const rawStatus = row.status || 'Draft';
+        const s = String(rawStatus)
+          .toLowerCase()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
         return <span className={`badge ${STATUS_BADGE[s] || 'badge-secondary'}`}>{s}</span>;
       },
     },

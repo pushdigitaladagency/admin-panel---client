@@ -2719,3 +2719,45 @@ html.dark .sidebar {
     width: 100%;
   }
 }
+
+/* CKEditor Dark Mode overrides for Popups & Balloon Panels */
+html.dark .ck.ck-balloon-panel {
+  background: var(--color-bg-alt) !important;
+  border-color: var(--color-border) !important;
+}
+
+html.dark .ck.ck-balloon-panel::before,
+html.dark .ck.ck-balloon-panel::after {
+  border-bottom-color: var(--color-bg-alt) !important;
+  border-top-color: var(--color-bg-alt) !important;
+}
+
+html.dark .ck.ck-balloon-panel .ck-input {
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+html.dark .ck.ck-balloon-panel .ck-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-glow) !important;
+}
+
+html.dark .ck.ck-balloon-panel .ck-button {
+  color: var(--color-text) !important;
+}
+
+html.dark .ck.ck-balloon-panel .ck-button:hover {
+  background: var(--color-surface-hover) !important;
+}
+
+html.dark .ck.ck-balloon-panel .ck-button .ck-icon,
+html.dark .ck.ck-balloon-panel .ck-icon {
+  color: var(--color-text) !important;
+  fill: var(--color-text) !important;
+}
+
+html.dark .ck.ck-balloon-panel .ck-icon * {
+  fill: var(--color-text) !important;
+}
+

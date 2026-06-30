@@ -3,8 +3,6 @@
 import React from 'react';
 import { ImagePlus, FileText } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 
 import { Button } from '@/components/ui/Button';
@@ -186,15 +184,14 @@ export function PostForm({ initialData, postType }) {
       },
   });
 
-  // Register featured_image and gallery_images as custom virtual fields since they are populated via MediaSelectModal.
-  // Enquiry has no image fields, so skip — a required virtual field that's never rendered silently blocks handleSubmit.
+  // Register featured_image, gallery_images and attachment as custom virtual fields since they are populated via MediaSelectModal.
+  // Enquiry has no image fields, skip.
   React.useEffect(() => {
     if (postType === 'enquiry') return;
     register('featured_image', (isEdit || postType === 'event') ? {} : { required: 'Featured Image is required' });
     register('gallery_images');
+    register('attachment');
   }, [register, isEdit, postType]);
-
-  const attachmentRegister = register('attachment');
 
   const handleMediaModalSelect = (media) => {
     if (mediaTarget === 'featured') {
@@ -206,10 +203,14 @@ export function PostForm({ initialData, postType }) {
       const paths = Array.isArray(media) ? media.map(m => m.path || m.url) : [media.path || media.url];
       setGalleryImagesPreviews(urls);
       setValue('gallery_images', paths.join(','), { shouldValidate: true, shouldDirty: true });
+    } else if (mediaTarget === 'attachment') {
+      const selectedPath = media.path || media.url || '';
+      setValue('attachment', selectedPath, { shouldValidate: true, shouldDirty: true });
     }
   };
 
   const postTitle = watch('title');
+  const attachmentVal = watch('attachment') || '';
 
   // Load CKEditor 5 Decoupled Document from CDN
   React.useEffect(() => {
@@ -357,12 +358,7 @@ export function PostForm({ initialData, postType }) {
         addToast('Enquiry updated successfully', 'success');
       } else {
         const apiPath = POST_API[postType] || '/press-releases';
-
-        let attachmentPath = initialData?.attachment || '';
-        if (data.attachment?.[0] instanceof File) {
-          const uploaded = await uploadFile(data.attachment[0]);
-          attachmentPath = uploaded?.path || uploaded?.filename || '';
-        }
+        const attachmentPath = data.attachment || '';
 
         // Build the payload mapping form fields to backend column names
         const payload = {};
@@ -562,11 +558,11 @@ export function PostForm({ initialData, postType }) {
               </div>
               <div className="form-group">
                 <label className="form-label">Submitted Date</label>
-                <Controller control={control} name="submitted_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" disabled />)} />
+                <Input type="date" {...register('submitted_date')} disabled />
               </div>
               <div className="form-group">
                 <label className="form-label">Response Date</label>
-                <Controller control={control} name="response_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                <Input type="date" {...register('response_date')} />
               </div>
               <div className="form-group">
                 <label className="form-label">Assigned To</label>
@@ -679,7 +675,7 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Controller control={control} name="event_start_date" rules={{ required: 'Event Start Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_start_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                      <Input type="date" {...register('event_start_date', { required: 'Event Start Date is required' })} className={errors.event_start_date ? 'error' : ''} />
                       {errors.event_start_date && <p className="form-error">{errors.event_start_date.message}</p>}
                     </div>
 
@@ -687,18 +683,18 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event End Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Controller control={control} name="event_end_date" rules={{ required: 'Event End Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.event_end_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                      <Input type="date" {...register('event_end_date', { required: 'Event End Date is required' })} className={errors.event_end_date ? 'error' : ''} />
                       {errors.event_end_date && <p className="form-error">{errors.event_end_date.message}</p>}
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration Start Date</label>
-                      <Controller control={control} name="reg_start_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                      <Input type="date" {...register('reg_start_date')} />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration End Date</label>
-                      <Controller control={control} name="reg_end_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                      <Input type="date" {...register('reg_end_date')} />
                     </div>
 
                     <div className="form-group md:col-span-2">
@@ -816,14 +812,14 @@ export function PostForm({ initialData, postType }) {
                     <label className="form-label">
                       Publish Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                     </label>
-                    <Controller control={control} name="publish_date" rules={{ required: 'Publish Date is required' }} render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className={`form-input w-full ${errors.publish_date ? 'error' : ''}`} wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                    <Input type="date" {...register('publish_date', { required: 'Publish Date is required' })} className={errors.publish_date ? 'error' : ''} />
                     {errors.publish_date && <p className="form-error">{errors.publish_date.message}</p>}
                   </div>
 
                   {postType !== 'news' && (
                     <div className="form-group">
                       <label className="form-label">Expiry Date</label>
-                      <Controller control={control} name="expiry_date" render={({ field: { onChange, onBlur, value } }) => (<DatePicker onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')} onBlur={onBlur} selected={value ? new Date(value) : null} className="form-input w-full" wrapperClassName="w-full" dateFormat="yyyy-MM-dd" placeholderText="Select date" onKeyDown={(e) => e.preventDefault()} />)} />
+                      <Input type="date" {...register('expiry_date')} />
                     </div>
                   )}
                 </div>
@@ -959,29 +955,17 @@ export function PostForm({ initialData, postType }) {
                     {postType !== 'news' && postType !== 'event' && (
                       <div className="form-group md:col-span-2">
                         <label className="form-label">Attachment (PDF/Doc)</label>
-                        <input
-                          type="file"
-                          id="attachment-input"
-                          accept=".pdf,.doc,.docx"
-                          {...attachmentRegister}
-                          style={{ display: 'none' }}
-                          onChange={(e) => {
-                            attachmentRegister.onChange(e);
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const label = document.getElementById('attachment-label');
-                              if (label) label.innerText = file.name;
-                            }
-                          }}
-                        />
                         <div
-                          onClick={() => document.getElementById('attachment-input').click()}
+                          onClick={() => {
+                            setMediaTarget('attachment');
+                            setIsMediaModalOpen(true);
+                          }}
                           className="premium-dropzone"
                           style={{ minHeight: '80px' }}
                         >
                           <FileText size={24} className="premium-dropzone-icon" />
-                          <span id="attachment-label" className="premium-dropzone-text">
-                            {initialData?.attachment ? initialData.attachment.split('/').pop() : 'Click to select document'}
+                          <span className="premium-dropzone-text">
+                            {attachmentVal ? attachmentVal.split('/').pop() : 'Select Document'}
                           </span>
                         </div>
                       </div>
@@ -1054,6 +1038,10 @@ export function PostForm({ initialData, postType }) {
         onClose={() => setIsMediaModalOpen(false)}
         onSelect={handleMediaModalSelect}
         multiple={mediaTarget === 'gallery'}
+        accept={mediaTarget === 'attachment' ? '.pdf,.doc,.docx,application/pdf' : 'image/*'}
+        allowedTypes={mediaTarget === 'attachment' ? ['PDF', 'DOC', 'DOCX'] : []}
+        invalidFileMessage={mediaTarget === 'attachment' ? 'Only document files (PDF/Doc) are allowed' : 'Only image files are allowed'}
+        emptyMessage={mediaTarget === 'attachment' ? 'No document files found' : 'No images found'}
       />
     </div>
   );

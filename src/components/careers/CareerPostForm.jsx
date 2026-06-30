@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
@@ -15,7 +15,24 @@ const WORK_MODES = ['On-site', 'Hybrid', 'Remote'];
 const SALARY_PERIODS = ['Monthly', 'Annual'];
 const STATUSES = ['Draft', 'Published', 'Open', 'Closed', 'On Hold', 'Archived'];
 
+const STATUS_BADGE = {
+  Published: 'badge-success',
+  Open:      'badge-primary',
+  Draft:     'badge-warning',
+  Closed:    'badge-danger',
+  'On Hold': 'badge-info',
+  Archived:  'badge-purple',
+};
+
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return String(str)
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 export function CareerPostForm({ initialData }) {
   const isEdit = !!initialData;
@@ -25,6 +42,7 @@ export function CareerPostForm({ initialData }) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -58,13 +76,15 @@ export function CareerPostForm({ initialData }) {
       publish_date: initialData?.publish_date ? String(initialData.publish_date).split('T')[0] : '',
       application_deadline: initialData?.application_deadline ? String(initialData.application_deadline).split('T')[0] : '',
       featured_job: initialData?.featured_job || 'No',
-      status: initialData?.status || 'Draft',
+      status: toTitleCase(initialData?.status) || 'Draft',
       meta_title: initialData?.meta_title || '',
       meta_keywords: initialData?.meta_keywords || '',
       meta_description: initialData?.meta_description || '',
       canonical_url: initialData?.canonical_url || '',
     },
   });
+
+  const statusVal = useWatch({ control, name: 'status', defaultValue: toTitleCase(initialData?.status) || 'Draft' });
 
   const onSubmit = async (data) => {
     const payload = {
@@ -127,6 +147,24 @@ export function CareerPostForm({ initialData }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      
+      {/* Details Summary — colored badges only here */}
+      {isEdit && (
+        <div className="card">
+          <div className="card-header"><h3 className="card-title">Details</h3></div>
+          <div className="card-body">
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span className="form-label" style={{ marginBottom: 0 }}>Status</span>
+                <span className={`badge ${STATUS_BADGE[statusVal] || 'badge-secondary'}`}>
+                  {statusVal || 'Draft'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Job Details */}
       <div className="card">
         <div className="card-header"><h3 className="card-title">Job Details</h3></div>

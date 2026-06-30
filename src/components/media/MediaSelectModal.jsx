@@ -245,6 +245,13 @@ export default function MediaSelectModal({
         });
       }
       setMediaItems(prev => [...uploadedItems, ...prev]);
+      if (uploadedItems.length > 0) {
+        if (multiple) {
+          setSelectedIds(prev => [...uploadedItems.map(item => item.id), ...prev]);
+        } else {
+          setSelectedIds([uploadedItems[0].id]);
+        }
+      }
       addToast('File(s) uploaded successfully', 'success');
     } catch (err) {
       console.error('Upload failed:', err);
