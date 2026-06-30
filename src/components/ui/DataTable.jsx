@@ -116,7 +116,7 @@ export default function DataTable({
   }
 
   return (
-    <div className="card">
+    <div className="card data-table-card">
       {/* Toolbar */}
       <div className="card-header">
         <div className="data-table-toolbar" style={{ width: '100%', display: 'flex', gap: '10px', alignItems: 'center' }}>

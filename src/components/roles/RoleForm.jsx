@@ -156,7 +156,7 @@ export function RoleForm({ initialData }) {
               <select {...register('status')} className="form-select">
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-                <option value="pending">Pending</option>
+                {/* <option value="pending">Pending</option> */}
               </select>
             </div>
 

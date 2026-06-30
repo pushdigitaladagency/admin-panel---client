@@ -91,7 +91,7 @@ export default function RoleListPage() {
           data={roles} 
           columns={columns} 
           searchKey="name" 
-          filterOptions={['Active', 'Inactive', 'Pending']}
+          filterOptions={['Active', 'Inactive']}
           filterKey={(row) => {
             const raw = row.status;
             const s = typeof raw === 'boolean' ? (raw ? 'active' : 'inactive') : (raw || 'active');
