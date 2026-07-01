@@ -12,7 +12,7 @@ import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
 
-const NUMERIC = ['founded_year', 'smtp_port', 'map_zoom_level', 'session_timeout', 'max_login_attempts', 'max_upload_size', 'latitude', 'longitude'];
+const NUMERIC = ['founded_year', 'smtp_port', 'map_zoom_level', 'session_timeout', 'max_login_attempts', 'latitude', 'longitude'];
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
 
 const IMAGE_TYPES = ['PNG', 'JPG', 'JPEG', 'WEBP', 'GIF', 'SVG', 'ICO'];
@@ -108,22 +108,15 @@ export function GlobalSettingsForm({ initialData }) {
       google_maps_api_key: s.google_maps_api_key || '', map_embed_url: s.map_embed_url || '', latitude: s.latitude ?? '', longitude: s.longitude ?? '', map_zoom_level: s.map_zoom_level ?? 15,
       // Footer
       copyright_text: s.copyright_text || '', powered_by_text: s.powered_by_text || '', footer_note: s.footer_note || '',
-      // Maintenance
-      maintenance_mode: s.maintenance_mode || 'Off', maintenance_message: s.maintenance_message || '', allowed_ip_addresses: s.allowed_ip_addresses || '',
-      expected_back_online: s.expected_back_online ? String(s.expected_back_online).slice(0, 16) : '',
       // Security
       enable_recaptcha: s.enable_recaptcha || 'No', recaptcha_site_key: s.recaptcha_site_key || '', recaptcha_secret_key: s.recaptcha_secret_key || '',
-      session_timeout: s.session_timeout ?? 30, max_login_attempts: s.max_login_attempts ?? 5, force_https: s.force_https || 'Yes', enable_two_factor: s.enable_two_factor || 'No',
-      // Uploads
-      max_upload_size: s.max_upload_size ?? 25, allowed_image_formats: s.allowed_image_formats || '', allowed_document_formats: s.allowed_document_formats || '',
-      image_compression: s.image_compression || 'Yes', max_image_dimensions: s.max_image_dimensions || '',
+      session_timeout: s.session_timeout ?? 30, max_login_attempts: s.max_login_attempts ?? 5, force_https: s.force_https || 'Yes',
     },
   });
 
   const onSubmit = async (data) => {
     const payload = { ...data, site_logo: siteLogo || null, footer_logo: footerLogo || null, mobile_logo: mobileLogo || null, favicon: favicon || null, default_og_image: ogImage || null };
     NUMERIC.forEach((k) => { payload[k] = toNum(payload[k]); });
-    payload.expected_back_online = data.expected_back_online || null;
     try {
       await api.put('/global-settings', payload);
       addToast('Global settings saved successfully', 'success');
@@ -320,17 +313,6 @@ export function GlobalSettingsForm({ initialData }) {
           </>
         ))}
 
-        {section('Maintenance', (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectField('maintenance_mode', 'Maintenance Mode', ['Off', 'On'])}
-              {field('expected_back_online', 'Expected Back Online', 'datetime-local')}
-              {field('allowed_ip_addresses', 'Allowed IP Addresses')}
-            </div>
-            {textArea('maintenance_message', 'Maintenance Message')}
-          </>
-        ))}
-
         {section('Security', (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {selectField('enable_recaptcha', 'Enable reCAPTCHA', ['No', 'Yes'])}
@@ -339,17 +321,6 @@ export function GlobalSettingsForm({ initialData }) {
             {field('session_timeout', 'Session Timeout (min)', 'number')}
             {field('max_login_attempts', 'Max Login Attempts', 'number')}
             {selectField('force_https', 'Force HTTPS', ['Yes', 'No'])}
-            {selectField('enable_two_factor', 'Enable Two-Factor', ['No', 'Yes'])}
-          </div>
-        ))}
-
-        {section('Uploads', (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('max_upload_size', 'Max Upload Size (MB)', 'number')}
-            {field('allowed_image_formats', 'Allowed Image Formats')}
-            {field('allowed_document_formats', 'Allowed Document Formats')}
-            {selectField('image_compression', 'Image Compression', ['Yes', 'No'])}
-            {field('max_image_dimensions', 'Max Image Dimensions')}
           </div>
         ))}
 

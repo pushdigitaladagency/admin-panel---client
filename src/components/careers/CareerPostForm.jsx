@@ -43,6 +43,8 @@ export function CareerPostForm({ initialData }) {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -85,6 +87,19 @@ export function CareerPostForm({ initialData }) {
   });
 
   const statusVal = useWatch({ control, name: 'status', defaultValue: toTitleCase(initialData?.status) || 'Draft' });
+
+  const jobTitleVal = watch('job_title');
+
+  React.useEffect(() => {
+    if (jobTitleVal !== undefined && !isEdit) {
+      const generatedSlug = jobTitleVal
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [jobTitleVal, setValue, isEdit]);
 
   const onSubmit = async (data) => {
     const payload = {
@@ -147,23 +162,6 @@ export function CareerPostForm({ initialData }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      
-      {/* Details Summary — colored badges only here */}
-      {isEdit && (
-        <div className="card">
-          <div className="card-header"><h3 className="card-title">Details</h3></div>
-          <div className="card-body">
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span className="form-label" style={{ marginBottom: 0 }}>Status</span>
-                <span className={`badge ${STATUS_BADGE[statusVal] || 'badge-secondary'}`}>
-                  {statusVal || 'Draft'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Job Details */}
       <div className="card">

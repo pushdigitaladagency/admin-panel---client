@@ -77,6 +77,8 @@ export function CertificateForm({ initialData }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -97,6 +99,19 @@ export function CertificateForm({ initialData }) {
       status: initialData?.status || 'Active',
     },
   });
+
+  const certificateTitleVal = watch('certificate_title');
+
+  React.useEffect(() => {
+    if (certificateTitleVal !== undefined && !isEdit) {
+      const generatedSlug = certificateTitleVal
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [certificateTitleVal, setValue, isEdit]);
 
   const onSubmit = async (data) => {
     if (!image) {
@@ -248,6 +263,7 @@ export function CertificateForm({ initialData }) {
         isOpen={isMediaModalOpen}
         onClose={closeMediaPicker}
         onSelect={handleMediaSelect}
+        source={mediaTarget === 'pdf' ? 'uploads' : 'gallery'}
         accept={mediaTarget === 'pdf' ? '.pdf,application/pdf' : 'image/*'}
         allowedTypes={mediaTarget === 'pdf' ? ['PDF'] : IMAGE_TYPES}
         invalidFileMessage={mediaTarget === 'pdf' ? 'Only PDF files are allowed for PDF Attachment' : 'Only image files are allowed'}

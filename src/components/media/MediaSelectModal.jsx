@@ -25,6 +25,12 @@ const getFileType = (name = '') => {
 
 const isImageType = (type = '') => IMAGE_TYPES.includes(String(type).toUpperCase());
 
+const formatSize = (bytes) => {
+  if (!bytes && bytes !== 0) return 'N/A';
+  const kb = bytes / 1024;
+  return kb > 1024 ? `${(kb / 1024).toFixed(2)} MB` : `${kb.toFixed(2)} KB`;
+};
+
 export default function MediaSelectModal({
   isOpen,
   onClose,
@@ -34,6 +40,7 @@ export default function MediaSelectModal({
   allowedTypes = IMAGE_TYPES,
   invalidFileMessage = 'Only image files are allowed',
   emptyMessage = 'No images found',
+  source = 'gallery',   // 'gallery' = images from albums, 'uploads' = physical uploads folder (incl. PDFs)
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All Files');
@@ -50,15 +57,33 @@ export default function MediaSelectModal({
   const fetchMediaItems = React.useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get('/gallery-albums');
-      const albums = res?.data || [];
-      const imagesList = [];
       const baseHost = BASE_URL.replace(/\/api$/, '');
       const resolveUrl = (path) => {
         if (!path) return '';
         if (path.startsWith('http')) return path;
         return `${baseHost}/${path.replace(/^\/?/, '')}`;
       };
+
+      // 'uploads' source: list actual files from the server's uploads folder (PDFs etc.).
+      if (source === 'uploads') {
+        const res = await api.get('/media-files');
+        const files = res?.data || [];
+        setMediaItems(files.map((f) => ({
+          id: f.filename,
+          name: f.filename,
+          type: (f.type || '').toUpperCase(),
+          size: formatSize(f.size),
+          url: resolveUrl(f.path),
+          path: f.path,
+          date: f.modified ? new Date(f.modified).toLocaleDateString() : 'N/A',
+        })));
+        setLoading(false);
+        return;
+      }
+
+      const res = await api.get('/gallery-albums');
+      const albums = res?.data || [];
+      const imagesList = [];
 
       const parseDate = (createdAt, updatedAt) => {
         const raw = updatedAt || createdAt;
@@ -118,7 +143,7 @@ export default function MediaSelectModal({
     } finally {
       setLoading(false);
     }
-  }, [addToast]);
+  }, [addToast, source]);
 
   React.useEffect(() => {
     if (isOpen) {
