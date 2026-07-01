@@ -77,6 +77,8 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
     control,
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -95,6 +97,19 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
       canonical_url: initialData?.canonical_url || '',
     },
   });
+
+  const titleVal = watch('title');
+
+  React.useEffect(() => {
+    if (titleVal !== undefined && !isEdit) {
+      const generatedSlug = titleVal
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [titleVal, setValue, isEdit]);
 
   const onSubmit = async (data) => {
     if (!pdf) {
