@@ -245,6 +245,7 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
         onClose={closeMediaPicker}
         onSelect={handleMediaSelect}
         multiple={false}
+        source="uploads"
         accept={mediaTarget === 'pdf' ? '.pdf,application/pdf' : 'image/*'}
         allowedTypes={mediaTarget === 'pdf' ? ['PDF'] : []}
         invalidFileMessage={mediaTarget === 'pdf' ? 'Only PDF files are allowed' : 'Invalid file type'}
