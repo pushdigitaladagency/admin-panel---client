@@ -263,6 +263,7 @@ export function CertificateForm({ initialData }) {
         isOpen={isMediaModalOpen}
         onClose={closeMediaPicker}
         onSelect={handleMediaSelect}
+        source={mediaTarget === 'pdf' ? 'uploads' : 'gallery'}
         accept={mediaTarget === 'pdf' ? '.pdf,application/pdf' : 'image/*'}
         allowedTypes={mediaTarget === 'pdf' ? ['PDF'] : IMAGE_TYPES}
         invalidFileMessage={mediaTarget === 'pdf' ? 'Only PDF files are allowed for PDF Attachment' : 'Only image files are allowed'}
