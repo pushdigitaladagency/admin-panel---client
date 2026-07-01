@@ -3,8 +3,17 @@ import { Calendar } from 'lucide-react';
 
 export const Input = forwardRef(({ className = '', type, onChange, value, defaultValue, ...rest }, ref) => {
   const [internalVal, setInternalVal] = React.useState(value || defaultValue || '');
-  const fallbackRef = React.useRef(null);
-  const activeRef = ref || fallbackRef;
+  const dateInputRef = React.useRef(null);
+
+  const setRefs = React.useCallback((node) => {
+    dateInputRef.current = node;
+
+    if (typeof ref === 'function') {
+      ref(node);
+    } else if (ref) {
+      ref.current = node;
+    }
+  }, [ref]);
 
   React.useEffect(() => {
     if (value !== undefined) {
@@ -12,11 +21,25 @@ export const Input = forwardRef(({ className = '', type, onChange, value, defaul
     }
   }, [value]);
 
+  React.useEffect(() => {
+    if (type !== 'date' || value !== undefined) return;
+
+    const syncDateValue = () => {
+      const currentValue = dateInputRef.current?.value || defaultValue || '';
+      setInternalVal(currentValue);
+    };
+
+    syncDateValue();
+    const frame = window.requestAnimationFrame(syncDateValue);
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [type, value, defaultValue]);
+
   const handleTextClick = () => {
-    if (activeRef.current) {
+    if (dateInputRef.current) {
       try {
-        activeRef.current.showPicker();
-      } catch (err) {
+        dateInputRef.current.showPicker();
+      } catch {
         // Fallback for unsupported browsers
       }
     }
@@ -49,7 +72,7 @@ export const Input = forwardRef(({ className = '', type, onChange, value, defaul
           <Calendar size={18} />
         </div>
         <input
-          ref={activeRef}
+          ref={setRefs}
           type="date"
           onChange={(e) => {
             setInternalVal(e.target.value);
