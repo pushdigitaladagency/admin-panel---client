@@ -43,6 +43,8 @@ export function CareerPostForm({ initialData }) {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -85,6 +87,19 @@ export function CareerPostForm({ initialData }) {
   });
 
   const statusVal = useWatch({ control, name: 'status', defaultValue: toTitleCase(initialData?.status) || 'Draft' });
+
+  const jobTitleVal = watch('job_title');
+
+  React.useEffect(() => {
+    if (jobTitleVal !== undefined && !isEdit) {
+      const generatedSlug = jobTitleVal
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [jobTitleVal, setValue, isEdit]);
 
   const onSubmit = async (data) => {
     const payload = {
