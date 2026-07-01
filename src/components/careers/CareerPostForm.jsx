@@ -162,23 +162,6 @@ export function CareerPostForm({ initialData }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      
-      {/* Details Summary — colored badges only here */}
-      {isEdit && (
-        <div className="card">
-          <div className="card-header"><h3 className="card-title">Details</h3></div>
-          <div className="card-body">
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span className="form-label" style={{ marginBottom: 0 }}>Status</span>
-                <span className={`badge ${STATUS_BADGE[statusVal] || 'badge-secondary'}`}>
-                  {statusVal || 'Draft'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Job Details */}
       <div className="card">
