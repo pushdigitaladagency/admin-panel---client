@@ -18,7 +18,7 @@ const STATUS_BADGE = {
   'Interview Scheduled': 'badge-purple',
   Selected: 'badge-success',
   Rejected: 'badge-danger',
-  'On Hold': 'badge-secondary',
+  'On Hold': 'badge-info',
 };
 
 export default function CareerApplicationListPage() {
