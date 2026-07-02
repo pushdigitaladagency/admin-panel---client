@@ -1,8 +1,9 @@
-import React, { forwardRef } from 'react';
-import { Calendar } from 'lucide-react';
+import React, { forwardRef, useState } from 'react';
+import { Calendar, Eye, EyeOff } from 'lucide-react';
 
 export const Input = forwardRef(({ className = '', type, onChange, value, defaultValue, ...rest }, ref) => {
-  const [internalVal, setInternalVal] = React.useState(value || defaultValue || '');
+  const [internalVal, setInternalVal] = useState(value || defaultValue || '');
+  const [showPassword, setShowPassword] = useState(false);
   const dateInputRef = React.useRef(null);
 
   const setRefs = React.useCallback((node) => {
@@ -93,6 +94,44 @@ export const Input = forwardRef(({ className = '', type, onChange, value, defaul
             zIndex: 10
           }}
         />
+      </div>
+    );
+  }
+
+  if (type === 'password') {
+    return (
+      <div style={{ position: 'relative', width: '100%' }}>
+        <input
+          ref={ref}
+          type={showPassword ? 'text' : 'password'}
+          className={`form-input ${className}`}
+          onChange={onChange}
+          value={value}
+          defaultValue={defaultValue}
+          {...rest}
+          style={{ ...rest.style, paddingRight: '40px' }}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            color: 'var(--color-text-muted)'
+          }}
+          tabIndex="-1"
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
       </div>
     );
   }

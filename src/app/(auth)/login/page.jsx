@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { Input } from '@/components/ui/Input';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Email</label>
-              <input
+              <Input
                 type="email"
                 className="form-input"
                 placeholder="admin@example.com"
@@ -81,7 +82,7 @@ export default function LoginPage() {
 
             <div className="form-group">
               <label className="form-label">Password</label>
-              <input
+              <Input
                 type="password"
                 className="form-input"
                 placeholder="••••••••"

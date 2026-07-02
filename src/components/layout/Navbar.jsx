@@ -78,6 +78,7 @@ export default function Navbar({ onMenuToggle }) {
         >
           <Menu size={24} />
         </button>
+        <div className="navbar-mobile-brand">Airfloa</div>
       </div>
 
       <div className="navbar-right">
