@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/context/ConfirmContext';
 import { Pencil, Trash2 } from 'lucide-react';
 
-const STATUS_BADGE = { Active: 'badge-success', Inactive: 'badge-secondary', Expired: 'badge-danger' };
+const STATUS_BADGE = { Active: 'badge-success', Inactive: 'badge-danger', Expired: 'badge-warning' };
 
 export default function CertificateListPage() {
   const { can } = useAuth();
