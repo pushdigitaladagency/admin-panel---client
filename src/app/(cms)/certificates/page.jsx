@@ -18,10 +18,15 @@ export default function CertificateListPage() {
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
   const canView = can('certificates', 'view');
+  const canDelete = can('certificates', 'delete');
   const { data, loading, error, reload } = useApi('/certificates', { enabled: canView });
   const rows = data || [];
 
   const handleDelete = (id) => {
+    if (!canDelete) {
+      addToast(`You don't have access to delete the certificates module.`, 'danger');
+      return;
+    }
     confirmDelete('Are you sure you want to delete this certificate?', async () => {
       try {
         await api.del(`/certificates/${id}`);

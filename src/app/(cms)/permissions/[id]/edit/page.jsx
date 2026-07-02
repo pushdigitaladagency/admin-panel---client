@@ -4,15 +4,19 @@ import React from 'react';
 import { PermissionForm } from '@/components/permissions/PermissionForm';
 import { notFound, useParams } from 'next/navigation';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function EditPermissionPage() {
   const params = useParams();
+  const { can } = useAuth();
   const permissionId = parseInt(params.id, 10);
-  
+
   if (isNaN(permissionId)) return notFound();
 
   const { data: perm, loading, error } = useApi(`/permissions/${permissionId}`);
 
+  if (!can('roles', 'edit')) return <NoAccess module="roles" action="edit" />;
   if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
   if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load permission'}</p>;
   if (!perm) return notFound();

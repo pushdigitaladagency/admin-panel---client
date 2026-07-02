@@ -16,10 +16,15 @@ export default function MetaMappingListPage() {
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
   const canView = can('meta_mappings', 'view');
+  const canDelete = can('meta_mappings', 'delete');
   const { data, loading, error, reload } = useApi('/meta-mappings', { enabled: canView });
   const rows = data || [];
 
   const handleDelete = (id) => {
+    if (!canDelete) {
+      addToast(`You don't have access to delete the meta_mappings module.`, 'danger');
+      return;
+    }
     confirmDelete('Are you sure you want to delete this meta mapping?', async () => {
       try {
         await api.del(`/meta-mappings/${id}`);

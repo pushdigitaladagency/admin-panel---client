@@ -4,11 +4,15 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { CareerApplicationForm } from '@/components/careers/CareerApplicationForm';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function EditCareerApplicationPage() {
   const params = useParams();
+  const { can } = useAuth();
   const { data, loading, error } = useApi(`/career-applications/${params.id}`);
 
+  if (!can('career_applications', 'edit')) return <NoAccess module="career_applications" action="edit" />;
   if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
   if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load application'}</p>;
   if (!data) return <p className="text-muted" style={{ padding: '32px 0' }}>Application not found</p>;

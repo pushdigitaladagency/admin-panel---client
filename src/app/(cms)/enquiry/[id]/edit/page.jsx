@@ -4,13 +4,17 @@ import React from 'react';
 import { PostForm } from '@/components/posts/PostForm';
 import { useParams } from 'next/navigation';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function EditEnquiryPage() {
   const params = useParams();
+  const { can } = useAuth();
   const enquiryId = params.id;
 
   const { data, loading, error } = useApi(`/enquiries/${enquiryId}`);
 
+  if (!can('enquiries', 'edit')) return <NoAccess module="enquiries" action="edit" />;
   if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
   if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load enquiry'}</p>;
   if (!data) return <p className="text-muted" style={{ padding: '32px 0' }}>Enquiry not found</p>;

@@ -36,6 +36,7 @@ export default function PostListPage() {
   const apiPath = POST_API[postType] || '/press-releases';
   const moduleCode = POST_MODULE[postType] || 'press_releases';
   const canView = can(moduleCode, 'view');
+  const canDelete = can(moduleCode, 'delete');
   const { data, loading, error, reload } = useApi(apiPath, { enabled: canView });
   const posts = data || [];
 
@@ -51,6 +52,11 @@ export default function PostListPage() {
       : 'Press Release';
 
   const handleDelete = (id) => {
+    // Mirror the NoAccess wording for the inline delete action (no dedicated page).
+    if (!canDelete) {
+      addToast(`You don't have access to delete the ${moduleCode} module.`, 'danger');
+      return;
+    }
     confirmDelete(`Are you sure you want to delete this ${singularPostTypeLabel.toLowerCase()}?`, async () => {
       try {
         await api.del(`${apiPath}/${id}`);

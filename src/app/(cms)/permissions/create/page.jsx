@@ -2,8 +2,13 @@
 
 import React from 'react';
 import { PermissionForm } from '@/components/permissions/PermissionForm';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function CreatePermissionPage() {
+  const { can } = useAuth();
+  if (!can('roles', 'create')) return <NoAccess module="roles" action="create" />;
+
   return (
     <>
       <div className="page-header">

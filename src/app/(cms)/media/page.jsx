@@ -37,6 +37,8 @@ export default function MediaPage() {
   const [preselectedAlbumId, setPreselectedAlbumId] = useState(null);
 
   const canViewGallery = can('gallery', 'view');
+  const canDeleteGallery = can('gallery', 'delete');
+  const denyDelete = () => addToast(`You don't have access to delete the gallery module.`, 'danger');
 
   // Fetch from API (skip the calls entirely when the user can't view the gallery)
   const { data: albumsData, loading: albumsLoading, error: albumsError, reload: reloadAlbums } = useApi('/gallery-albums', { enabled: canViewGallery });
@@ -196,6 +198,7 @@ export default function MediaPage() {
   };
 
   const handleDeleteAlbum = (id) => {
+    if (!canDeleteGallery) return denyDelete();
     confirmDelete('Are you sure you want to delete this album? This will not delete the images inside it.', async () => {
       try {
         await api.del(`/gallery-albums/${id}`);
@@ -208,6 +211,7 @@ export default function MediaPage() {
   };
 
   const handleDeleteImage = (id) => {
+    if (!canDeleteGallery) return denyDelete();
     confirmDelete('Are you sure you want to delete this image?', async () => {
       try {
         await api.del(`/gallery-images/${id}`);
@@ -220,6 +224,7 @@ export default function MediaPage() {
   };
 
   const handleDeleteVideo = (id) => {
+    if (!canDeleteGallery) return denyDelete();
     confirmDelete('Are you sure you want to delete this video?', async () => {
       try {
         await api.del(`/gallery-videos/${id}`);
@@ -232,6 +237,7 @@ export default function MediaPage() {
   };
 
   const handleBulkDeleteAlbums = (ids) => {
+    if (!canDeleteGallery) return denyDelete();
     confirmDelete(`Are you sure you want to delete ${ids.length} albums?`, async () => {
       await Promise.allSettled(ids.map((id) => api.del(`/gallery-albums/${id}`)));
       addToast(`${ids.length} albums deleted`, 'success');
@@ -240,6 +246,7 @@ export default function MediaPage() {
   };
 
   const handleBulkDeleteImages = (ids) => {
+    if (!canDeleteGallery) return denyDelete();
     confirmDelete(`Are you sure you want to delete ${ids.length} images?`, async () => {
       await Promise.allSettled(ids.map((id) => api.del(`/gallery-images/${id}`)));
       addToast(`${ids.length} images deleted`, 'success');
@@ -248,6 +255,7 @@ export default function MediaPage() {
   };
 
   const handleBulkDeleteVideos = (ids) => {
+    if (!canDeleteGallery) return denyDelete();
     confirmDelete(`Are you sure you want to delete ${ids.length} videos?`, async () => {
       await Promise.allSettled(ids.map((id) => api.del(`/gallery-videos/${id}`)));
       addToast(`${ids.length} videos deleted`, 'success');

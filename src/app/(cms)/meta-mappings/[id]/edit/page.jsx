@@ -4,11 +4,15 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { MetaMappingForm } from '@/components/meta/MetaMappingForm';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function EditMetaMappingPage() {
   const params = useParams();
+  const { can } = useAuth();
   const { data, loading, error } = useApi(`/meta-mappings/${params.id}`);
 
+  if (!can('meta_mappings', 'edit')) return <NoAccess module="meta_mappings" action="edit" />;
   if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
   if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load meta mapping'}</p>;
   if (!data) return <p className="text-muted" style={{ padding: '32px 0' }}>Meta mapping not found</p>;

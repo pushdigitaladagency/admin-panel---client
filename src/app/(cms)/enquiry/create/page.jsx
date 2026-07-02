@@ -2,8 +2,13 @@
 
 import React from 'react';
 import { PostForm } from '@/components/posts/PostForm';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 export default function CreateEnquiryPage() {
+  const { can } = useAuth();
+  if (!can('enquiries', 'create')) return <NoAccess module="enquiries" action="create" />;
+
   return (
     <>
       <div className="mb-6">

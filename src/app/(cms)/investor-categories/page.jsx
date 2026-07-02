@@ -16,10 +16,15 @@ export default function InvestorCategoryListPage() {
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
   const canView = can('investors', 'view');
+  const canDelete = can('investors', 'delete');
   const { data, loading, error, reload } = useApi('/investor-categories', { enabled: canView });
   const rows = data || [];
 
   const handleDelete = (id) => {
+    if (!canDelete) {
+      addToast(`You don't have access to delete the investors module.`, 'danger');
+      return;
+    }
     confirmDelete('Are you sure you want to delete this category?', async () => {
       try {
         await api.del(`/investor-categories/${id}`);

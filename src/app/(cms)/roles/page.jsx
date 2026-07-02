@@ -14,12 +14,17 @@ import { Pencil, Trash2 } from 'lucide-react';
 export default function RoleListPage() {
   const { can } = useAuth();
   const canView = can('roles', 'view');
+  const canDelete = can('roles', 'delete');
   const { data, loading, error, reload } = useApi('/roles', { enabled: canView });
   const roles = data || [];
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
 
   const handleDelete = (id) => {
+    if (!canDelete) {
+      addToast(`You don't have access to delete the roles module.`, 'danger');
+      return;
+    }
     confirmDelete('Are you sure you want to delete this role?', async () => {
       try {
         await api.del(`/roles/${id}`);

@@ -18,10 +18,15 @@ export default function LogoListPage() {
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
   const canView = can('client_partner_logos', 'view');
+  const canDelete = can('client_partner_logos', 'delete');
   const { data, loading, error, reload } = useApi('/client-partner-logos', { enabled: canView });
   const rows = data || [];
 
   const handleDelete = (id) => {
+    if (!canDelete) {
+      addToast(`You don't have access to delete the client_partner_logos module.`, 'danger');
+      return;
+    }
     confirmDelete('Are you sure you want to delete this logo?', async () => {
       try {
         await api.del(`/client-partner-logos/${id}`);

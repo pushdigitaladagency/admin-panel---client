@@ -4,6 +4,8 @@ import React from 'react';
 import { PostForm } from '@/components/posts/PostForm';
 import { notFound, useParams } from 'next/navigation';
 import { useApi } from '@/lib/useApi';
+import { useAuth } from '@/context/AuthContext';
+import { NoAccess } from '@/components/ui/NoAccess';
 
 // Map frontend postType slug to API path
 const POST_API = {
@@ -12,15 +14,30 @@ const POST_API = {
   'press-release': '/press-releases',
 };
 
+// Map frontend postType slug to RBAC module code
+const POST_MODULE = {
+  news: 'news',
+  event: 'events',
+  'press-release': 'press_releases',
+};
+
 export default function EditPostPage() {
   const params = useParams();
+  const { can } = useAuth();
   const postType = params.postType || 'post';
   const postId = parseInt(params.id, 10);
-  
-  if (isNaN(postId)) return notFound();
-
   const apiPath = POST_API[postType] || '/press-releases';
-  const { data, loading, error } = useApi(`${apiPath}/${postId}`);
+  const moduleCode = POST_MODULE[postType] || 'press_releases';
+  const canEdit = can(moduleCode, 'edit');
+
+  // Only fetch the record once we know the user is allowed to edit it (and the id
+  // is valid). `enabled` keeps the useApi hook call unconditional (stable hook order).
+  const { data, loading, error } = useApi(`${apiPath}/${postId}`, {
+    enabled: canEdit && !Number.isNaN(postId),
+  });
+
+  if (Number.isNaN(postId)) return notFound();
+  if (!canEdit) return <NoAccess module={moduleCode} action="edit" />;
 
   if (loading) return <p className="text-muted" style={{ padding: '32px 0' }}>Loading…</p>;
   if (error) return <p className="form-error" style={{ padding: '32px 0' }}>{error.message || 'Failed to load record'}</p>;

@@ -25,10 +25,15 @@ export default function CareerPostListPage() {
   const { addToast } = useToast();
   const { confirmDelete } = useConfirm();
   const canView = can('career_posts', 'view');
+  const canDelete = can('career_posts', 'delete');
   const { data, loading, error, reload } = useApi('/career-posts', { enabled: canView });
   const posts = data || [];
 
   const handleDelete = (id) => {
+    if (!canDelete) {
+      addToast(`You don't have access to delete the career_posts module.`, 'danger');
+      return;
+    }
     confirmDelete('Are you sure you want to delete this career post?', async () => {
       try {
         await api.del(`/career-posts/${id}`);
