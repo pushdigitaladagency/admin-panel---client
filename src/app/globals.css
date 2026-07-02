@@ -159,9 +159,7 @@ img {
   left: 0;
   width: var(--sidebar-width);
   height: 100vh;
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--color-bg-alt);
   border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
@@ -170,13 +168,15 @@ img {
 }
 
 .sidebar-header {
-  height: var(--navbar-height);
+  min-height: var(--navbar-height);
+  height: auto;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--glass-border);
   gap: 12px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sidebar-logo {
@@ -326,11 +326,12 @@ img {
 /* -- Main Content Area -- */
 .main-wrapper {
   flex: 1;
+  width: calc(100% - var(--sidebar-width));
   margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left var(--transition-base);
+  transition: margin-left var(--transition-base), width var(--transition-base);
 }
 
 /* -- Navbar -- */
@@ -1048,6 +1049,7 @@ html.dark textarea:disabled::placeholder {
 
 .data-table {
   width: 100%;
+  min-width: max-content;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -2789,7 +2791,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   background-clip: text;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
   /* Sidebar Backdrop */
   .sidebar-backdrop {
     display: block;
@@ -2814,6 +2816,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   .sidebar {
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
+    background: var(--color-bg-alt); /* Make solid on mobile to prevent text overlap */
   }
   .sidebar.open {
     transform: translateX(0);
@@ -2822,6 +2825,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   /* Main wrapper */
   .main-wrapper {
     margin-left: 0 !important;
+    width: 100% !important;
   }
 
   /* Hamburger Button */
@@ -2899,5 +2903,32 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   }
   .data-table-search .input {
     width: 100%;
+  }
+
+  /* Media Modal Responsive */
+  .media-modal-body {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+  }
+  
+  .media-modal-left-sidebar {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    flex-shrink: 0 !important;
+    overflow-y: visible !important;
+  }
+  
+  .media-modal-main {
+    overflow-y: visible !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .media-modal-right-sidebar {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid var(--color-border) !important;
+    flex-shrink: 0 !important;
+    overflow-y: visible !important;
   }
 }
