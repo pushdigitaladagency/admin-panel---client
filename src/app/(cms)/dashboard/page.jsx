@@ -170,7 +170,7 @@ export default function DashboardPage() {
       </div>
 
       <UserGrowthChart data={s.userGrowth} loading={statsLoading} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px', alignItems: 'stretch' }} className="mb-6">
+      <div style={{ display: 'grid', gap: '24px', alignItems: 'stretch' }} className="dashboard-charts-container mb-6">
         <PostActivityChart data={s.postActivity} loading={statsLoading} />
 
         <RecentPostsCard posts={recentPosts} loading={recentLoading} />

@@ -147,7 +147,7 @@ export function ClientPartnerLogoForm({ initialData }) {
   const field = (name, label, opts = {}) => (
     <div className="form-group">
       <label className="form-label">{label}{opts.required && ' *'}</label>
-      <Input type={opts.type || 'text'} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
+      <Input type={opts.type || 'text'} min={opts.min} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
       {errors[name] && <p className="form-error">{errors[name].message}</p>}
     </div>
   );
@@ -167,7 +167,7 @@ export function ClientPartnerLogoForm({ initialData }) {
               </div>
               {field('website_url', 'Website URL')}
               {field('alt_text', 'Alt Text')}
-              {field('display_order', 'Display Order', { type: 'number' })}
+              {field('display_order', 'Display Order', { type: 'number', min: 0, rules: { min: { value: 0, message: 'Display Order cannot be negative' } } })}
               <div className="form-group">
                 <label className="form-label">Featured</label>
                 <select className="form-select" {...register('featured')}>

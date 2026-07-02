@@ -133,9 +133,11 @@ export function ImageForm({ albums = [], initialData, defaultAlbumId, onSubmit, 
         <label className="form-label">Display Order</label>
         <Input
           type="number"
-          {...register('display_order')}
+          min={0}
+          {...register('display_order', { min: { value: 0, message: 'Display Order cannot be negative' } })}
           placeholder="e.g. 1, 2, 3"
         />
+        {errors.display_order && <p className="form-error">{errors.display_order.message}</p>}
       </div>
 
       <div className="form-group">

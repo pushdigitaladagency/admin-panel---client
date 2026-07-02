@@ -53,7 +53,7 @@ export function InvestorCategoryForm({ initialData }) {
   const field = (name, label, opts = {}) => (
     <div className="form-group">
       <label className="form-label">{label}{opts.required && ' *'}</label>
-      <Input type={opts.type || 'text'} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
+      <Input type={opts.type || 'text'} min={opts.min} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
       {errors[name] && <p className="form-error">{errors[name].message}</p>}
     </div>
   );
@@ -66,7 +66,7 @@ export function InvestorCategoryForm({ initialData }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {field('category_name', 'Category Name', { required: true, rules: { required: 'Name is required' } })}
             {field('slug', 'Slug')}
-            {field('display_order', 'Display Order', { type: 'number' })}
+            {field('display_order', 'Display Order', { type: 'number', min: 0, rules: { min: { value: 0, message: 'Display Order cannot be negative' } } })}
             <div className="form-group">
               <label className="form-label">Status</label>
               <select className="form-select" {...register('status')}><option>Active</option><option>Inactive</option></select>

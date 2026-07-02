@@ -15,6 +15,15 @@ const WORK_MODES = ['On-site', 'Hybrid', 'Remote'];
 const SALARY_PERIODS = ['Monthly', 'Annual'];
 const STATUSES = ['Draft', 'Published', 'Open', 'Closed', 'On Hold', 'Archived'];
 
+// Rich-text fields in the Description card — each gets its own CKEditor instance.
+const DESCRIPTION_FIELDS = [
+  { name: 'job_summary', label: 'Job Summary', required: true },
+  { name: 'job_description', label: 'Job Description', required: true },
+  { name: 'roles_responsibilities', label: 'Roles & Responsibilities', required: true },
+  { name: 'key_requirements', label: 'Key Requirements', required: true },
+  { name: 'educational_qualification', label: 'Educational Qualification', required: true },
+];
+
 const STATUS_BADGE = {
   Published: 'badge-success',
   Open:      'badge-primary',
@@ -88,6 +97,13 @@ export function CareerPostForm({ initialData }) {
 
   const statusVal = useWatch({ control, name: 'status', defaultValue: toTitleCase(initialData?.status) || 'Draft' });
 
+  const [editorLoaded, setEditorLoaded] = React.useState(false);
+  // name -> DOM element / editor instance. Keyed maps keep this generic across
+  // the five description editors instead of a ref-pair per field.
+  const editableRefs = React.useRef({});
+  const toolbarRefs = React.useRef({});
+  const instRefs = React.useRef({});
+
   const jobTitleVal = watch('job_title');
 
   React.useEffect(() => {
@@ -100,6 +116,94 @@ export function CareerPostForm({ initialData }) {
       setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
     }
   }, [jobTitleVal, setValue, isEdit]);
+
+  // Load CKEditor 5 Decoupled Document from CDN (same build as PostForm).
+  React.useEffect(() => {
+    if (window.DecoupledEditor) {
+      setEditorLoaded(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-decoupled-document@36.0.1/build/ckeditor.js';
+    script.async = true;
+    script.onload = () => setEditorLoaded(true);
+    document.head.appendChild(script);
+  }, []);
+
+  // Register the rich-text fields manually since CKEditor drives their value via
+  // setValue (they are not wired through a native <textarea> register()).
+  React.useEffect(() => {
+    DESCRIPTION_FIELDS.forEach((f) => {
+      register(f.name, f.required ? { required: `${f.label} is required` } : {});
+    });
+  }, [register]);
+
+  // Initialize CKEditors (StrictMode-safe).
+  React.useEffect(() => {
+    if (!editorLoaded || !window.DecoupledEditor) return;
+
+    const editorConfig = {
+      toolbar: [
+        'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+        'alignment', '|',
+        'bold', 'italic', 'underline', '|',
+        'bulletedList', 'numberedList', '|',
+        'undo', 'redo', 'link',
+      ],
+      list: { properties: { styles: false, startIndex: false, reversed: false } },
+    };
+
+    // The synchronous 'pending' sentinel blocks a second create() on the same
+    // element — without it, React StrictMode's double-invoke spawns two editors
+    // on one node and the field becomes non-editable.
+    const mountEditor = (name, initialValue) => {
+      const editableEl = editableRefs.current[name];
+      const toolbarEl = toolbarRefs.current[name];
+      if (!editableEl || instRefs.current[name]) return;
+      instRefs.current[name] = 'pending';
+      window.DecoupledEditor.create(editableEl, editorConfig)
+        .then((editor) => {
+          instRefs.current[name] = editor;
+          if (toolbarEl) {
+            toolbarEl.innerHTML = '';
+            toolbarEl.appendChild(editor.ui.view.toolbar.element);
+          }
+          editor.setData(initialValue || '');
+          editor.model.document.on('change:data', () => {
+            setValue(name, editor.getData(), { shouldDirty: true, shouldValidate: true });
+          });
+        })
+        .catch((err) => {
+          instRefs.current[name] = null;
+          console.error('Error initializing CKEditor:', err);
+        });
+    };
+
+    DESCRIPTION_FIELDS.forEach((f) => mountEditor(f.name, initialData?.[f.name]));
+
+    return () => {
+      // Only destroy fully-initialized editors; skipping the 'pending' sentinel
+      // avoids racing an in-flight create() during a StrictMode remount.
+      Object.keys(instRefs.current).forEach((name) => {
+        const inst = instRefs.current[name];
+        if (inst && inst !== 'pending' && typeof inst.destroy === 'function') {
+          instRefs.current[name] = null;
+          inst.destroy().catch(() => {});
+        }
+      });
+    };
+  }, [editorLoaded]);
+
+  // Keep editors synced if initialData arrives/changes after initialization.
+  React.useEffect(() => {
+    DESCRIPTION_FIELDS.forEach((f) => {
+      const inst = instRefs.current[f.name];
+      const value = initialData?.[f.name];
+      if (inst && inst !== 'pending' && typeof inst.getData === 'function' && value !== undefined) {
+        if (inst.getData() !== (value || '')) inst.setData(value || '');
+      }
+    });
+  }, [initialData]);
 
   const onSubmit = async (data) => {
     const payload = {
@@ -148,6 +252,17 @@ export function CareerPostForm({ initialData }) {
     </div>
   );
 
+  const ckField = (name, label, required) => (
+    <div className="form-group" key={name}>
+      <label className="form-label">{label}{required && ' *'}</label>
+      <div className="ck-editor-wrapper">
+        <div ref={(el) => { toolbarRefs.current[name] = el; }} className="ck-toolbar-container" />
+        <div ref={(el) => { editableRefs.current[name] = el; }} className="ck-editor-editable-area" />
+      </div>
+      {errors[name] && <p className="form-error">{errors[name].message}</p>}
+    </div>
+  );
+
   const textArea = (name, label, required) => (
     <div className="form-group">
       <label className="form-label">{label}{required && ' *'}</label>
@@ -184,11 +299,7 @@ export function CareerPostForm({ initialData }) {
       <div className="card">
         <div className="card-header"><h3 className="card-title">Description</h3></div>
         <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
-          {textArea('job_summary', 'Job Summary', true)}
-          {textArea('job_description', 'Job Description', true)}
-          {textArea('roles_responsibilities', 'Roles & Responsibilities', true)}
-          {textArea('key_requirements', 'Key Requirements', true)}
-          {textArea('educational_qualification', 'Educational Qualification', true)}
+          {DESCRIPTION_FIELDS.map((f) => ckField(f.name, f.label, f.required))}
         </div>
       </div>
 
