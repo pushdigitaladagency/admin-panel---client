@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { 
   LayoutDashboard, 
   Users, 
@@ -121,7 +122,13 @@ const NAV_SECTIONS = [
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const { can, loading } = useAuth();
   const [openDropdowns, setOpenDropdowns] = useState({});
+
+  // The whole sidebar is gated by the 'sidebar' module's view permission.
+  // Render optimistically while /me is still loading (avoids a flash for the
+  // common case where the role has the grant), then hide once we know it lacks it.
+  if (!loading && !can('sidebar', 'view')) return null;
 
   const toggleDropdown = (label) => {
     setOpenDropdowns((prev) => ({ ...prev, [label]: !prev[label] }));
