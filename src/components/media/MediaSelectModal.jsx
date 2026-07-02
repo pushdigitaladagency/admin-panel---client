@@ -11,7 +11,8 @@ import {
   FileImage,
   FileText,
   CheckCircle2,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import { api, BASE_URL, uploadFile } from '@/lib/api';
@@ -53,6 +54,7 @@ export default function MediaSelectModal({
 
   const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const fetchMediaItems = React.useCallback(async () => {
     setLoading(true);
@@ -197,6 +199,17 @@ export default function MediaSelectModal({
   const normalizedAllowedTypes = allowedTypes.map(type => String(type).toUpperCase());
   const filterOptions = normalizedAllowedTypes.length ? normalizedAllowedTypes : IMAGE_TYPES;
 
+  let loadingText = 'File is loading...';
+  const effectiveTypes = normalizedAllowedTypes.length > 0 ? normalizedAllowedTypes : IMAGE_TYPES;
+
+  if (effectiveTypes.every(t => t === 'PDF')) {
+    loadingText = 'File is loading...';
+  } else if (effectiveTypes.every(t => ['MP4', 'WEBM', 'OGG', 'MOV'].includes(t))) {
+    loadingText = 'Videos loading...';
+  } else if (effectiveTypes.every(t => IMAGE_TYPES.includes(t))) {
+    loadingText = 'Images loading...';
+  }
+
   // Filter media items
   const filteredItems = mediaItems.filter(item => {
     if (normalizedAllowedTypes.length && !normalizedAllowedTypes.includes(String(item.type).toUpperCase())) return false;
@@ -251,7 +264,20 @@ export default function MediaSelectModal({
       return;
     }
 
-    setLoading(true);
+    let uploadingText = 'Uploading...';
+    if (selectedFiles.length > 0) {
+      const type = getFileType(selectedFiles[0].name).toUpperCase();
+      if (IMAGE_TYPES.includes(type)) {
+        uploadingText = 'Uploading Image...';
+      } else if (type === 'PDF') {
+        uploadingText = 'Uploading PDF...';
+      } else if (['MP4', 'WEBM', 'OGG', 'MOV'].includes(type)) {
+        uploadingText = 'Uploading Video...';
+      } else {
+        uploadingText = `Uploading ${type}...`;
+      }
+    }
+    setUploading(uploadingText);
     try {
       const uploadedItems = [];
       const baseHost = BASE_URL.replace(/\/api$/, '');
@@ -282,7 +308,7 @@ export default function MediaSelectModal({
       console.error('Upload failed:', err);
       addToast(err.message || 'Failed to upload file(s)', 'danger');
     } finally {
-      setLoading(false);
+      setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -311,9 +337,9 @@ export default function MediaSelectModal({
               accept={accept}
               onChange={handleFileChange} 
             />
-            <button className="media-upload-btn" onClick={handleUploadClick}>
-              <Upload size={18} />
-              <span>Upload Files</span>
+            <button className="media-upload-btn" onClick={handleUploadClick} disabled={!!uploading}>
+              {uploading ? <Loader2 size={18} style={{ animation: 'btnSpin 1s linear infinite' }} /> : <Upload size={18} />}
+              <span>{uploading ? uploading : 'Upload Files'}</span>
             </button>
             
             <div className="media-filter-group">
@@ -352,7 +378,7 @@ export default function MediaSelectModal({
           <div className="media-modal-main">
             {loading ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-muted)', fontSize: '0.875rem' }}>
-                Loading gallery images...
+                {loadingText}
               </div>
             ) : filteredItems.length === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-muted)', fontSize: '0.875rem' }}>
