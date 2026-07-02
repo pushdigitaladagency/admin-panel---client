@@ -125,10 +125,14 @@ export default function Sidebar({ isOpen, onClose }) {
   const { can, loading } = useAuth();
   const [openDropdowns, setOpenDropdowns] = useState({});
 
-  // The whole sidebar is gated by the 'sidebar' module's view permission.
-  // Render optimistically while /me is still loading (avoids a flash for the
-  // common case where the role has the grant), then hide once we know it lacks it.
-  if (!loading && !can('sidebar', 'view')) return null;
+  // The sidebar is gated by the 'sidebar' module's view permission.
+  // Render optimistically while /me is still loading (avoids a flash for the common
+  // case where the role has the grant). Once resolved, a role WITHOUT sidebar:view
+  // is reduced to the "Main" section only (Dashboard) rather than losing all nav.
+  const hasSidebar = loading || can('sidebar', 'view');
+  const visibleSections = hasSidebar
+    ? NAV_SECTIONS
+    : NAV_SECTIONS.filter((section) => section.title === 'Main');
 
   const toggleDropdown = (label) => {
     setOpenDropdowns((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -167,7 +171,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Navigation */}
         <nav className="sidebar-nav">
-          {NAV_SECTIONS.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.title}>
               <div className="sidebar-section-title">{section.title}</div>
               {section.items.map((item) => {

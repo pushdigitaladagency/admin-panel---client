@@ -14,9 +14,15 @@ export function PermissionForm({ initialData }) {
   const router = useRouter();
   const { addToast } = useToast();
 
-  // Fetch modules from backend
+  // Fetch modules from backend.
+  // Memoized so MODULES keeps a stable reference across renders — otherwise the
+  // auto-generate-code effect below (which lists MODULES as a dependency and calls
+  // setValue) would re-run every render and loop infinitely, freezing the page.
   const { data: modulesData } = useApi('/modules');
-  const MODULES = (modulesData || []).map((m) => ({ id: m.id, name: m.name }));
+  const MODULES = React.useMemo(
+    () => (modulesData || []).map((m) => ({ id: m.id, name: m.name })),
+    [modulesData]
+  );
 
   const {
     register,

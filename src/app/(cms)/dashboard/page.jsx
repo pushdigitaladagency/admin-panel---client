@@ -9,7 +9,11 @@ import { useApi } from '@/lib/useApi';
 import { useAuth } from '@/context/AuthContext';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, can, loading: authLoading } = useAuth();
+  // "View all" links are gated by the same sidebar:view permission. While auth is
+  // still hydrating we treat it as active (optimistic) to avoid disabling links for
+  // users who do have access; once resolved, a role lacking sidebar:view can't click.
+  const sidebarActive = authLoading || can('sidebar', 'view');
   const { data: statsData, loading: statsLoading } = useApi('/dashboard/stats');
   const { data: recentData, loading: recentLoading } = useApi('/dashboard/recent');
 
@@ -149,21 +153,42 @@ export default function DashboardPage() {
               background: 'var(--color-surface)',
               width: '100%'
             }}>
-              <Link
-                href={stat.href}
-                style={{
-                  fontSize: '0.8125rem',
-                  fontWeight: 500,
-                  color: '#6366f1',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  textDecoration: 'none',
-                  transition: 'gap 0.2s ease',
-                }}
-              >
-                View all <ArrowRight size={14} />
-              </Link>
+              {sidebarActive ? (
+                <Link
+                  href={stat.href}
+                  style={{
+                    fontSize: '0.8125rem',
+                    fontWeight: 500,
+                    color: '#6366f1',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textDecoration: 'none',
+                    transition: 'gap 0.2s ease',
+                  }}
+                >
+                  View all <ArrowRight size={14} />
+                </Link>
+              ) : (
+                <span
+                  aria-disabled="true"
+                  title="Sidebar access is disabled for your role"
+                  style={{
+                    fontSize: '0.8125rem',
+                    fontWeight: 500,
+                    color: 'var(--color-text-muted)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textDecoration: 'none',
+                    opacity: 0.55,
+                    cursor: 'not-allowed',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  View all <ArrowRight size={14} />
+                </span>
+              )}
             </div>
           </div>
         ))}

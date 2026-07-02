@@ -195,7 +195,12 @@ export function RoleForm({ initialData }) {
                       boxShadow: 'var(--shadow-md)',
                       position: 'absolute',
                       width: '100%',
-                      boxSizing: 'border-box'
+                      boxSizing: 'border-box',
+                      // Cap the height so a long permission list scrolls instead of
+                      // running the full page height. Inline style guarantees this
+                      // even if the Tailwind max-h/overflow utilities aren't compiled.
+                      maxHeight: '260px',
+                      overflowY: 'auto'
                     }}
                   >
                     {AVAILABLE_PERMISSIONS.map((perm) => {
