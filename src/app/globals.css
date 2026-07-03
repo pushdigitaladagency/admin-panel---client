@@ -1070,6 +1070,14 @@ html.dark textarea:disabled::placeholder {
   transition: color var(--transition-fast);
 }
 
+.data-table thead th:first-child {
+  padding-left: 24px;
+}
+
+.data-table thead th:last-child {
+  padding-right: 24px;
+}
+
 .data-table thead th:hover {
   color: var(--color-text-muted);
 }
@@ -1098,6 +1106,14 @@ html.dark textarea:disabled::placeholder {
   border-bottom: 1px solid var(--glass-border);
   color: var(--color-text-muted);
   vertical-align: middle;
+}
+
+.data-table tbody td:first-child {
+  padding-left: 24px;
+}
+
+.data-table tbody td:last-child {
+  padding-right: 24px;
 }
 
 .data-table tbody tr.selected {
