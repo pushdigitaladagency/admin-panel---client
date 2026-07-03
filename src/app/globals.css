@@ -2983,6 +2983,13 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .page-content {
-    padding: 32px !important;
+    padding: 15px !important;
   }
+  .data-table tbody td {
+  padding: 14px 7px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--color-text-muted);
+  vertical-align: middle;
+}
 }
