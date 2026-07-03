@@ -46,6 +46,17 @@ export function PermissionForm({ initialData }) {
   const moduleName = watch('module_id');
   const permissionName = watch('name');
 
+  // The module list loads asynchronously, so on the edit page the <select> first
+  // renders with only the placeholder option — the browser then drops the pre-set
+  // module_id and shows "Select module...". Re-apply the saved value once the
+  // options actually exist so the correct module is selected.
+  React.useEffect(() => {
+    const moduleId = initialData?.module_id ?? initialData?.module?.id;
+    if (isEdit && MODULES.length > 0 && moduleId !== undefined && moduleId !== null && moduleId !== '') {
+      setValue('module_id', String(moduleId), { shouldValidate: true });
+    }
+  }, [isEdit, MODULES, initialData, setValue]);
+
   // Auto-generate code
   React.useEffect(() => {
     if (permissionName !== undefined && moduleName !== undefined) {

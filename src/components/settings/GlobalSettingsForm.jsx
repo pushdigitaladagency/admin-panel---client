@@ -7,6 +7,8 @@ import { FileText, ImagePlus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CountedField } from '@/components/ui/CountedField';
+import { isUrl } from '@/lib/validators';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
 import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
@@ -78,7 +80,7 @@ export function GlobalSettingsForm({ initialData }) {
   const [isMediaModalOpen, setIsMediaModalOpen] = React.useState(false);
   const [mediaTarget, setMediaTarget] = React.useState(null);
 
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm({
+  const { register, handleSubmit, control, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
       // General
       site_name: s.site_name || '', site_tagline: s.site_tagline || '', default_language: s.default_language || 'English',
@@ -154,10 +156,11 @@ export function GlobalSettingsForm({ initialData }) {
     closeMediaPicker();
   };
 
-  const field = (name, label, type = 'text') => (
+  const field = (name, label, type = 'text', opts = {}) => (
     <div className="form-group">
       <label className="form-label">{label}</label>
-      <Input type={type} {...register(name)} />
+      <Input type={type} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
+      {errors[name] && <p className="form-error">{errors[name].message}</p>}
     </div>
   );
 
@@ -232,13 +235,13 @@ export function GlobalSettingsForm({ initialData }) {
 
         {section('Social Links', (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('facebook_url', 'Facebook URL')}
-            {field('twitter_url', 'Twitter URL')}
-            {field('linkedin_url', 'LinkedIn URL')}
-            {field('instagram_url', 'Instagram URL')}
-            {field('youtube_url', 'YouTube URL')}
-            {field('pinterest_url', 'Pinterest URL')}
-            {field('whatsapp_url', 'WhatsApp URL')}
+            {field('facebook_url', 'Facebook URL', 'text', { rules: { validate: isUrl } })}
+            {field('twitter_url', 'Twitter URL', 'text', { rules: { validate: isUrl } })}
+            {field('linkedin_url', 'LinkedIn URL', 'text', { rules: { validate: isUrl } })}
+            {field('instagram_url', 'Instagram URL', 'text', { rules: { validate: isUrl } })}
+            {field('youtube_url', 'YouTube URL', 'text', { rules: { validate: isUrl } })}
+            {field('pinterest_url', 'Pinterest URL', 'text', { rules: { validate: isUrl } })}
+            {field('whatsapp_url', 'WhatsApp URL', 'text', { rules: { validate: isUrl } })}
           </div>
         ))}
 
@@ -272,12 +275,12 @@ export function GlobalSettingsForm({ initialData }) {
         {section('SEO Defaults', (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {field('default_meta_title', 'Default Meta Title')}
-              {field('default_canonical_url', 'Default Canonical URL')}
+              <CountedField control={control} register={register} name="default_meta_title" label="Default Meta Title" limit={255} />
+              <CountedField control={control} register={register} errors={errors} name="default_canonical_url" label="Default Canonical URL" limit={255} rules={{ validate: isUrl }} />
               {selectField('robots', 'Robots', ['index, follow', 'noindex, nofollow'])}
             </div>
-            {textArea('default_meta_keywords', 'Default Meta Keywords')}
-            {textArea('default_meta_description', 'Default Meta Description')}
+            <CountedField control={control} register={register} name="default_meta_keywords" label="Default Meta Keywords" multiline />
+            <CountedField control={control} register={register} name="default_meta_description" label="Default Meta Description" multiline />
           </>
         ))}
 

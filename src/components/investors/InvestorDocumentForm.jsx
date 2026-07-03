@@ -8,9 +8,11 @@ import { FileText, ImagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
+import { CountedField } from '@/components/ui/CountedField';
 import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
+import { notOnlySpecial, isUrl } from '@/lib/validators';
 
 const STATUSES = ['Draft', 'Published', 'Archived'];
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
@@ -101,7 +103,7 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
   const titleVal = watch('title');
 
   React.useEffect(() => {
-    if (titleVal !== undefined && !isEdit) {
+    if (titleVal !== undefined) {
       const generatedSlug = titleVal
         .toString()
         .toLowerCase()
@@ -178,7 +180,7 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
           <div className="card-header"><h3 className="card-title">Document Details</h3></div>
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {field('title', 'Title', { required: true, rules: { required: 'Title is required' } })}
+              {field('title', 'Title', { required: true, rules: { required: 'Title is required', validate: notOnlySpecial } })}
               {field('slug', 'Slug')}
               <div className="form-group">
                 <label className="form-label">Category *</label>
@@ -227,10 +229,10 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
         <div className="card">
           <div className="card-header"><h3 className="card-title">SEO</h3></div>
           <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
-            {field('meta_title', 'Meta Title')}
-            {field('canonical_url', 'Canonical URL')}
-            <div className="form-group"><label className="form-label">Meta Keywords</label><textarea className="form-textarea" {...register('meta_keywords')} /></div>
-            <div className="form-group"><label className="form-label">Meta Description</label><textarea className="form-textarea" {...register('meta_description')} /></div>
+            <CountedField control={control} register={register} errors={errors} name="meta_title" label="Meta Title" limit={255} />
+            <CountedField control={control} register={register} errors={errors} name="canonical_url" label="Canonical URL" limit={255} rules={{ validate: isUrl }} />
+            <CountedField control={control} register={register} errors={errors} name="meta_keywords" label="Meta Keywords" multiline />
+            <CountedField control={control} register={register} errors={errors} name="meta_description" label="Meta Description" multiline />
           </div>
         </div>
 

@@ -8,9 +8,11 @@ import { FileText, ImagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
+import { CountedField } from '@/components/ui/CountedField';
 import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
+import { notOnlySpecial, isUrl } from '@/lib/validators';
 
 const CATEGORIES = ['Client', 'Partner', 'Sponsor'];
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
@@ -160,12 +162,12 @@ export function ClientPartnerLogoForm({ initialData }) {
           <div className="card-header"><h3 className="card-title">Logo Details</h3></div>
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {field('client_partner_name', 'Name', { required: true, rules: { required: 'Name is required' } })}
+              {field('client_partner_name', 'Name', { required: true, rules: { required: 'Name is required', validate: notOnlySpecial } })}
               <div className="form-group">
                 <label className="form-label">Category *</label>
                 <select className="form-select" {...register('category', { required: true })}>{CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select>
               </div>
-              {field('website_url', 'Website URL')}
+              {field('website_url', 'Website URL', { rules: { validate: isUrl } })}
               {field('alt_text', 'Alt Text')}
               {field('display_order', 'Display Order', { type: 'number', min: 0, rules: { min: { value: 0, message: 'Display Order cannot be negative' } } })}
               <div className="form-group">
@@ -206,8 +208,8 @@ export function ClientPartnerLogoForm({ initialData }) {
         <div className="card">
           <div className="card-header"><h3 className="card-title">SEO</h3></div>
           <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {field('meta_title', 'Meta Title')}
-            <div className="form-group"><label className="form-label">Meta Description</label><textarea className="form-textarea" {...register('meta_description')} /></div>
+            <CountedField control={control} register={register} errors={errors} name="meta_title" label="Meta Title" limit={255} />
+            <CountedField control={control} register={register} errors={errors} name="meta_description" label="Meta Description" multiline />
           </div>
         </div>
 

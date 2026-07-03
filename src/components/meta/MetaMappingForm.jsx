@@ -7,10 +7,12 @@ import { FileText, ImagePlus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CountedField } from '@/components/ui/CountedField';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
 import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
+import { notOnlySpecial, isUrl, isUrlOrPath } from '@/lib/validators';
 
 const TWITTER_CARDS = ['Summary', 'Summary Large Image'];
 const ROBOTS = ['index, follow', 'noindex, nofollow'];
@@ -77,6 +79,7 @@ export function MetaMappingForm({ initialData }) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -173,10 +176,10 @@ export function MetaMappingForm({ initialData }) {
           <div className="card-header"><h3 className="card-title">Page & Meta</h3></div>
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {field('page_name', 'Page Name', { required: true, rules: { required: 'Page name is required' } })}
-              {field('url', 'URL', { required: true, rules: { required: 'URL is required' }, placeholder: '/about-us' })}
-              {field('meta_title', 'Meta Title', { required: true, rules: { required: 'Meta title is required' } })}
-              {field('canonical_url', 'Canonical URL')}
+              <CountedField control={control} register={register} errors={errors} name="page_name" label="Page Name" limit={255} required rules={{ required: 'Page name is required', validate: notOnlySpecial }} />
+              <CountedField control={control} register={register} errors={errors} name="url" label="URL" limit={500} required placeholder="/about-us" rules={{ required: 'URL is required', validate: isUrlOrPath }} />
+              <CountedField control={control} register={register} errors={errors} name="meta_title" label="Meta Title" limit={255} required rules={{ required: 'Meta title is required' }} />
+              <CountedField control={control} register={register} errors={errors} name="canonical_url" label="Canonical URL" limit={500} rules={{ validate: isUrl }} />
               <div className="form-group">
                 <label className="form-label">Robots</label>
                 <select className="form-select" {...register('robots')}>{ROBOTS.map((r) => <option key={r}>{r}</option>)}</select>
@@ -186,8 +189,8 @@ export function MetaMappingForm({ initialData }) {
                 <select className="form-select" {...register('status')}><option>Active</option><option>Inactive</option></select>
               </div>
             </div>
-            {textArea('meta_keywords', 'Meta Keywords')}
-            {textArea('meta_description', 'Meta Description', true)}
+            <CountedField control={control} register={register} errors={errors} name="meta_keywords" label="Meta Keywords" multiline />
+            <CountedField control={control} register={register} errors={errors} name="meta_description" label="Meta Description" required multiline rules={{ required: 'Meta Description is required' }} />
           </div>
         </div>
 
@@ -195,9 +198,9 @@ export function MetaMappingForm({ initialData }) {
           <div className="card-header"><h3 className="card-title">Open Graph</h3></div>
           <div className="card-body">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {field('og_title', 'OG Title')}
-              {field('og_type', 'OG Type')}
-              {field('og_url', 'OG URL')}
+              <CountedField control={control} register={register} errors={errors} name="og_title" label="OG Title" limit={255} />
+              <CountedField control={control} register={register} errors={errors} name="og_type" label="OG Type" limit={100} />
+              <CountedField control={control} register={register} errors={errors} name="og_url" label="OG URL" limit={500} rules={{ validate: isUrl }} />
               <FormMediaField
                 label="OG Image"
                 value={ogImage}
@@ -205,7 +208,7 @@ export function MetaMappingForm({ initialData }) {
                 onClear={() => setOgImage('')}
               />
             </div>
-            {textArea('og_description', 'OG Description')}
+            <CountedField control={control} register={register} errors={errors} name="og_description" label="OG Description" multiline />
           </div>
         </div>
 
@@ -217,7 +220,7 @@ export function MetaMappingForm({ initialData }) {
                 <label className="form-label">Twitter Card</label>
                 <select className="form-select" {...register('twitter_card')}>{TWITTER_CARDS.map((t) => <option key={t}>{t}</option>)}</select>
               </div>
-              {field('twitter_title', 'Twitter Title')}
+              <CountedField control={control} register={register} errors={errors} name="twitter_title" label="Twitter Title" limit={255} />
               <FormMediaField
                 label="Twitter Image"
                 value={twitterImage}
@@ -225,7 +228,7 @@ export function MetaMappingForm({ initialData }) {
                 onClear={() => setTwitterImage('')}
               />
             </div>
-            {textArea('twitter_description', 'Twitter Description')}
+            <CountedField control={control} register={register} errors={errors} name="twitter_description" label="Twitter Description" multiline />
           </div>
         </div>
 

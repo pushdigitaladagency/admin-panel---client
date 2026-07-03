@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { notOnlySpecial } from '@/lib/validators';
 
 export function AlbumForm({ categories = [], events = [], initialData, onSubmit, onCancel }) {
   const isEdit = !!initialData;
@@ -44,7 +45,7 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
           Album Title <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
         </label>
         <Input
-          {...register('title', { required: 'Album Title is required' })}
+          {...register('title', { required: 'Album Title is required', validate: notOnlySpecial })}
           placeholder="e.g. Annual Summit 2026 Photos"
           className={errors.title ? 'error' : ''}
         />

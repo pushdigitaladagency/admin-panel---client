@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CountedField } from '@/components/ui/CountedField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
+import { notOnlySpecial, isUrl } from '@/lib/validators';
 
 const EMPLOYMENT_TYPES = ['Full Time', 'Part Time', 'Contract', 'Internship', 'Freelance', 'Remote'];
 const EXPERIENCE_LEVELS = ['Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead'];
@@ -107,7 +109,7 @@ export function CareerPostForm({ initialData }) {
   const jobTitleVal = watch('job_title');
 
   React.useEffect(() => {
-    if (jobTitleVal !== undefined && !isEdit) {
+    if (jobTitleVal !== undefined) {
       const generatedSlug = jobTitleVal
         .toString()
         .toLowerCase()
@@ -283,7 +285,7 @@ export function CareerPostForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Job Details</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('job_title', 'Job Title', { required: true, rules: { required: 'Job title is required' } })}
+            {field('job_title', 'Job Title', { required: true, rules: { required: 'Job title is required', validate: notOnlySpecial } })}
             {field('slug', 'Slug', { placeholder: 'auto-generated if blank' })}
             {field('department', 'Department', { required: true, rules: { required: 'Department is required' } })}
             {field('job_code', 'Job Code')}
@@ -359,10 +361,10 @@ export function CareerPostForm({ initialData }) {
       <div className="card">
         <div className="card-header"><h3 className="card-title">SEO</h3></div>
         <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
-          {field('meta_title', 'Meta Title')}
-            {field('canonical_url', 'Canonical URL')}
-          {textArea('meta_keywords', 'Meta Keywords')}
-          {textArea('meta_description', 'Meta Description')}
+          <CountedField control={control} register={register} errors={errors} name="meta_title" label="Meta Title" limit={255} />
+          <CountedField control={control} register={register} errors={errors} name="canonical_url" label="Canonical URL" limit={500} rules={{ validate: isUrl }} />
+          <CountedField control={control} register={register} errors={errors} name="meta_keywords" label="Meta Keywords" multiline />
+          <CountedField control={control} register={register} errors={errors} name="meta_description" label="Meta Description" multiline />
         
         </div>
       </div>

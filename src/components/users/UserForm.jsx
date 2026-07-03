@@ -240,6 +240,10 @@ export function UserForm({
                   <Input
                     {...register('first_name', {
                       required: 'First name is required',
+                      pattern: {
+                        value: /^[A-Za-z][A-Za-z .'-]*$/,
+                        message: "Only letters, spaces, hyphens and apostrophes are allowed",
+                      },
                     })}
                     placeholder="Enter your first name"
                     className={errors.first_name ? 'error' : ''}
@@ -255,6 +259,10 @@ export function UserForm({
                   <Input
                     {...register('last_name', {
                       required: 'Last name is required',
+                      pattern: {
+                        value: /^[A-Za-z][A-Za-z .'-]*$/,
+                        message: "Only letters, spaces, hyphens and apostrophes are allowed",
+                      },
                     })}
                     placeholder="Enter your last name"
                     className={errors.last_name ? 'error' : ''}

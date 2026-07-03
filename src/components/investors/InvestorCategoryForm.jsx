@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CountedField } from '@/components/ui/CountedField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
+import { notOnlySpecial, isUrl } from '@/lib/validators';
 
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
 
@@ -19,6 +21,9 @@ export function InvestorCategoryForm({ initialData }) {
   const {
     register,
     handleSubmit,
+    control,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -33,6 +38,19 @@ export function InvestorCategoryForm({ initialData }) {
       canonical_url: initialData?.canonical_url || '',
     },
   });
+
+  // Auto-generate the slug from the category name in both create and edit.
+  const categoryNameVal = watch('category_name');
+  React.useEffect(() => {
+    if (categoryNameVal !== undefined) {
+      const generatedSlug = categoryNameVal
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [categoryNameVal, setValue]);
 
   const onSubmit = async (data) => {
     const payload = { ...data, slug: data.slug || undefined, display_order: toNum(data.display_order) ?? 0 };
@@ -64,7 +82,7 @@ export function InvestorCategoryForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Category Details</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('category_name', 'Category Name', { required: true, rules: { required: 'Name is required' } })}
+            {field('category_name', 'Category Name', { required: true, rules: { required: 'Name is required', validate: notOnlySpecial } })}
             {field('slug', 'Slug')}
             {field('display_order', 'Display Order', { type: 'number', min: 0, rules: { min: { value: 0, message: 'Display Order cannot be negative' } } })}
             <div className="form-group">
@@ -82,11 +100,10 @@ export function InvestorCategoryForm({ initialData }) {
       <div className="card">
         <div className="card-header"><h3 className="card-title">SEO</h3></div>
         <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
-          {field('meta_title', 'Meta Title')}
-          {field('canonical_url', 'Canonical URL')}
-          <div className="form-group"><label className="form-label">Meta Keywords</label><textarea className="form-textarea" {...register('meta_keywords')} /></div>
-          
-          <div className="form-group"><label className="form-label">Meta Description</label><textarea className="form-textarea" {...register('meta_description')} /></div>
+          <CountedField control={control} register={register} errors={errors} name="meta_title" label="Meta Title" limit={255} />
+          <CountedField control={control} register={register} errors={errors} name="canonical_url" label="Canonical URL" limit={255} rules={{ validate: isUrl }} />
+          <CountedField control={control} register={register} errors={errors} name="meta_keywords" label="Meta Keywords" multiline />
+          <CountedField control={control} register={register} errors={errors} name="meta_description" label="Meta Description" multiline />
           
         </div>
       </div>

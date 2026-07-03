@@ -7,11 +7,13 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CountedField } from '@/components/ui/CountedField';
 import { Select } from '@/components/ui/Select';
 import { useToast } from '@/components/ui/Toast';
 import { useRouter } from 'next/navigation';
 import MediaSelectModal from '@/components/media/MediaSelectModal';
 import { api, BASE_URL, uploadFile } from '@/lib/api';
+import { notOnlySpecial, isUrl } from '@/lib/validators';
 import { useApi } from '@/lib/useApi';
 
 const resolveImageUrl = (path) => {
@@ -240,7 +242,7 @@ export function PostForm({ initialData, postType }) {
 
   // Handle Slug generation
   React.useEffect(() => {
-    if (!isEdit && postTitle !== undefined) {
+    if (postTitle !== undefined) {
       const generatedSlug = postTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -472,38 +474,16 @@ export function PostForm({ initialData, postType }) {
       </div>
       <div className="card-body" style={{ padding: '18px' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="form-group">
-            <label className="form-label">SEO Title</label>
-            <Input
-              {...register('seo_title')}
-              placeholder="Meta title for search engines"
-            />
+          <CountedField control={control} register={register} errors={errors} name="seo_title" label="SEO Title" limit={255} placeholder="Meta title for search engines" />
+
+          <CountedField control={control} register={register} errors={errors} name="seo_keywords" label="SEO Keywords" placeholder="event, launch, workshop" />
+
+          <div className="md:col-span-2">
+            <CountedField control={control} register={register} errors={errors} name="seo_description" label="SEO Description" multiline placeholder="Meta description under 160 characters..." />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">SEO Keywords</label>
-            <Input
-              {...register('seo_keywords')}
-              placeholder="event, launch, workshop"
-            />
-          </div>
-
-          <div className="form-group text-left md:col-span-2">
-            <label className="form-label">SEO Description</label>
-            <textarea
-              {...register('seo_description')}
-              className="form-textarea"
-              placeholder="Meta description under 160 characters..."
-              style={{ minHeight: '60px' }}
-            />
-          </div>
-
-          <div className="form-group md:col-span-2">
-            <label className="form-label">Canonical URL</label>
-            <Input
-              {...register('canonical_url')}
-              placeholder="e.g. https://example.com/posts/my-post"
-            />
+          <div className="md:col-span-2">
+            <CountedField control={control} register={register} errors={errors} name="canonical_url" label="Canonical URL" limit={500} rules={{ validate: isUrl }} placeholder="e.g. https://example.com/posts/my-post" />
           </div>
         </div>
       </div>
@@ -609,7 +589,7 @@ export function PostForm({ initialData, postType }) {
                     {postType === 'event' ? 'Event Title' : postType === 'news' ? 'News Title' : 'Title'} <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                   </label>
                   <Input
-                    {...register('title', { required: 'Title is required' })}
+                    {...register('title', { required: 'Title is required', validate: notOnlySpecial })}
                     placeholder={postType === 'event' ? 'Event Title' : postType === 'news' ? 'News Title' : 'Press Release Title'}
                     className={errors.title ? 'error' : ''}
                   />
@@ -720,17 +700,21 @@ export function PostForm({ initialData, postType }) {
                     <div className="form-group">
                       <label className="form-label">Google Map URL</label>
                       <Input
-                        {...register('map_url')}
+                        {...register('map_url', { validate: isUrl })}
                         placeholder="https://maps.google.com/..."
+                        className={errors.map_url ? 'error' : ''}
                       />
+                      {errors.map_url && <p className="form-error">{errors.map_url.message}</p>}
                     </div>
 
                     <div className="form-group md:col-span-2">
                       <label className="form-label">Registration Link</label>
                       <Input
-                        {...register('registration_link')}
+                        {...register('registration_link', { validate: isUrl })}
                         placeholder="https://example.com/register"
+                        className={errors.registration_link ? 'error' : ''}
                       />
+                      {errors.registration_link && <p className="form-error">{errors.registration_link.message}</p>}
                     </div>
                   </div>
 
