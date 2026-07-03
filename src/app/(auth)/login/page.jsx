@@ -27,6 +27,8 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
+      // Flag a successful sign-in so the dashboard shell can show a success toast.
+      try { sessionStorage.setItem('loginSuccess', '1'); } catch {}
       router.push('/dashboard');
     } catch (err) {
       setError(err?.message || 'Login failed. Please try again.');

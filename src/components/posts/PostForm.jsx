@@ -15,6 +15,7 @@ import MediaSelectModal from '@/components/media/MediaSelectModal';
 import { api, BASE_URL, uploadFile } from '@/lib/api';
 import { notOnlySpecial, isUrl } from '@/lib/validators';
 import { useApi } from '@/lib/useApi';
+import { loadCKEditor } from '@/lib/loadCKEditor';
 
 const resolveImageUrl = (path) => {
   if (!path) return '';
@@ -214,17 +215,13 @@ export function PostForm({ initialData, postType }) {
   const postTitle = watch('title');
   const attachmentVal = watch('attachment') || '';
 
-  // Load CKEditor 5 Decoupled Document from CDN
+  // Load CKEditor 5 Decoupled Document once (shared singleton loader, StrictMode-safe).
   React.useEffect(() => {
-    if (window.DecoupledEditor) {
-      setEditorLoaded(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-decoupled-document@36.0.1/build/ckeditor.js';
-    script.async = true;
-    script.onload = () => setEditorLoaded(true);
-    document.head.appendChild(script);
+    let active = true;
+    loadCKEditor()
+      .then(() => { if (active) setEditorLoaded(true); })
+      .catch((err) => console.error('Error loading CKEditor:', err));
+    return () => { active = false; };
   }, []);
 
   // Register form fields.
@@ -1022,6 +1019,7 @@ export function PostForm({ initialData, postType }) {
         onClose={() => setIsMediaModalOpen(false)}
         onSelect={handleMediaModalSelect}
         multiple={mediaTarget === 'gallery'}
+        source={mediaTarget === 'attachment' ? 'uploads' : 'gallery'}
         accept={mediaTarget === 'attachment' ? '.pdf,.doc,.docx,application/pdf' : 'image/*'}
         allowedTypes={mediaTarget === 'attachment' ? ['PDF', 'DOC', 'DOCX'] : []}
         invalidFileMessage={mediaTarget === 'attachment' ? 'Only document files (PDF/Doc) are allowed' : 'Only image files are allowed'}
