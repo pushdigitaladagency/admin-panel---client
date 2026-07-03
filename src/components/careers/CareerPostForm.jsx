@@ -107,7 +107,7 @@ export function CareerPostForm({ initialData }) {
   const jobTitleVal = watch('job_title');
 
   React.useEffect(() => {
-    if (jobTitleVal !== undefined && !isEdit) {
+    if (jobTitleVal !== undefined && (!isEdit || jobTitleVal !== initialData?.job_title)) {
       const generatedSlug = jobTitleVal
         .toString()
         .toLowerCase()
@@ -115,7 +115,7 @@ export function CareerPostForm({ initialData }) {
         .replace(/^-+|-+$/g, '');
       setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
     }
-  }, [jobTitleVal, setValue, isEdit]);
+  }, [jobTitleVal, setValue, isEdit, initialData]);
 
   // Load CKEditor 5 Decoupled Document from CDN (same build as PostForm).
   React.useEffect(() => {
