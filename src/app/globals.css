@@ -3008,4 +3008,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   color: var(--color-text-muted);
   vertical-align: middle;
 }
+.data-table thead th:first-child {
+  padding-left: 7px;
+}
 }
