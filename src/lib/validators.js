@@ -19,6 +19,14 @@ export const isUrl = (value) => {
   }
 };
 
+// Financial year: exactly a 4-digit year ("2024"). Empty is owned by `required`.
+export const isFinancialYear = (value) => {
+  if (!value) return true;
+  return /^\d{4}$/.test(String(value).trim())
+    ? true
+    : 'Enter a valid 4-digit year (e.g. 2024)';
+};
+
 // Accepts an absolute http(s) URL OR a root-relative path (e.g. "/about-us").
 // Used for fields like a meta-mapping page URL that store a path, not a full URL.
 export const isUrlOrPath = (value) => {

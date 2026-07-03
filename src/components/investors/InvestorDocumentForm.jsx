@@ -12,7 +12,7 @@ import { CountedField } from '@/components/ui/CountedField';
 import { resolveUploadUrl } from '@/components/ui/UploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
-import { notOnlySpecial, isUrl } from '@/lib/validators';
+import { notOnlySpecial, isUrl, isFinancialYear } from '@/lib/validators';
 
 const STATUSES = ['Draft', 'Published', 'Archived'];
 const toNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
@@ -168,7 +168,7 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
   const field = (name, label, opts = {}) => (
     <div className="form-group">
       <label className="form-label">{label}{opts.required && ' *'}</label>
-      <Input type={opts.type || 'text'} min={opts.min} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
+      <Input type={opts.type || 'text'} min={opts.min} placeholder={opts.placeholder} {...register(name, opts.rules)} className={errors[name] ? 'error' : ''} />
       {errors[name] && <p className="form-error">{errors[name].message}</p>}
     </div>
   );
@@ -190,7 +190,33 @@ export function InvestorDocumentForm({ initialData, categories = [] }) {
                 </select>
                 {errors.category_id && <p className="form-error">{errors.category_id.message}</p>}
               </div>
-              {field('financial_year', 'Financial Year', { required: true, rules: { required: 'Financial year is required' }, })}
+              <div className="form-group">
+                <label className="form-label">Financial Year *</label>
+                {(() => {
+                  const reg = register('financial_year', { required: 'Financial year is required', validate: isFinancialYear });
+                  return (
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="2024"
+                      className={errors.financial_year ? 'error' : ''}
+                      {...reg}
+                      onChange={(e) => {
+                        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        reg.onChange(e);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.ctrlKey || e.metaKey || e.altKey) return;
+                        const allowed = ['Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+                        if (allowed.includes(e.key)) return;
+                        if (!/^\d$/.test(e.key)) e.preventDefault();
+                      }}
+                    />
+                  );
+                })()}
+                {errors.financial_year && <p className="form-error">{errors.financial_year.message}</p>}
+              </div>
               <div className="form-group">
                 <label className="form-label">Publish Date *</label>
                 <Input type="date" {...register('publish_date', { required: 'Publish date is required' })} className={errors.publish_date ? 'error' : ''} />

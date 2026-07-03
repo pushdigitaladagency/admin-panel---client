@@ -10,6 +10,7 @@ import { CountedField } from '@/components/ui/CountedField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
 import { notOnlySpecial, isUrl } from '@/lib/validators';
+import { loadCKEditor } from '@/lib/loadCKEditor';
 
 const EMPLOYMENT_TYPES = ['Full Time', 'Part Time', 'Contract', 'Internship', 'Freelance', 'Remote'];
 const EXPERIENCE_LEVELS = ['Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead'];
@@ -119,17 +120,13 @@ export function CareerPostForm({ initialData }) {
     }
   }, [jobTitleVal, setValue, isEdit, initialData]);
 
-  // Load CKEditor 5 Decoupled Document from CDN (same build as PostForm).
+  // Load CKEditor 5 Decoupled Document once (shared singleton loader, StrictMode-safe).
   React.useEffect(() => {
-    if (window.DecoupledEditor) {
-      setEditorLoaded(true);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-decoupled-document@36.0.1/build/ckeditor.js';
-    script.async = true;
-    script.onload = () => setEditorLoaded(true);
-    document.head.appendChild(script);
+    let active = true;
+    loadCKEditor()
+      .then(() => { if (active) setEditorLoaded(true); })
+      .catch((err) => console.error('Error loading CKEditor:', err));
+    return () => { active = false; };
   }, []);
 
   // Register the rich-text fields manually since CKEditor drives their value via

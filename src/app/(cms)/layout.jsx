@@ -4,10 +4,24 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Navbar from '@/components/layout/Navbar';
-import { ToastProvider } from '@/components/ui/Toast';
+import { ToastProvider, useToast } from '@/components/ui/Toast';
 import { TermsProvider } from '@/context/TermsContext';
 import { ConfirmProvider } from '@/context/ConfirmContext';
 import { useAuth } from '@/context/AuthContext';
+
+// Shows a one-time success toast right after a fresh sign-in.
+function LoginSuccessToast() {
+  const { addToast } = useToast();
+  useEffect(() => {
+    let flagged = false;
+    try {
+      flagged = sessionStorage.getItem('loginSuccess') === '1';
+      if (flagged) sessionStorage.removeItem('loginSuccess');
+    } catch {}
+    if (flagged) addToast('Logged in successfully', 'success');
+  }, [addToast]);
+  return null;
+}
 
 export default function CmsLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,6 +40,7 @@ export default function CmsLayout({ children }) {
 
   return (
     <ToastProvider>
+      <LoginSuccessToast />
       <TermsProvider>
         <ConfirmProvider>
           <div className="app-shell">
