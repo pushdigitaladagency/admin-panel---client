@@ -2866,13 +2866,16 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     display: none !important;
   }
   .admin-profile-btn {
-    padding: 8px !important;
+    padding: 0 !important;
     min-height: auto !important;
     gap: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
   .admin-profile-btn .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
   }
   
   /* Stats Grid */
@@ -3019,6 +3022,21 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 }
 .data-table thead th:first-child {
   padding-left: 7px;
+}
+.data-table thead th {
+  text-align: left;
+  padding: 12px 0px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--transition-fast);
 }
 }
 }
