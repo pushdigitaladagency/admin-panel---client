@@ -2974,33 +2974,23 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .page-content {
-    padding: 14px !important;
+    padding: 16px !important;
   }
   .data-table tbody td {
-  padding: 14px 0px;
-  font-size: 0.760rem;
-  border-bottom: 1px solid var(--glass-border);
-  color: var(--color-text-muted);
-  vertical-align: middle;
-    /* max-width: 17px; */
-}
-.data-table thead th {
-  text-align: left;
-  padding: 12px 0px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
-  border-bottom: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.02);
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: color var(--transition-fast);
-}
-.data-table thead th:first-child {
-  padding-left: 7px;
+    padding: 14px 12px;
+    font-size: 0.8125rem;
+  }
+  .data-table thead th {
+    padding: 12px 12px;
+  }
+  .data-table thead th:first-child,
+  .data-table tbody td:first-child {
+    padding-left: 16px;
+  }
+  .data-table thead th:last-child,
+  .data-table tbody td:last-child {
+    padding-right: 16px;
+  }
 }
 
 @media (min-width: 1367px) and (max-width: 1440px) {
@@ -3011,33 +3001,21 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .page-content {
-    padding: 14px !important;
+    padding: 20px !important;
   }
   .data-table tbody td {
-  padding: 14px 7px;
-  font-size: 0.875rem;
-  border-bottom: 1px solid var(--glass-border);
-  color: var(--color-text-muted);
-  vertical-align: middle;
-
-}
-.data-table thead th:first-child {
-  padding-left: 7px;
-}
-.data-table thead th {
-  text-align: left;
-  padding: 12px 0px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
-  border-bottom: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.02);
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: color var(--transition-fast);
-}
-}
+    padding: 14px 14px;
+    font-size: 0.875rem;
+  }
+  .data-table thead th {
+    padding: 12px 14px;
+  }
+  .data-table thead th:first-child,
+  .data-table tbody td:first-child {
+    padding-left: 20px;
+  }
+  .data-table thead th:last-child,
+  .data-table tbody td:last-child {
+    padding-right: 20px;
+  }
 }
