@@ -42,7 +42,7 @@ export function PostActivityChart({ data = [], loading = false }) {
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#dcfce7', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BarChart3 size={18} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>Post Activity</h3>
+          <h3 style={{  fontsize: 'clamp(10px, 2vw, 1.25rem)', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>Post Activity</h3>
         </div>
         
         <button 

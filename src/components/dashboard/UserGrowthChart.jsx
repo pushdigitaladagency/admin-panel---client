@@ -59,12 +59,12 @@ export function UserGrowthChart({ data = [], loading = false }) {
 
   return (
     <div className="card mb-6" style={{ background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)', position: 'relative' }}>
-      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 24px 0 24px', borderBottom: 'none', paddingBottom: isChartVisible ? '0' : '24px' }}>
+      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 'none', paddingBottom: isChartVisible ? '0' : '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--color-surface-hover)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BarChart3 size={18} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>User Growth</h3>
+          <h3 className="user-growth-title" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>User Growth</h3>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }} ref={dropdownRef}>
