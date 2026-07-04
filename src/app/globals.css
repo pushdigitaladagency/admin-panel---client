@@ -1216,11 +1216,13 @@ html.dark textarea:disabled::placeholder {
 .badge-success {
   background: var(--color-success-glow);
   color: var(--color-success);
+  width: max-content;
 }
 
 .badge-danger {
   background: var(--color-danger-glow);
   color: var(--color-danger);
+  width: max-content;
 }
 
 .badge-warning {
@@ -1231,11 +1233,13 @@ html.dark textarea:disabled::placeholder {
 .badge-purple {
   background: var(--color-purple-glow);
   color: var(--color-purple);
+  
 }
 
 .badge-info {
   background: var(--color-info-glow);
   color: var(--color-info);
+  width: max-content;
 }
 
 .badge-dark {
