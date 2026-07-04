@@ -1049,7 +1049,8 @@ html.dark textarea:disabled::placeholder {
 
 .data-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
+  min-width: 800px;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -2824,13 +2825,16 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     display: none !important;
   }
   .admin-profile-btn {
-    padding: 8px !important;
+    padding: 0 !important;
     min-height: auto !important;
     gap: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
   .admin-profile-btn .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
   }
   
   /* Stats Grid */
@@ -2994,7 +2998,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 14px !important;
   }
   .data-table tbody td {
-  padding: 14px 04px;
+  padding: 14px 0px;
   font-size: 0.760rem;
   border-bottom: 1px solid var(--glass-border);
   color: var(--color-text-muted);
@@ -3024,8 +3028,6 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   border-collapse: separate;
   border-spacing: 0;
 
-}
-}
 @media (min-width: 1367px) and (max-width: 1600px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr) !important;
@@ -3046,6 +3048,21 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 }
 .data-table thead th:first-child {
   padding-left: 7px;
+}
+.data-table thead th {
+  text-align: left;
+  padding: 12px 0px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--transition-fast);
 }
 }
 
