@@ -1049,7 +1049,8 @@ html.dark textarea:disabled::placeholder {
 
 .data-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
+  min-width: 800px;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -2976,7 +2977,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 14px !important;
   }
   .data-table tbody td {
-  padding: 14px 04px;
+  padding: 14px 0px;
   font-size: 0.760rem;
   border-bottom: 1px solid var(--glass-border);
   color: var(--color-text-muted);

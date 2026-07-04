@@ -120,9 +120,6 @@ export default function Navbar({ onMenuToggle }) {
             <a href="/profile" className="user-dropdown-item">
               <User size={16} /> Profile
             </a>
-            <a href="/settings" className="user-dropdown-item">
-              <Settings size={16} /> Settings
-            </a>
             <div className="user-dropdown-divider" />
             <button
               className="user-dropdown-item"
