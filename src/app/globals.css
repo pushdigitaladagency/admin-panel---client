@@ -2724,26 +2724,7 @@ html.dark .sidebar {
 
 
 /* Mobile Responsive Layout (640px) */
-@media (max-width: 640px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    height: 100vh;
-    z-index: 1000;
-    transform: translateX(-100%);
-    width: 260px;
-    max-width: 85vw;
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-  .main-wrapper {
-    margin-left: 0 !important;
-    width: 100%;
-  }
-}
+
 
 /* CKEditor Dark Mode overrides for Popups & Balloon Panels */
 html.dark .ck.ck-balloon-panel {
@@ -2789,29 +2770,6 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 /* ============================================================
    MOBILE RESPONSIVENESS (max-width: 640px)
    ============================================================ */
-.sidebar-backdrop {
-  display: none;
-}
-
-.dashboard-charts-container {
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-}
-
-.data-table-wrapper {
-  overflow-x: auto;
-  width: 100%;
-  -webkit-overflow-scrolling: touch;
-}
-
-.navbar-mobile-brand {
-  display: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  background: linear-gradient(135deg, var(--color-primary), #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
 @media (max-width: 1024px) {
   /* Sidebar Backdrop */
@@ -2963,6 +2921,69 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   .stats-grid {
     grid-template-columns: 1fr !important;
   }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    width: 260px;
+    max-width: 85vw;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+  .form-label {
+    color: var(--color-text-muted);
+    font-size: .75rem;
+    font-weight: 500;
+    width: 155px;
+}
+.post-title{
+ font-size: .25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0px;
+
+}
+.user-growth-title {
+  font-size: 0.95rem !important;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+  
+   .sidebar-backdrop {
+  display: none;
+}
+
+.dashboard-charts-container {
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+}
+
+.data-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navbar-mobile-brand {
+  display: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, var(--color-primary), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.card-header{
+  padding: 0px 7px 0px;
+}
 }
 
 /* Laptop/Desktop adjustments */
@@ -2992,8 +3013,12 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding-right: 16px;
   }
 }
-
-@media (min-width: 1367px) and (max-width: 1440px) {
+.data-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+@media (min-width: 1367px) and (max-width: 1600px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr) !important;
   }
@@ -3019,3 +3044,5 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding-right: 20px;
   }
 }
+
+

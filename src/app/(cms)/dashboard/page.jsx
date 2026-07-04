@@ -93,7 +93,7 @@ export default function DashboardPage() {
       <div className="page-header" style={{ marginBottom: '24px' }}>
         <div>
           <h1 className="page-title" style={{ fontSize: '2rem', fontWeight: '800', background: 'linear-gradient(135deg, var(--color-primary), #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '8px' }}>Dashboard</h1>
-          <p className="page-subtitle" style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>Welcome back {user?.role?.name || 'User'} ! Here's an overview.</p>
+        <p className="page-subtitle" style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>Welcome back {user?.role?.name || 'User'} ! Here&apos;s an overview.</p>
         </div>
       </div>
 
