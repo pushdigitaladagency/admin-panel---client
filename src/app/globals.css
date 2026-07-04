@@ -1109,9 +1109,8 @@ html.dark textarea:disabled::placeholder {
   border-bottom: 1px solid var(--glass-border);
   color: var(--color-text-muted);
   vertical-align: middle;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .data-table tbody td:first-child {
