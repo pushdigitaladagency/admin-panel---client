@@ -3003,7 +3003,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   padding-left: 7px;
 }
 
-@media (min-width: 1367px) and (max-width: 1600px) {
+@media (min-width: 1367px) and (max-width: 1440px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr) !important;
   }
