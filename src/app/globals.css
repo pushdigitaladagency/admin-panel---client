@@ -3007,7 +3007,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .page-content {
-    padding: 15px !important;
+    padding: 14px !important;
   }
   .data-table tbody td {
   padding: 14px 7px;
