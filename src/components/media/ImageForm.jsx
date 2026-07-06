@@ -13,7 +13,7 @@ export function ImageForm({ albums = [], initialData, defaultAlbumId, onSubmit, 
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
-    const baseHost = (process.env.NEXT_PUBLIC_API_URL || 'http://63.141.242.203:6001/api').replace(/\/api$/, '');
+    const baseHost = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/api$/, '');
     return `${baseHost}/${path.replace(/^\/?/, '')}`;
   };
 
