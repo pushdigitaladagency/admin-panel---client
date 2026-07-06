@@ -2998,7 +2998,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 14px !important;
   }
   .data-table tbody td {
-  padding: 14px 0px;
+  padding: 15px 18px;
   font-size: 0.760rem;
   border-bottom: 1px solid var(--glass-border);
   color: var(--color-text-muted);
