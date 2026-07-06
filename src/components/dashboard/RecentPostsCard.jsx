@@ -21,8 +21,8 @@ export function RecentPostsCard({ posts = [], loading = false }) {
       </div>
 
       {isOpen && (
-        <div className="data-table-wrapper" style={{ padding: '0 24px 24px 24px' }}>
-          <table className="data-table">
+        <div className="data-table-wrapper recent-posts-wrapper" style={{ padding: '0 24px 24px 24px' }}>
+          <table className="data-table recent-posts-table">
             <thead>
               <tr>
                 <th>Title</th>
@@ -47,13 +47,15 @@ export function RecentPostsCard({ posts = [], loading = false }) {
               ) : (
                 posts.map((post) => (
                   <tr key={`${post.post_type}-${post.id}`}>
-                    <td style={{ fontWeight: 500, color: 'var(--color-text)' }}>
+                    <td style={{ fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '0', width: '100%' }}>
                       {post.title}
                     </td>
                     <td>
-                      <span className="badge badge-info">{post.post_type}</span>
+                      <span className="badge badge-info">
+                        {post.post_type ? post.post_type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''}
+                      </span>
                     </td>
-                    <td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
                       <span
                         className={`badge ${
                           (post.status || '').toLowerCase() === 'published'
@@ -67,10 +69,10 @@ export function RecentPostsCard({ posts = [], loading = false }) {
                             : 'badge-primary'
                         }`}
                       >
-                        {post.status || 'Draft'}
+                        {post.status ? post.status.charAt(0).toUpperCase() + post.status.slice(1).toLowerCase() : 'Draft'}
                       </span>
                     </td>
-                    <td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
                       {post.created_at
                         ? new Date(post.created_at).toLocaleDateString('en-US', {
                             month: 'short',

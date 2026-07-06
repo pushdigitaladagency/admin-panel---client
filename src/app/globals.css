@@ -2989,6 +2989,17 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 }
 }
 
+.recent-posts-table {
+  width: 100%;
+  min-width: 100%;
+}
+
+@media (min-width: 1025px) {
+  .dashboard-charts-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
 /* Laptop/Desktop adjustments */
 @media (min-width: 1280px) and (max-width: 1366px) {
   .stats-grid {
@@ -3014,6 +3025,9 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   .data-table thead th:last-child,
   .data-table tbody td:last-child {
     padding-right: 16px;
+  }
+  .recent-posts-wrapper {
+    overflow-x: hidden !important;
   }
 }
 .data-table{
