@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import Navbar from '@/components/layout/Navbar';
 import { ToastProvider, useToast } from '@/components/ui/Toast';
@@ -24,9 +24,14 @@ function LoginSuccessToast() {
 }
 
 export default function CmsLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+  const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {

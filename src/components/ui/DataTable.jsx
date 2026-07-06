@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, Fragment } from 'react';
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
 /**
@@ -360,7 +360,7 @@ export default function DataTable({
                     Math.abs(p - page) <= 1
                 )
                 .map((p, idx, arr) => (
-                  <span key={p}>
+                  <Fragment key={p}>
                     {idx > 0 && arr[idx - 1] !== p - 1 && (
                       <span className="pagination-btn" style={{ cursor: 'default', border: 'none' }}>
                         …
@@ -372,7 +372,7 @@ export default function DataTable({
                     >
                       {p}
                     </button>
-                  </span>
+                  </Fragment>
                 ))}
               <button
                 className="pagination-btn"
