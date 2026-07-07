@@ -2993,6 +2993,17 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     margin: 0px;
 
 }
+
+.badge {
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-radius: 99px;
+    align-items: center;
+    padding: 3px 2px;
+    font-size: .6675rem;
+    font-weight: 600;
+    display: inline-flex;
+}
 .user-growth-title {
   font-size: 0.95rem !important;
   line-height: 1.2;
@@ -3017,6 +3028,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 
 .sidebar-backdrop {
   display: none;
+}
 }
 .page-title {
     font-size: 1.3rem;
@@ -3062,7 +3074,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 .card-header{
   padding: 0px 7px 0px;
 }
-}
+
 
 /* Laptop/Desktop adjustments */
 @media (min-width: 1280px) and (max-width: 1366px) {

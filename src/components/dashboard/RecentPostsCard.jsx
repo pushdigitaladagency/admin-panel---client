@@ -22,13 +22,13 @@ export function RecentPostsCard({ posts = [], loading = false }) {
 
       {isOpen && (
         <div className="data-table-wrapper recent-posts-wrapper" style={{ padding: '0 24px 24px 24px' }}>
-          <table className="data-table recent-posts-table">
+          <table className="data-table recent-posts-table" style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th style={{ width: '40%' }}>Title</th>
+                <th style={{ width: '25%' }}>Type</th>
+                <th style={{ width: '15%' }}>Status</th>
+                <th style={{ width: '20%' }}>Date</th>
               </tr>
             </thead>
             <tbody>
@@ -47,7 +47,7 @@ export function RecentPostsCard({ posts = [], loading = false }) {
               ) : (
                 posts.map((post) => (
                   <tr key={`${post.post_type}-${post.id}`}>
-                    <td className="recent-posts-title-cell" style={{ fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <td style={{ fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '0', width: '100%' }}>
                       {post.title}
                     </td>
                     <td>
