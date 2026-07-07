@@ -576,6 +576,7 @@ html.dark .navbar::after {
 .page-content {
   flex: 1;
   padding: 28px;
+  min-width: 0;
 }
 
 /* ============================================================
@@ -2984,9 +2985,6 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   margin-bottom: 16px;
 }
 
-.sidebar-backdrop {
-  display: none;
-}
 .page-title {
     font-size: 1.3rem;
     font-weight: 700;
@@ -3000,16 +2998,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
 }
 
-.data-table-wrapper {
-  overflow-x: auto;
-  width: 100%;
-  -webkit-overflow-scrolling: touch;
-}
 
-.data-table thead th,
-.data-table tbody td {
-  white-space: nowrap;
-}
 .card-title {
     font-size: 1rem;
     font-weight: 600;
@@ -3033,8 +3022,25 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 }
 }
 
+.data-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table thead th,
+.data-table tbody td {
+  white-space: nowrap !important;
+}
+
 /* Laptop/Desktop adjustments */
 @media (min-width: 1280px) and (max-width: 1366px) {
+  .sidebar {
+    width: 220px !important;
+  }
+  .app-shell {
+    padding-left: 220px !important;
+  }
   .stats-grid {
     grid-template-columns: repeat(3, 1fr) !important;
   }
@@ -3042,11 +3048,11 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(2, 1fr) !important;
   }
   .page-content {
-    padding: 16px !important;
+    padding: 10px !important;
   }
   .data-table tbody td {
-        padding: 14px 12px;
-        font-size: .8125rem;
+        padding: 8px 2px;
+        font-size: .725rem;
     }
     .data-table-wrapper 
     .recent-posts-wrapper{
@@ -3054,22 +3060,32 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     }
     
   .data-table thead th {
-    padding: 12px 12px;
+    padding: 8px 2px;
+    font-size: .725rem;
   }
   .data-table thead th:first-child,
   .data-table tbody td:first-child {
-    padding-left: 16px;
+    padding-left: 4px;
   }
   .data-table thead th:last-child,
   .data-table tbody td:last-child {
-    padding-right: 16px;
+    padding-right: 4px;
   }
 
 .data-table{
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+}
+.badge {
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-radius: 99px;
+    align-items: center;
+    padding: 3px 4px;
+    font-size: .6875rem;
+    font-weight: 600;
+    display: inline-flex;
 }
 }
 
@@ -3084,19 +3100,20 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 20px !important;
   }
   .data-table tbody td {
-    padding: 14px 03px;
-    font-size: 0.875rem;
+    padding: 10px 8px;
+    font-size: 0.8rem;
   }
   .data-table thead th {
-    padding: 12px 14px;
+    padding: 10px 8px;
+    font-size: 0.8rem;
   }
   .data-table thead th:first-child,
   .data-table tbody td:first-child {
-    padding-left: 20px;
+    padding-left: 14px;
   }
   .data-table thead th:last-child,
   .data-table tbody td:last-child {
-    padding-right: 20px;
+    padding-right: 14px;
   }
 }
 
