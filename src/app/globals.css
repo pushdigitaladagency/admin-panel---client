@@ -3017,7 +3017,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 16px !important;
   }
   .data-table tbody td {
-    padding: 14px 12px;
+    padding: 14px 0px;
     font-size: 0.8125rem;
   }
   .data-table thead th {
@@ -3051,7 +3051,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 20px !important;
   }
   .data-table tbody td {
-    padding: 14px 12px;
+    padding: 14px 03px;
     font-size: 0.875rem;
   }
   .data-table thead th {
