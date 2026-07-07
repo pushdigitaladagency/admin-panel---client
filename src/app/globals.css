@@ -1141,6 +1141,37 @@ html.dark textarea:disabled::placeholder {
   opacity: 0.3;
 }
 
+@media (min-width: 1024px) {
+  .dashboard-charts-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .recent-posts-table {
+    table-layout: fixed;
+  }
+
+  .recent-posts-table th:nth-child(1),
+  .recent-posts-table td:nth-child(1) {
+    width: 40%;
+  }
+
+  .recent-posts-table th:nth-child(2),
+  .recent-posts-table td:nth-child(2) {
+    width: 22%;
+  }
+
+  .recent-posts-table th:nth-child(3),
+  .recent-posts-table td:nth-child(3),
+  .recent-posts-table th:nth-child(4),
+  .recent-posts-table td:nth-child(4) {
+    width: 19%;
+  }
+
+  .recent-posts-title-cell {
+    max-width: 0;
+  }
+}
+
 /* -- Pagination -- */
 .pagination {
   display: flex;
@@ -3039,7 +3070,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(3, 1fr) !important;
   }
   .dashboard-charts-container {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr !important;
   }
   .page-content {
     padding: 16px !important;
@@ -3073,7 +3104,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     grid-template-columns: repeat(4, 1fr) !important;
   }
   .dashboard-charts-container {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr !important;
   }
   .page-content {
     padding: 20px !important;

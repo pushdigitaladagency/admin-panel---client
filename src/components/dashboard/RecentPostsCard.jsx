@@ -47,7 +47,7 @@ export function RecentPostsCard({ posts = [], loading = false }) {
               ) : (
                 posts.map((post) => (
                   <tr key={`${post.post_type}-${post.id}`}>
-                    <td style={{ fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '0', width: '100%' }}>
+                    <td className="recent-posts-title-cell" style={{ fontWeight: 500, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {post.title}
                     </td>
                     <td>
