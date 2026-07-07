@@ -3045,9 +3045,10 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
     padding: 16px !important;
   }
   .data-table tbody td {
-    padding: 14px 12px;
-    font-size: 0.8125rem;
-  }
+        padding: 14px 12px;
+        font-size: .8125rem;
+        text-wrap: auto;
+    }
   .data-table thead th {
     padding: 12px 12px;
   }
