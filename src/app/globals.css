@@ -3048,6 +3048,11 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
         padding: 14px 12px;
         font-size: .8125rem;
     }
+    .data-table-wrapper 
+    .recent-posts-wrapper{
+      padding:0 3px 24px;
+    }
+    
   .data-table thead th {
     padding: 12px 12px;
   }
@@ -3064,6 +3069,7 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 }
 }
 
