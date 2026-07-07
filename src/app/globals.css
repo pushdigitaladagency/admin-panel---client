@@ -1064,8 +1064,7 @@ html.dark textarea:disabled::placeholder {
   color: var(--color-text-dim);
   border-bottom: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.02);
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
@@ -1109,8 +1108,7 @@ html.dark textarea:disabled::placeholder {
   border-bottom: 1px solid var(--glass-border);
   color: var(--color-text-muted);
   vertical-align: middle;
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
 
@@ -1646,6 +1644,10 @@ html.dark textarea:disabled::placeholder {
 
   .sidebar.open {
     transform: translateX(0);
+  }
+
+  .app-shell {
+    padding-left: 0;
   }
 
   .main-wrapper {
@@ -2966,8 +2968,32 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   white-space: nowrap;
 }
   
-   .sidebar-backdrop {
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 16px !important;
+}
+.grid {
+  display: grid;
+}
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.gap-4 {
+  gap: 16px !important;
+}
+.card {
+  margin-bottom: 16px;
+}
+
+.sidebar-backdrop {
   display: none;
+}
+.page-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.gap-6 {
+    gap: 51px !important;
 }
 
 .dashboard-charts-container {
@@ -2983,6 +3009,14 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
 .data-table thead th,
 .data-table tbody td {
   white-space: nowrap;
+}
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px;
+}
+.card-body {
+    padding: 17px;
 }
 
 .navbar-mobile-brand {
