@@ -3071,8 +3071,8 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.card-header{
-  padding: 0px 7px 0px;
+.card-header {
+    padding: 23px 7px;
 }
 
 
