@@ -20,6 +20,8 @@ export function TermForm({ initialData, taxonomy }) {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: isEdit
@@ -32,6 +34,20 @@ export function TermForm({ initialData, taxonomy }) {
         }
       : { name: '', slug: '', description: '', taxonomy: taxonomy },
   });
+
+  // Auto-generate the slug from the name, in both create and edit (same as the
+  // content modules). Runs on every name change so the slug always tracks the name.
+  const nameVal = watch('name');
+  React.useEffect(() => {
+    if (nameVal !== undefined) {
+      const generatedSlug = nameVal
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', generatedSlug, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [nameVal, setValue]);
 
   const onSubmit = async (data) => {
     try {

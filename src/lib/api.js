@@ -6,8 +6,7 @@
 //   { success:false } or non-2xx responses.
 // - Emits a window 'auth:unauthorized' event on 401 so the auth layer can react.
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL 
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const TOKEN_KEY = 'cms_keytoauthkenvalitecdodationsadsadefewgbv';
 
 export function getToken() {
