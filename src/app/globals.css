@@ -2940,6 +2940,9 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   .sidebar.open {
     transform: translateX(0);
   }
+  .app-shell {
+    padding-left: 0;
+  }
   .main-wrapper {
     margin-left: 0 !important;
     width: 100%;
@@ -2975,6 +2978,11 @@ html.dark .ck.ck-balloon-panel .ck-icon * {
   overflow-x: auto;
   width: 100%;
   -webkit-overflow-scrolling: touch;
+}
+
+.data-table thead th,
+.data-table tbody td {
+  white-space: nowrap;
 }
 
 .navbar-mobile-brand {
