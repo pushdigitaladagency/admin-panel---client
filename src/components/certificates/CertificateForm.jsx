@@ -199,8 +199,41 @@ export function CertificateForm({ initialData }) {
               {field('slug', 'Slug')}
               {field('certificate_number', 'Certificate Number', { required: true, rules: { required: 'Number is required' } })}
               {field('issuing_authority', 'Issuing Authority', { required: true, rules: { required: 'Issuing authority is required' } })}
-              {field('issue_date', 'Issue Date', { type: 'date', required: true, rules: { required: 'Issue date is required' } })}
-              {field('expiry_date', 'Expiry Date', { type: 'date' })}
+              <div className="form-group">
+                <label className="form-label">Issue Date *</label>
+                <Input
+                  type="date"
+                  {...register('issue_date', {
+                    required: 'Issue date is required',
+                    validate: (val) => {
+                      if (!val) return true;
+                      const today = new Date().toISOString().split('T')[0];
+                      return val >= today || 'Issue Date cannot be a past date';
+                    },
+                  })}
+                  className={errors.issue_date ? 'error' : ''}
+                />
+                {errors.issue_date && <p className="form-error">{errors.issue_date.message}</p>}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Expiry Date</label>
+                <Input
+                  type="date"
+                  {...register('expiry_date', {
+                    validate: (val) => {
+                      if (!val) return true;
+                      const issueDate = watch('issue_date');
+                      if (issueDate && val < issueDate) {
+                        return 'Expiry Date cannot be before Issue Date';
+                      }
+                      return true;
+                    },
+                  })}
+                  className={errors.expiry_date ? 'error' : ''}
+                />
+                {errors.expiry_date && <p className="form-error">{errors.expiry_date.message}</p>}
+              </div>
               {field('display_order', 'Display Order', { type: 'number', min: 0, rules: { min: { value: 0, message: 'Display Order cannot be negative' } } })}
               <div className="form-group">
                 <label className="form-label">Featured</label>

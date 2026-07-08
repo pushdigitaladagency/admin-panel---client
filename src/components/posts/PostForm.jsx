@@ -653,7 +653,18 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event Start Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Input type="date" {...register('event_start_date', { required: 'Event Start Date is required' })} className={errors.event_start_date ? 'error' : ''} />
+                      <Input
+                        type="date"
+                        {...register('event_start_date', {
+                          required: 'Event Start Date is required',
+                          validate: (val) => {
+                            if (!val) return true;
+                            const today = new Date().toISOString().split('T')[0];
+                            return val >= today || 'Event Start Date cannot be a past date';
+                          },
+                        })}
+                        className={errors.event_start_date ? 'error' : ''}
+                      />
                       {errors.event_start_date && <p className="form-error">{errors.event_start_date.message}</p>}
                     </div>
 
@@ -661,18 +672,57 @@ export function PostForm({ initialData, postType }) {
                       <label className="form-label">
                         Event End Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                       </label>
-                      <Input type="date" {...register('event_end_date', { required: 'Event End Date is required' })} className={errors.event_end_date ? 'error' : ''} />
+                      <Input
+                        type="date"
+                        {...register('event_end_date', {
+                          required: 'Event End Date is required',
+                          validate: (val) => {
+                            if (!val) return true;
+                            const startDate = watch('event_start_date');
+                            if (startDate && val < startDate) {
+                              return 'Event End Date cannot be before Event Start Date';
+                            }
+                            return true;
+                          },
+                        })}
+                        className={errors.event_end_date ? 'error' : ''}
+                      />
                       {errors.event_end_date && <p className="form-error">{errors.event_end_date.message}</p>}
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration Start Date</label>
-                      <Input type="date" {...register('reg_start_date')} />
+                      <Input
+                        type="date"
+                        {...register('reg_start_date', {
+                          validate: (val) => {
+                            if (!val) return true;
+                            const today = new Date().toISOString().split('T')[0];
+                            return val >= today || 'Registration Start Date cannot be a past date';
+                          },
+                        })}
+                        className={errors.reg_start_date ? 'error' : ''}
+                      />
+                      {errors.reg_start_date && <p className="form-error">{errors.reg_start_date.message}</p>}
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Registration End Date</label>
-                      <Input type="date" {...register('reg_end_date')} />
+                      <Input
+                        type="date"
+                        {...register('reg_end_date', {
+                          validate: (val) => {
+                            if (!val) return true;
+                            const regStart = watch('reg_start_date');
+                            if (regStart && val < regStart) {
+                              return 'Registration End Date cannot be before Registration Start Date';
+                            }
+                            return true;
+                          },
+                        })}
+                        className={errors.reg_end_date ? 'error' : ''}
+                      />
+                      {errors.reg_end_date && <p className="form-error">{errors.reg_end_date.message}</p>}
                     </div>
 
                     <div className="form-group md:col-span-2">
@@ -794,14 +844,39 @@ export function PostForm({ initialData, postType }) {
                     <label className="form-label">
                       Publish Date <span className="text-red-500" style={{ color: 'var(--color-danger)' }}>*</span>
                     </label>
-                    <Input type="date" {...register('publish_date', { required: 'Publish Date is required' })} className={errors.publish_date ? 'error' : ''} />
+                    <Input
+                      type="date"
+                      {...register('publish_date', {
+                        required: 'Publish Date is required',
+                        validate: (val) => {
+                          if (!val) return true;
+                          const today = new Date().toISOString().split('T')[0];
+                          return val >= today || 'Publish Date cannot be a past date';
+                        },
+                      })}
+                      className={errors.publish_date ? 'error' : ''}
+                    />
                     {errors.publish_date && <p className="form-error">{errors.publish_date.message}</p>}
                   </div>
 
                   {postType !== 'news' && (
                     <div className="form-group">
                       <label className="form-label">Expiry Date</label>
-                      <Input type="date" {...register('expiry_date')} />
+                      <Input
+                        type="date"
+                        {...register('expiry_date', {
+                          validate: (val) => {
+                            if (!val) return true;
+                            const publishDate = watch('publish_date');
+                            if (publishDate && val < publishDate) {
+                              return 'Expiry Date cannot be before Publish Date';
+                            }
+                            return true;
+                          },
+                        })}
+                        className={errors.expiry_date ? 'error' : ''}
+                      />
+                      {errors.expiry_date && <p className="form-error">{errors.expiry_date.message}</p>}
                     </div>
                   )}
                 </div>

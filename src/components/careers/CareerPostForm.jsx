@@ -346,8 +346,42 @@ export function CareerPostForm({ initialData }) {
         <div className="card-header"><h3 className="card-title">Publishing</h3></div>
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {field('publish_date', 'Publish Date', { type: 'date', required: true, rules: { required: 'Publish date is required' } })}
-            {field('application_deadline', 'Application Deadline', { type: 'date', required: true, rules: { required: 'Deadline is required' } })}
+            <div className="form-group">
+              <label className="form-label">Publish Date *</label>
+              <Input
+                type="date"
+                {...register('publish_date', {
+                  required: 'Publish date is required',
+                  validate: (val) => {
+                    if (!val) return true;
+                    const today = new Date().toISOString().split('T')[0];
+                    return val >= today || 'Publish Date cannot be a past date';
+                  },
+                })}
+                className={errors.publish_date ? 'error' : ''}
+              />
+              {errors.publish_date && <p className="form-error">{errors.publish_date.message}</p>}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Application Deadline *</label>
+              <Input
+                type="date"
+                {...register('application_deadline', {
+                  required: 'Deadline is required',
+                  validate: (val) => {
+                    if (!val) return true;
+                    const publishDate = watch('publish_date');
+                    if (publishDate && val < publishDate) {
+                      return 'Application Deadline cannot be before Publish Date';
+                    }
+                    return true;
+                  },
+                })}
+                className={errors.application_deadline ? 'error' : ''}
+              />
+              {errors.application_deadline && <p className="form-error">{errors.application_deadline.message}</p>}
+            </div>
             {selectField('featured_job', 'Featured Job', ['No', 'Yes'])}
             {selectField('status', 'Status', STATUSES)}
           </div>
