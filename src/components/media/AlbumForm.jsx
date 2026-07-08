@@ -38,6 +38,15 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
 
   const coverImageRegister = register('cover_image', isEdit ? {} : { required: 'Cover Image is required' });
 
+  // Only offer ACTIVE categories, but keep the album's current category visible in edit.
+  const currentCategoryId = initialData?.category_id ?? initialData?.category?.id;
+  const activeCategories = categories.filter(
+    (c) =>
+      c.status === true ||
+      c.status === 1 ||
+      String(c.id) === String(currentCategoryId)
+  );
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
       <div className="form-group">
@@ -56,7 +65,7 @@ export function AlbumForm({ categories = [], events = [], initialData, onSubmit,
         <label className="form-label">Album Category</label>
         <Select value={watch('category_id') || ''} {...register('category_id')}>
           <option value="">None / Select Category...</option>
-          {categories.map((cat) => (
+          {activeCategories.map((cat) => (
             <option key={cat.id} value={cat.id}>
               {cat.name}
             </option>

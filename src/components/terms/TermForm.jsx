@@ -17,6 +17,12 @@ export function TermForm({ initialData, taxonomy }) {
   const { addTerm, updateTerm } = useTerms();
   const taxonomyLabel = formatTaxonomyLabel(taxonomy);
 
+  // Category `status` is a BOOLEAN column on the backend. The <select> works in
+  // 'Active'/'Inactive' labels, so map boolean -> label for display and label ->
+  // boolean on save. (Treat only an explicit false/0 as Inactive.)
+  const statusToLabel = (s) =>
+    s === false || s === 0 || s === '0' || s === 'Inactive' ? 'Inactive' : 'Active';
+
   const {
     register,
     handleSubmit,
@@ -30,7 +36,7 @@ export function TermForm({ initialData, taxonomy }) {
           name: initialData?.name || '',
           slug: initialData?.slug || '',
           description: initialData?.description || '',
-          status: initialData?.status || 'Active',
+          status: statusToLabel(initialData?.status),
           taxonomy: taxonomy,
         }
       : { name: '', slug: '', description: '', status: 'Active', taxonomy: taxonomy },
@@ -51,12 +57,14 @@ export function TermForm({ initialData, taxonomy }) {
   }, [nameVal, setValue]);
 
   const onSubmit = async (data) => {
+    // Convert the 'Active'/'Inactive' label back to the boolean the column stores.
+    const payload = { ...data, status: data.status === 'Active' };
     try {
       if (isEdit) {
-        await updateTerm(taxonomy, initialData.id, data);
+        await updateTerm(taxonomy, initialData.id, payload);
         addToast(`${taxonomyLabel} updated successfully`, 'success');
       } else {
-        await addTerm(taxonomy, data);
+        await addTerm(taxonomy, payload);
         addToast(`${taxonomyLabel} created successfully`, 'success');
       }
       router.push(`/terms/${taxonomy}`);

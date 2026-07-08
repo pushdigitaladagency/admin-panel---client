@@ -27,7 +27,8 @@ export default function EditTermPage() {
     name: data.name || '',
     slug: data.slug || '',
     description: data.description || '',
-    status: data.status || 'Active',
+    // Pass the raw boolean through; TermForm maps it to the Active/Inactive label.
+    status: data.status,
   };
 
   return (
