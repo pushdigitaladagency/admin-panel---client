@@ -458,7 +458,14 @@ export function PostForm({ initialData, postType }) {
         : null;
 
   const { data: categoriesData } = useApi(categoryEndpoint, { enabled: !!categoryEndpoint });
-  const CATEGORIES = categoriesData || [];
+  // Only offer ACTIVE categories/types. Keep the currently-assigned one visible in
+  // edit mode so an existing post's selection is never silently dropped.
+  const CATEGORIES = (categoriesData || []).filter(
+    (c) =>
+      c.status === true ||
+      c.status === 1 ||
+      String(c.id) === String(initialData?.category)
+  );
 
   // Users for the enquiry "Assigned To" picker (assigned_to is a user-id FK on the server).
   const { data: enquiryUsersData } = useApi('/users', { enabled: postType === 'enquiry' });
