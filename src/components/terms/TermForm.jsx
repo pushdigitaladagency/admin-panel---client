@@ -30,9 +30,10 @@ export function TermForm({ initialData, taxonomy }) {
           name: initialData?.name || '',
           slug: initialData?.slug || '',
           description: initialData?.description || '',
+          status: initialData?.status || 'Active',
           taxonomy: taxonomy,
         }
-      : { name: '', slug: '', description: '', taxonomy: taxonomy },
+      : { name: '', slug: '', description: '', status: 'Active', taxonomy: taxonomy },
   });
 
   // Auto-generate the slug from the name, in both create and edit (same as the
@@ -100,6 +101,14 @@ export function TermForm({ initialData, taxonomy }) {
               style={{ minHeight: '100px' }}
             />
             {errors.description && <p className="form-error">{errors.description.message}</p>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Status</label>
+            <select className="form-select" {...register('status')}>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">

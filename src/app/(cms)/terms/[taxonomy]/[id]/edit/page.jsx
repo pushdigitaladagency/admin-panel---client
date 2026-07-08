@@ -27,6 +27,7 @@ export default function EditTermPage() {
     name: data.name || '',
     slug: data.slug || '',
     description: data.description || '',
+    status: data.status || 'Active',
   };
 
   return (

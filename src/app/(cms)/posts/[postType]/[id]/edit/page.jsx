@@ -71,6 +71,7 @@ export default function EditPostPage() {
       seo_title: data.seo_title || '',
       seo_keywords: data.seo_keywords || '',
       seo_description: data.seo_description || '',
+      canonical_url: data.canonical_url || '',
       tags: data.tags || '',
       featured: data.featured ? 'yes' : 'no',
     };
@@ -93,6 +94,7 @@ export default function EditPostPage() {
       seo_title: data.seo_title || '',
       seo_keywords: data.seo_keywords || '',
       seo_description: data.seo_description || '',
+      canonical_url: data.canonical_url || '',
     };
   } else {
     // press release
@@ -113,6 +115,7 @@ export default function EditPostPage() {
       seo_title: data.seo_title || '',
       seo_keywords: data.seo_keywords || '',
       seo_description: data.seo_description || '',
+      canonical_url: data.canonical_url || '',
     };
   }
 

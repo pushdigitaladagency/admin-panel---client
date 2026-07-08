@@ -562,13 +562,14 @@ export function PostForm({ initialData, postType }) {
                 <textarea {...register('follow_up_notes')} className="form-textarea" rows={3} />
               </div>
               
-              <div className="form-group md:col-span-2 pt-4 flex gap-4">
-                <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving...">
+              <div className="form-group md:col-span-2 pt-4" style={{ display: 'flex', flexDirection: 'row', gap: '12px' }}>
+                <Button type="submit" variant="primary" loading={isSubmitting} loadingText="Saving..." style={{ width: '120px', height: '40px' }}>
                   Save
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
+                  style={{ width: '120px', height: '40px' }}
                   onClick={() => router.push(postType === 'enquiry' ? '/enquiry' : `/posts/${postType}`)}
                 >
                   Cancel
